@@ -988,7 +988,7 @@ export default function App() {
               </span>
               
               <div className="w-full aspect-square flex items-center justify-center relative my-2 transform group-hover/elite-header:scale-110 transition-transform duration-500 border-2 border-red-500 bg-white">
-                <img src="/gifs/elite_seed.gif" alt="elite-gif" />
+                <img src="/gifs/elite_seed.gif" alt="elite-gif" className="w-full h-full object-contain filter drop-shadow-[0_0_15px_#00ff00] scale-110 brightness-110" />
               </div>
 
               <div className="flex items-center gap-2 w-full justify-center mb-1">
@@ -1039,7 +1039,7 @@ export default function App() {
                    {/* BIG IMAGE */}
                    <div className="w-full aspect-[4/3] bg-black/80 flex items-center justify-center border border-lime-500/20 mb-4 overflow-hidden rounded-lg relative group-hover/seed-card:border-lime-500/50 transition-colors">
                       <div className="absolute inset-0 bg-gradient-to-t from-green-950/60 to-transparent z-0 opacity-60"></div>
-                      <img src={seed.image} alt={seed.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover/seed-card:scale-125 relative z-10" />
+                      <img src="/gifs/elite_seed.gif" alt={seed.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover/seed-card:scale-125 relative z-10 border-4 border-yellow-500" />
                       
                       <div className="absolute top-2 right-2 z-20">
                          {G.selSeed === i && <div className="w-4 h-4 rounded-full bg-lime-500 animate-ping shadow-[0_0_15px_#00ff00]"></div>}
