@@ -542,7 +542,7 @@ export default function App() {
       <div className="md:sticky relative top-0 z-[1000] w-full flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
         {/* TOP PROMO BAR */}
         <div className="w-full bg-lime-500 text-black py-2 px-4 text-center vt text-[10px] md:text-sm font-bold uppercase tracking-widest flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 shadow-[0_4px_15px_rgba(0,255,0,0.2)]">
-          <img src="/gifs/VERDE CLARO.png" className="h-6 w-6 pixelate inline-block" alt="Promo Promo" />
+          <img src="/gifs/VERDE%20CLARO.png" className="h-6 w-6 pixelate inline-block" alt="Promo Promo" />
           <span>Gaste mais R$300 para obter envio grátis discreto!</span>
           <button 
             className="bg-black text-lime-400 px-4 py-1 hover:bg-white hover:text-black transition-colors rounded-full text-xs pixel shadow-inner border border-lime-700"
@@ -570,7 +570,7 @@ export default function App() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
-              <img src="/gifs/VERMELHO COM VERDE.png" className="w-[50px] h-[50px] pixelate animate-pulse drop-shadow-[0_0_15px_#ff00ff] group-hover:scale-110 transition-transform" alt="Mascot" />
+              <img src="/gifs/VERMELHO%20COM%20VERDE.png" className="w-[50px] h-[50px] pixelate animate-pulse drop-shadow-[0_0_15px_#ff00ff] group-hover:scale-110 transition-transform" alt="Mascot" />
               <div className="flex flex-col">
                  <span className="pixel text-2xl text-lime-500 whitespace-nowrap drop-shadow-[2px_2px_0px_#005500] leading-none group-hover:text-white transition-colors">SEMENTE SAGRADA</span>
                  <span className="vt text-lg text-[#ff00ff] font-bold tracking-[0.4em] uppercase drop-shadow-[1px_1px_0px_#ffffff] leading-relaxed group-hover:tracking-[0.5em] transition-all">World</span>
@@ -988,7 +988,7 @@ export default function App() {
               </span>
               
               <div className="w-full aspect-square flex items-center justify-center relative my-2 transform group-hover/elite-header:scale-110 transition-transform duration-500">
-                <img src="/gifs/Design sem nome (2).gif" alt="elite-gif" className="w-full h-full object-contain filter drop-shadow-[0_0_15px_#00ff00] scale-110 brightness-110" />
+                <img src="/gifs/Design%20sem%20nome%20(2).gif" alt="elite-gif" className="w-full h-full object-contain filter drop-shadow-[0_0_15px_#00ff00] scale-110 brightness-110" />
               </div>
 
               <div className="flex items-center gap-2 w-full justify-center mb-1">
@@ -1552,7 +1552,7 @@ export default function App() {
                 }}
               >
                  <div className="absolute bottom-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity translate-x-10 translate-y-10 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-700">
-                    <img src="/gifs/VERMELHO COM VERDE.png" className="w-48 h-48 pixelate" alt="Course mascot" />
+                    <img src="/gifs/VERMELHO%20COM%20VERDE.png" className="w-48 h-48 pixelate" alt="Course mascot" />
                  </div>
                  <div className="relative z-10">
                     <div className="flex items-center gap-3 mb-6">
@@ -1841,7 +1841,7 @@ export default function App() {
               </div>
 
               <div className="bg-gradient-to-br from-[#f3f4f6] to-[#e5e7eb] p-5 rounded-2xl relative overflow-hidden group cursor-pointer shadow-sm">
-                <div className="absolute right-[-10px] bottom-[-10px] pointer-events-none w-2/5 flex items-end justify-end opacity-90"><img src="/gifs/VERMELHO COM VERDE.png" className="w-full object-contain mix-blend-multiply" alt="cactus" /></div>
+                <div className="absolute right-[-10px] bottom-[-10px] pointer-events-none w-2/5 flex items-end justify-end opacity-90"><img src="/gifs/VERMELHO%20COM%20VERDE.png" className="w-full object-contain mix-blend-multiply" alt="cactus" /></div>
                 <div className="relative z-10 w-3/4">
                   <h4 className="font-bold text-[#1f2937] text-lg leading-tight mb-2">Genéticas Resistentes</h4>
                   <p className="text-xs text-[#4b5563] mb-4">As melhores e mais fortes variedades para quem está começando agora</p>

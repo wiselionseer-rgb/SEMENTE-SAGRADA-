@@ -48,7 +48,7 @@ export default function ManualPage({ onBack, onSelectSeed }: { onBack: () => voi
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80"></div>
         
         <div className="relative z-10 flex items-center gap-6 w-full max-w-7xl px-8">
-          <img src="/gifs/Design sem nome (2).gif" className="h-[140px] md:h-[200px] object-contain drop-shadow-[0_0_20px_rgba(132,204,22,0.3)]" alt="Mascot" />
+          <img src="/gifs/Design%20sem%20nome%20(2).gif" className="h-[140px] md:h-[200px] object-contain drop-shadow-[0_0_20px_rgba(132,204,22,0.3)]" alt="Mascot" />
           <div className="flex flex-col">
             <span className="text-lime-500 pixel text-[10px] tracking-[0.3em] mb-2">MODULO DE APRENDIZADO</span>
             <h1 className="text-white text-lg md:text-2xl font-black uppercase tracking-tighter leading-none pixel">
@@ -335,7 +335,7 @@ export default function ManualPage({ onBack, onSelectSeed }: { onBack: () => voi
                )}
              </div>
              <div className="w-full bg-gradient-to-t from-lime-500/10 to-transparent relative flex justify-center pt-10">
-                <img src="/gifs/Design sem nome (3).gif" className="h-[220px] object-contain opacity-40 mix-blend-screen drop-shadow-[0_0_30px_rgba(132,204,22,0.3)] grayscale hover:grayscale-0 transition-all duration-700" alt="quiz mascot" />
+                <img src="/gifs/Design%20sem%20nome%20(3).gif" className="h-[220px] object-contain opacity-40 mix-blend-screen drop-shadow-[0_0_30px_rgba(132,204,22,0.3)] grayscale hover:grayscale-0 transition-all duration-700" alt="quiz mascot" />
              </div>
            </div>
 
@@ -534,7 +534,7 @@ export default function ManualPage({ onBack, onSelectSeed }: { onBack: () => voi
          
          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12 relative z-10">
             <div className="shrink-0 flex items-center justify-center p-4 bg-white/5 rounded-full border border-white/5">
-               <img src="/gifs/Design sem nome (4).gif" className="h-[120px] object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] contrast-125" alt="mascot" />
+               <img src="/gifs/Design%20sem%20nome%20(4).gif" className="h-[120px] object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] contrast-125" alt="mascot" />
             </div>
             
             <div className="flex-1">
