@@ -6,16 +6,16 @@ let onTrackChangeCallback: ((name: string) => void) | null = null;
 
 // Track paths
 const TRACKS = [
-  { name: "SOUNDTRACK 8", path: "/gifs/videoplayback%20(10)%20(online-audio-converter.com).mp3" },
-  { name: "SOUNDTRACK 1", path: "/gifs/videoplayback%20(3)%20(online-audio-converter.com)%20(1).mp3" },
-  { name: "SOUNDTRACK 10", path: "/gifs/videoplayback%20(13)%20(online-audio-converter.com).mp3" },
-  { name: "SOUNDTRACK 2", path: "/gifs/videoplayback%20(4)%20(online-audio-converter.com).mp3" },
-  { name: "SOUNDTRACK 3", path: "/gifs/videoplayback%20(5)%20(online-audio-converter.com).mp3" },
-  { name: "SOUNDTRACK 4", path: "/gifs/videoplayback%20(6)%20(online-audio-converter.com).mp3" },
-  { name: "SOUNDTRACK 5", path: "/gifs/videoplayback%20(7)%20(online-audio-converter.com).mp3" },
-  { name: "SOUNDTRACK 6", path: "/gifs/videoplayback%20(8)%20(online-audio-converter.com).mp3" },
-  { name: "SOUNDTRACK 7", path: "/gifs/videoplayback%20(9)%20(online-audio-converter.com).mp3" },
-  { name: "SOUNDTRACK 9", path: "/gifs/videoplayback%20(12)%20(online-audio-converter.com).mp3" }
+  { name: "SOUNDTRACK 8", path: "/gifs/s8.mp3" },
+  { name: "SOUNDTRACK 1", path: "/gifs/s1.mp3" },
+  { name: "SOUNDTRACK 10", path: "/gifs/s10.mp3" },
+  { name: "SOUNDTRACK 2", path: "/gifs/s2.mp3" },
+  { name: "SOUNDTRACK 3", path: "/gifs/s3.mp3" },
+  { name: "SOUNDTRACK 4", path: "/gifs/s4.mp3" },
+  { name: "SOUNDTRACK 5", path: "/gifs/s5.mp3" },
+  { name: "SOUNDTRACK 6", path: "/gifs/s6.mp3" },
+  { name: "SOUNDTRACK 7", path: "/gifs/s7.mp3" },
+  { name: "SOUNDTRACK 9", path: "/gifs/s9.mp3" }
 ];
 
 export function setOnTrackChangeCallback(cb: (name: string) => void) {

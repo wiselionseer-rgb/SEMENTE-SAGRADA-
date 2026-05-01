@@ -1816,7 +1816,7 @@ export default function App() {
                 }}
                 className="bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] p-5 rounded-2xl relative overflow-hidden group cursor-pointer shadow-sm"
               >
-                <div className="absolute right-0 bottom-0 pointer-events-none w-1/2 h-[120%] flex items-end justify-end"><img src="/gifs/Design sem nome (2).gif" className="h-[90%] object-contain" alt="mascot" /></div>
+                <div className="absolute right-0 bottom-0 pointer-events-none w-1/2 h-[120%] flex items-end justify-end"><img src="/gifs/elite_seed.gif" className="h-[90%] object-contain" alt="mascot" /></div>
                 <div className="relative z-10 w-2/3">
                   <h4 className="font-bold text-[#0f172a] text-lg leading-tight mb-2">Descubra sua Genética</h4>
                   <p className="text-xs text-[#334155] mb-4">Faça um teste rápido e ache a planta perfeita para o seu primeiro cultivo</p>
@@ -1899,7 +1899,7 @@ export default function App() {
                           <span>5+2</span>
                           <span>10+4</span>
                        </div>
-                       <div className="absolute right-0 bottom-0 w-[60%] h-full flex items-end justify-end"><img src="/gifs/Design sem nome (2).gif" alt="Promo" className="h-[120%] object-contain" /></div>
+                       <div className="absolute right-0 bottom-0 w-[60%] h-full flex items-end justify-end"><img src="/gifs/elite_seed.gif" alt="Promo" className="h-[120%] object-contain" /></div>
                     </div>
                     <div className="p-6 flex-1 flex flex-col text-left">
                        <h5 className="font-bold text-[#1f2937] text-lg mb-2 leading-tight">Bônus Semente Sagrada World</h5>
@@ -2467,7 +2467,7 @@ export default function App() {
         <div className="absolute inset-0 pointer-events-none opacity-20 bg-transparent bg-repeat mix-blend-multiply"></div>
         <div className="max-w-[1200px] mx-auto px-4 relative z-10 flex flex-col md:flex-row items-center gap-8">
           <div className="flex-shrink-0 w-32 md:w-48">
-            <img src="/gifs/Design sem nome (2).gif" alt="mascot" className="w-full object-contain filter drop-shadow-lg" />
+            <img src="/gifs/elite_seed.gif" alt="mascot" className="w-full object-contain filter drop-shadow-lg" />
           </div>
           
           <div className="flex-1 text-center md:text-left">
@@ -3582,7 +3582,7 @@ export default function App() {
                         {/* Newsletter Strip */}
                         <div className="w-full bg-[#dcf1e2] border-[3px] border-[#a8d0b5] rounded-xl relative overflow-hidden p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm mt-8">
                           <div className="flex-shrink-0 w-32 md:w-48">
-                            <img src="/gifs/Design sem nome (2).gif" alt="mascot" className="w-full object-contain filter drop-shadow-lg" />
+                            <img src="/gifs/elite_seed.gif" alt="mascot" className="w-full object-contain filter drop-shadow-lg" />
                           </div>
                           
                           <div className="flex-1 text-center md:text-left">

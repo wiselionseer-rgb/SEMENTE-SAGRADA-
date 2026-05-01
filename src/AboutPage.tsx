@@ -37,7 +37,7 @@ export default function AboutPage({ onBack }: { onBack: () => void }) {
 
         <div className="w-full flex justify-center mb-20 relative">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#f5f7f5] opacity-50 z-0 rounded-full blur-3xl pointer-events-none"></div>
-            <img src="/gifs/Design sem nome (4).gif" className="w-80 h-80 object-contain z-10 hover:scale-105 transition-transform duration-500 cursor-pointer drop-shadow-2xl" alt="Mascote" />
+            <img src="/gifs/design_sem_nome_4.gif" className="w-80 h-80 object-contain z-10 hover:scale-105 transition-transform duration-500 cursor-pointer drop-shadow-2xl" alt="Mascote" />
         </div>
 
         <h3 className="text-2xl md:text-3xl font-bold text-[#1e4a1e] uppercase tracking-wide w-full mb-10">Quem Somos</h3>
@@ -86,7 +86,7 @@ export default function AboutPage({ onBack }: { onBack: () => void }) {
 
             <div className="w-full flex justify-center mb-24 relative">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#f5f7f5] opacity-50 z-0 rounded-full blur-3xl pointer-events-none"></div>
-                <img src="/gifs/sangoku.gif" className="w-[32rem] h-auto object-contain z-10 hover:-translate-y-2 transition-transform duration-500 cursor-pointer drop-shadow-2xl" alt="Nossa Missão" onError={(e) => e.currentTarget.src='/gifs/Design sem nome (4).gif'} />
+                <img src="/gifs/sangoku.gif" className="w-[32rem] h-auto object-contain z-10 hover:-translate-y-2 transition-transform duration-500 cursor-pointer drop-shadow-2xl" alt="Nossa Missão" onError={(e) => e.currentTarget.src='/gifs/design_sem_nome_4.gif'} />
             </div>
 
             <h3 className="text-2xl md:text-3xl font-bold text-[#1e4a1e] uppercase tracking-wide w-full mb-8">Nossos valores</h3>
@@ -173,7 +173,7 @@ export default function AboutPage({ onBack }: { onBack: () => void }) {
       <div className="w-full mt-10 mb-[-5rem]">
         <div className="w-full bg-[#dcf1e2] border-[3px] border-[#a8d0b5] rounded-xl relative overflow-hidden p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
           <div className="flex-shrink-0 w-32 md:w-48">
-            <img src="/gifs/Design sem nome (2).gif" alt="mascot" className="w-full object-contain filter drop-shadow-lg" />
+            <img src="/gifs/elite_seed.gif" alt="mascot" className="w-full object-contain filter drop-shadow-lg" />
           </div>
           
           <div className="flex-1 text-center md:text-left">
