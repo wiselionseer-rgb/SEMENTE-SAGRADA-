@@ -1039,7 +1039,7 @@ export default function App() {
                    {/* BIG IMAGE */}
                    <div className="w-full aspect-[4/3] bg-black/80 flex items-center justify-center border border-lime-500/20 mb-4 overflow-hidden rounded-lg relative group-hover/seed-card:border-lime-500/50 transition-colors">
                       <div className="absolute inset-0 bg-gradient-to-t from-green-950/60 to-transparent z-0 opacity-60"></div>
-                      <img src={seed.image} alt={seed.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover/seed-card:scale-125 relative z-10 border-4 border-yellow-500" />
+                      <img src={`${window.location.origin}${seed.image}`} alt={seed.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover/seed-card:scale-125 relative z-10 border-4 border-yellow-500" />
                       
                       <div className="absolute top-2 right-2 z-20">
                          {G.selSeed === i && <div className="w-4 h-4 rounded-full bg-lime-500 animate-ping shadow-[0_0_15px_#00ff00]"></div>}
@@ -1427,7 +1427,7 @@ export default function App() {
               <div className="relative w-full max-w-[400px] h-[300px]">
                  {/* Retro Hero Composition */}
                  <div className="absolute inset-0 bg-lime-500/10 blur-[50px] rounded-full"></div>
-                 <img src="/gifs/elite_seed.gif" className="absolute right-0 top-1/2 -translate-y-1/2 w-[280px] lg:w-[380px] drop-shadow-[0_0_40px_rgba(255,0,255,0.4)] pixelate z-10 hover:scale-[1.02] transition-transform duration-500" alt="Hero Mascot" />
+                 <img src={`${window.location.origin}/gifs/elite_seed.gif`} className="absolute right-0 top-1/2 -translate-y-1/2 w-[280px] lg:w-[380px] drop-shadow-[0_0_40px_rgba(255,0,255,0.4)] pixelate z-10 hover:scale-[1.02] transition-transform duration-500" alt="Hero Mascot" />
                  <img src="/gifs/verde_escura.png" className="absolute left-0 lg:-left-12 top-0 w-[90px] drop-shadow-xl animate-[bounce_4s_infinite] pixelate z-20 bg-lime-500/10 rounded-full p-2 border-2 border-lime-500/30 backdrop-blur-sm" alt="Floating Seed" />
                  <img src="/gifs/roxa.png" className="absolute right-10 -bottom-12 w-[110px] drop-shadow-xl animate-[pulse_3s_infinite] pixelate z-20 bg-pink-500/10 rounded-full p-2 border-2 border-[#ff00ff]/30 backdrop-blur-sm hover:rotate-180 transition-transform duration-1000" alt="Floating Seed 2" />
               </div>
