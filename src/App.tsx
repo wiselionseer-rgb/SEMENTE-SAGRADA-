@@ -968,7 +968,7 @@ export default function App() {
         {/* RESIZED TOP SEED SHOP (HORIZONTAL SCROLLABLE) */}
         <div className="bg-[#000d00] border-2 border-[#003300] p-4 rounded-lg backdrop-blur-xl relative overflow-hidden group/elite-section">
           {/* FLASHY BACKGROUND EFFECTS */}
-          <div className="absolute inset-0 bg-[url('https://web.archive.org/web/20091027052219/http://www.geocities.com/SunsetStrip/Alley/7468/back1.gif')] opacity-5 pointer-events-none mix-blend-screen scale-150"></div>
+          <div className="absolute inset-0 bg-transparent opacity-5 pointer-events-none mix-blend-screen scale-150"></div>
           <div className="absolute inset-0 bg-gradient-to-r from-green-900/40 via-transparent to-green-900/40 pointer-events-none"></div>
           <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#00ff00] to-transparent animate-pulse"></div>
 
@@ -1395,7 +1395,7 @@ export default function App() {
         {/* HERO BANNER SECTION */}
         <div className="w-full bg-[#0a000a] relative overflow-hidden py-16 lg:py-24 shadow-[inset_0_0_80px_rgba(0,0,0,0.9)] border-b-8 border-double border-[#ff00ff]">
            {/* Retro Hacker/Cyberspace Background */}
-           <div className="absolute inset-0 bg-[url('https://web.archive.org/web/20091027052219/http://www.geocities.com/SunsetStrip/Alley/7468/back1.gif')] opacity-[0.15] pointer-events-none mix-blend-screen scale-150 transform"></div>
+           <div className="absolute inset-0 bg-transparent opacity-[0.15] pointer-events-none mix-blend-screen scale-150 transform"></div>
            
            <div className="max-w-[1200px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between relative z-20">
               <div className="text-white max-w-xl text-center md:text-left mb-12 md:mb-0">
@@ -1722,7 +1722,7 @@ export default function App() {
                 {/* IMAGE AREA AND TITLE (CLICKABLE) */}
                 <div className="cursor-pointer group flex flex-col flex-1" onClick={() => setSelectedSeedId(seed.id)}>
                     <div className="relative aspect-square bg-gradient-to-b from-[#111] to-[#050505] flex flex-col items-center justify-center border-b border-[#222] overflow-hidden">
-                      <div className="absolute inset-0 bg-[url('https://web.archive.org/web/20091027052219/http://www.geocities.com/SunsetStrip/Alley/7468/back1.gif')] opacity-[0.05] mix-blend-screen pointer-events-none"></div>
+                      <div className="absolute inset-0 bg-transparent opacity-[0.05] mix-blend-screen pointer-events-none"></div>
                       
                       <img 
                         src={seed.image} 
@@ -2464,7 +2464,7 @@ export default function App() {
       {/* QUALITY PROMISE & NEWSLETTER (HERBIES STYLE)             */}
       {/* ========================================================= */}
       <div className="w-full bg-[#E5F2E9] py-12 relative overflow-hidden text-[#333]">
-        <div className="absolute inset-0 pointer-events-none opacity-20 bg-[url('https://web.archive.org/web/20090831114516/http://www.geocities.com/SunsetStrip/Alley/7468/mj.gif')] bg-repeat mix-blend-multiply"></div>
+        <div className="absolute inset-0 pointer-events-none opacity-20 bg-transparent bg-repeat mix-blend-multiply"></div>
         <div className="max-w-[1200px] mx-auto px-4 relative z-10 flex flex-col md:flex-row items-center gap-8">
           <div className="flex-shrink-0 w-32 md:w-48">
             <img src="/gifs/Design sem nome (2).gif" alt="mascot" className="w-full object-contain filter drop-shadow-lg" />
