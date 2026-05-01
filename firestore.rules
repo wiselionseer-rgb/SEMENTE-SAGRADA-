@@ -1,0 +1,125 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ==========================================
+    // PRIMITIVE DEFINITIONS
+    // ==========================================
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return request.auth.uid == userId; }
+    
+    // ==========================================
+    // VALIDATION BLUEPRINTS (The "Anti-Update-Gap")
+    // ==========================================
+    
+    function isValidUser(data, userId) {
+      return data.keys().hasAll(['email', 'createdAt'])
+        && data.keys().size() == 2
+        && data.email is string
+        && data.email.size() > 0
+        && data.email.size() <= 200
+        && data.createdAt is number;
+    }
+    
+    function isValidFavorite(data, seedId) {
+      return data.keys().hasAll(['seedId', 'addedAt'])
+        && data.keys().size() == 2
+        && data.seedId is string
+        && data.seedId == seedId
+        && data.seedId.size() > 0
+        && data.seedId.size() <= 128
+        && data.addedAt is number;
+    }
+    
+    function isValidCartItem(data) {
+       return data.keys().hasAll(['seedId', 'quantity', 'variantType', 'priceNum', 'addedAt', 'packCount'])
+        && data.keys().size() == 6
+        && data.seedId is string
+        && data.seedId.size() > 0
+        && data.seedId.size() <= 128
+        && data.quantity is string
+        && data.quantity.size() <= 10
+        && data.variantType is string
+        && data.variantType.size() <= 64
+        && data.priceNum is number
+        && data.priceNum >= 0
+        && data.addedAt is number
+        && data.packCount is number
+        && data.packCount > 0;
+    }
+    
+    function isValidOrder(data) {
+      return data.keys().hasAll(['totalAmount', 'items', 'status', 'createdAt'])
+        && (data.keys().size() == 4 || (data.keys().size() == 5 && data.keys().hasAll(['bonusSeeds'])))
+        && data.totalAmount is number
+        && data.totalAmount >= 0
+        && data.items is list
+        && data.items.size() > 0
+        && data.items.size() <= 50
+        && data.status is string
+        && data.status.size() <= 20
+        && data.createdAt is number
+        && (!data.keys().hasAll(['bonusSeeds']) || data.bonusSeeds is list);
+    }
+
+    // ==========================================
+    // PATHS & RULES
+    // ==========================================
+    
+    match /users/{userId} {
+      allow get: if isSignedIn() && isOwner(userId) && isValidId(userId);
+      allow list: if false; // No list of users
+      // Users can be created
+      allow create: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidUser(incoming(), userId);
+      // No updates for users right now, their email/createdat are immortal
+      allow update: if false;
+      allow delete: if false;
+      
+      match /favorites/{seedId} {
+        allow get: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidId(seedId);
+        allow list: if isSignedIn() && isOwner(userId) && isValidId(userId);
+        allow create: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidId(seedId) && isValidFavorite(incoming(), seedId);
+        allow update: if false; // Favorites are either added or removed
+        allow delete: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidId(seedId);
+      }
+      
+      match /cartItems/{itemId} {
+        allow get: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidId(itemId);
+        allow list: if isSignedIn() && isOwner(userId) && isValidId(userId);
+        allow create: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidId(itemId) && isValidCartItem(incoming());
+        allow update: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidId(itemId) 
+                         // For update, we only allow updating quantity and variantType
+                         && incoming().diff(existing()).affectedKeys().hasOnly(['quantity', 'variantType', 'priceNum', 'packCount'])
+                         && incoming().quantity is string
+                         && incoming().quantity.size() <= 10
+                         && incoming().variantType is string
+                         && incoming().variantType.size() <= 64
+                         && incoming().priceNum is number
+                         && incoming().priceNum >= 0
+                         && incoming().packCount is number
+                         && incoming().packCount > 0;
+        allow delete: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidId(itemId);
+      }
+      
+      match /orders/{orderId} {
+        allow get: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidId(orderId);
+        allow list: if isSignedIn() && isOwner(userId) && isValidId(userId);
+        allow create: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidId(orderId) && isValidOrder(incoming());
+        allow update: if false; // Orders are immutable once placed by user
+        allow delete: if false; 
+      }
+    }
+  }
+}

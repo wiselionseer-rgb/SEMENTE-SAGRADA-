@@ -1,0 +1,69 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile document",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "createdAt": { "type": "number", "description": "Timestamp created" }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "Favorite": {
+      "title": "Favorite",
+      "description": "Favorite seed",
+      "type": "object",
+      "properties": {
+        "seedId": { "type": "string" },
+        "addedAt": { "type": "number" }
+      },
+      "required": ["seedId", "addedAt"]
+    },
+    "CartItem": {
+      "title": "CartItem",
+      "description": "A single item in the user's cart",
+      "type": "object",
+      "properties": {
+        "seedId": { "type": "string" },
+        "quantity": { "type": "string" },
+        "variantType": { "type": "string" },
+        "priceNum": { "type": "number" },
+        "addedAt": { "type": "number" },
+        "packCount": { "type": "number", "description": "Number of packs to buy" }
+      },
+      "required": ["seedId", "quantity", "variantType", "priceNum", "addedAt", "packCount"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A completed purchase order",
+      "type": "object",
+      "properties": {
+        "totalAmount": { "type": "number" },
+        "items": { "type": "array" },
+        "bonusSeeds": { "type": "array" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["totalAmount", "items", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profile"
+    },
+    "/users/{userId}/favorites/{seedId}": {
+      "schema": { "$ref": "#/entities/Favorite" },
+      "description": "User's favorite items"
+    },
+    "/users/{userId}/cartItems/{itemId}": {
+      "schema": { "$ref": "#/entities/CartItem" },
+      "description": "Items in the user's shopping cart"
+    },
+    "/users/{userId}/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "User's order history"
+    }
+  }
+}
