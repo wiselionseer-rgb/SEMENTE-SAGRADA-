@@ -882,7 +882,7 @@ export default function App() {
           playsInline 
           className="absolute inset-0 w-full h-full object-cover z-0"
         >
-          <source src="/gifs/animate-this-pixel-art-scene-brazil-and-spain-flag.mp4" type="video/mp4" />
+          <source src="/videos/animate-this-pixel-art-scene-brazil-and-spain-flag.mp4" type="video/mp4" />
         </video>
         
         {/* Shooting Stars */}
@@ -2099,7 +2099,7 @@ export default function App() {
                <div className="lg:w-1/2 group relative">
                   <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-2 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
                      <img 
-                        src="/dr-guilherme-compressed.jpg" 
+                        src="/images/dr-guilherme-compressed.jpg" 
                         alt="Dr. Guilherme" 
                         className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
                      />

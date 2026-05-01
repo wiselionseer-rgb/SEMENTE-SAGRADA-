@@ -6,16 +6,16 @@ let onTrackChangeCallback: ((name: string) => void) | null = null;
 
 // Track paths
 const TRACKS = [
-  { name: "SOUNDTRACK 8", path: "/gifs/s8.mp3" },
-  { name: "SOUNDTRACK 1", path: "/gifs/s1.mp3" },
-  { name: "SOUNDTRACK 10", path: "/gifs/s10.mp3" },
-  { name: "SOUNDTRACK 2", path: "/gifs/s2.mp3" },
-  { name: "SOUNDTRACK 3", path: "/gifs/s3.mp3" },
-  { name: "SOUNDTRACK 4", path: "/gifs/s4.mp3" },
-  { name: "SOUNDTRACK 5", path: "/gifs/s5.mp3" },
-  { name: "SOUNDTRACK 6", path: "/gifs/s6.mp3" },
-  { name: "SOUNDTRACK 7", path: "/gifs/s7.mp3" },
-  { name: "SOUNDTRACK 9", path: "/gifs/s9.mp3" }
+  { name: "SOUNDTRACK 8", path: "/audio/s8.mp3" },
+  { name: "SOUNDTRACK 1", path: "/audio/s1.mp3" },
+  { name: "SOUNDTRACK 10", path: "/audio/s10.mp3" },
+  { name: "SOUNDTRACK 2", path: "/audio/s2.mp3" },
+  { name: "SOUNDTRACK 3", path: "/audio/s3.mp3" },
+  { name: "SOUNDTRACK 4", path: "/audio/s4.mp3" },
+  { name: "SOUNDTRACK 5", path: "/audio/s5.mp3" },
+  { name: "SOUNDTRACK 6", path: "/audio/s6.mp3" },
+  { name: "SOUNDTRACK 7", path: "/audio/s7.mp3" },
+  { name: "SOUNDTRACK 9", path: "/audio/s9.mp3" }
 ];
 
 export function setOnTrackChangeCallback(cb: (name: string) => void) {
