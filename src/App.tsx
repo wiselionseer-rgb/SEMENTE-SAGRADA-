@@ -2043,7 +2043,7 @@ export default function App() {
                <div className="lg:w-1/2 group relative">
                   <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-2 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
                      <img 
-                        src="/gifs/Design sem nome (21)-1-compressed.jpg" 
+                        src="/gifs/design_sem_nome_21_1.jpg" 
                         alt="Pedro Nicoletti" 
                         className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
                      />
@@ -2099,7 +2099,7 @@ export default function App() {
                <div className="lg:w-1/2 group relative">
                   <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-2 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
                      <img 
-                        src="/gifs/dr-guilherme-compressed.jpg" 
+                        src="/dr-guilherme-compressed.jpg" 
                         alt="Dr. Guilherme" 
                         className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
                      />
@@ -2170,7 +2170,7 @@ export default function App() {
                <div className="lg:w-1/2 group relative">
                   <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-2 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
                      <img 
-                        src="/gifs/wilian-1.jpg" 
+                        src="/wilian-1.jpg" 
                         alt="Engenheiro Wilian" 
                         className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
                      />
@@ -2241,7 +2241,7 @@ export default function App() {
                <div className="lg:w-1/2 group relative">
                   <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-2 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
                      <img 
-                        src="/gifs/suporte-juridico-compressed.jpg" 
+                        src="/suporte-juridico-compressed.jpg" 
                         alt="Suporte Jurídico Especializado" 
                         className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
                      />
@@ -2312,7 +2312,7 @@ export default function App() {
                <div className="lg:w-1/2 group relative">
                   <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-2 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
                      <img 
-                        src="/gifs/Whisk_4470564e35c5e8f83cd4c2a00f161bdcdr-compressed.jpg" 
+                        src="/whisk_compressed.jpg" 
                         alt="Acesso a Medicamentos Importados" 
                         className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
                      />
