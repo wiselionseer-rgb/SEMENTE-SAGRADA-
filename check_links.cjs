@@ -9,13 +9,13 @@ function getFiles(dir, files = []) {
     if (fs.statSync(name).isDirectory()) {
       getFiles(name, files);
     } else {
-      files.push(path.relative('/public', name).replace(/\\/g, '/'));
+      files.push(path.relative('./public', name).replace(/\\/g, '/'));
     }
   });
   return files;
 }
 
-const publicFiles = getFiles('/public');
+const publicFiles = getFiles('./public');
 const grepOutput = execSync('grep -rI "/gifs/" src').toString();
 const refs = [...new Set(grepOutput.match(/\/gifs\/[a-zA-Z0-9._() -]+/g))];
 

@@ -542,7 +542,7 @@ export default function App() {
       <div className="md:sticky relative top-0 z-[1000] w-full flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
         {/* TOP PROMO BAR */}
         <div className="w-full bg-lime-500 text-black py-2 px-4 text-center vt text-[10px] md:text-sm font-bold uppercase tracking-widest flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 shadow-[0_4px_15px_rgba(0,255,0,0.2)]">
-          <img src="/gifs/verde_claro.png" className="h-6 w-6 pixelate inline-block" alt="Promo Promo" />
+          <img src="/images/verde_claro.png" className="h-6 w-6 pixelate inline-block" alt="Promo Promo" />
           <span>Gaste mais R$300 para obter envio grátis discreto!</span>
           <button 
             className="bg-black text-lime-400 px-4 py-1 hover:bg-white hover:text-black transition-colors rounded-full text-xs pixel shadow-inner border border-lime-700"
@@ -570,7 +570,7 @@ export default function App() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
-              <img src="/gifs/vermelho_com_verde.png" className="w-[50px] h-[50px] pixelate animate-pulse drop-shadow-[0_0_15px_#ff00ff] group-hover:scale-110 transition-transform" alt="Mascot" />
+              <img src="/images/vermelho_com_verde.png" className="w-[50px] h-[50px] pixelate animate-pulse drop-shadow-[0_0_15px_#ff00ff] group-hover:scale-110 transition-transform" alt="Mascot" />
               <div className="flex flex-col">
                  <span className="pixel text-2xl text-lime-500 whitespace-nowrap drop-shadow-[2px_2px_0px_#005500] leading-none group-hover:text-white transition-colors">SEMENTE SAGRADA</span>
                  <span className="vt text-lg text-[#ff00ff] font-bold tracking-[0.4em] uppercase drop-shadow-[1px_1px_0px_#ffffff] leading-relaxed group-hover:tracking-[0.5em] transition-all">World</span>
@@ -1183,7 +1183,7 @@ export default function App() {
              ) : (
                 <>
                   {!isDay && (
-                     <div className="absolute inset-0 bg-[url('/gifs/underworld_bg.png')] opacity-20 mix-blend-screen" style={{ backgroundSize: '200px' }} />
+                     <div className="absolute inset-0 bg-[url('/images/underworld_bg.png')] opacity-20 mix-blend-screen" style={{ backgroundSize: '200px' }} />
                   )}
                   {isDay ? (
                     <div 
@@ -1428,8 +1428,8 @@ export default function App() {
                  {/* Retro Hero Composition */}
                  <div className="absolute inset-0 bg-lime-500/10 blur-[50px] rounded-full"></div>
                  <img src={`${window.location.origin}/gifs/elite_seed.gif`} className="absolute right-0 top-1/2 -translate-y-1/2 w-[280px] lg:w-[380px] drop-shadow-[0_0_40px_rgba(255,0,255,0.4)] pixelate z-10 hover:scale-[1.02] transition-transform duration-500" alt="Hero Mascot" />
-                 <img src="/gifs/verde_escura.png" className="absolute left-0 lg:-left-12 top-0 w-[90px] drop-shadow-xl animate-[bounce_4s_infinite] pixelate z-20 bg-lime-500/10 rounded-full p-2 border-2 border-lime-500/30 backdrop-blur-sm" alt="Floating Seed" />
-                 <img src="/gifs/roxa.png" className="absolute right-10 -bottom-12 w-[110px] drop-shadow-xl animate-[pulse_3s_infinite] pixelate z-20 bg-pink-500/10 rounded-full p-2 border-2 border-[#ff00ff]/30 backdrop-blur-sm hover:rotate-180 transition-transform duration-1000" alt="Floating Seed 2" />
+                 <img src="/images/verde_escura.png" className="absolute left-0 lg:-left-12 top-0 w-[90px] drop-shadow-xl animate-[bounce_4s_infinite] pixelate z-20 bg-lime-500/10 rounded-full p-2 border-2 border-lime-500/30 backdrop-blur-sm" alt="Floating Seed" />
+                 <img src="/images/roxa.png" className="absolute right-10 -bottom-12 w-[110px] drop-shadow-xl animate-[pulse_3s_infinite] pixelate z-20 bg-pink-500/10 rounded-full p-2 border-2 border-[#ff00ff]/30 backdrop-blur-sm hover:rotate-180 transition-transform duration-1000" alt="Floating Seed 2" />
               </div>
            </div>
            
@@ -1552,7 +1552,7 @@ export default function App() {
                 }}
               >
                  <div className="absolute bottom-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity translate-x-10 translate-y-10 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-700">
-                    <img src="/gifs/vermelho_com_verde.png" className="w-48 h-48 pixelate" alt="Course mascot" />
+                    <img src="/images/vermelho_com_verde.png" className="w-48 h-48 pixelate" alt="Course mascot" />
                  </div>
                  <div className="relative z-10">
                     <div className="flex items-center gap-3 mb-6">
@@ -1841,7 +1841,7 @@ export default function App() {
               </div>
 
               <div className="bg-gradient-to-br from-[#f3f4f6] to-[#e5e7eb] p-5 rounded-2xl relative overflow-hidden group cursor-pointer shadow-sm">
-                <div className="absolute right-[-10px] bottom-[-10px] pointer-events-none w-2/5 flex items-end justify-end opacity-90"><img src="/gifs/vermelho_com_verde.png" className="w-full object-contain mix-blend-multiply" alt="cactus" /></div>
+                <div className="absolute right-[-10px] bottom-[-10px] pointer-events-none w-2/5 flex items-end justify-end opacity-90"><img src="/images/vermelho_com_verde.png" className="w-full object-contain mix-blend-multiply" alt="cactus" /></div>
                 <div className="relative z-10 w-3/4">
                   <h4 className="font-bold text-[#1f2937] text-lg leading-tight mb-2">Genéticas Resistentes</h4>
                   <p className="text-xs text-[#4b5563] mb-4">As melhores e mais fortes variedades para quem está começando agora</p>
@@ -2043,7 +2043,7 @@ export default function App() {
                <div className="lg:w-1/2 group relative">
                   <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-2 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
                      <img 
-                        src="/gifs/design_sem_nome_21_1.jpg" 
+                        src="/images/design_sem_nome_21_1.jpg" 
                         alt="Pedro Nicoletti" 
                         className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
                      />
@@ -2170,7 +2170,7 @@ export default function App() {
                <div className="lg:w-1/2 group relative">
                   <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-2 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
                      <img 
-                        src="/wilian-1.jpg" 
+                        src="/images/wilian-1.jpg" 
                         alt="Engenheiro Wilian" 
                         className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
                      />
@@ -2241,7 +2241,7 @@ export default function App() {
                <div className="lg:w-1/2 group relative">
                   <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-2 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
                      <img 
-                        src="/suporte-juridico-compressed.jpg" 
+                        src="/images/suporte-juridico-compressed.jpg" 
                         alt="Suporte Jurídico Especializado" 
                         className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
                      />
@@ -2312,7 +2312,7 @@ export default function App() {
                <div className="lg:w-1/2 group relative">
                   <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-2 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
                      <img 
-                        src="/whisk_compressed.jpg" 
+                        src="/images/whisk_compressed.jpg" 
                         alt="Acesso a Medicamentos Importados" 
                         className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
                      />

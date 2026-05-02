@@ -44,7 +44,7 @@ export default function ManualPage({ onBack, onSelectSeed }: { onBack: () => voi
       
       {/* HEADER BANNER */}
       <div className="w-full bg-[#050505] relative overflow-hidden h-[180px] md:h-[240px] flex items-center justify-center border-b border-white/5">
-        <div className="absolute inset-0 z-0 opacity-20 bg-center bg-cover mix-blend-overlay" style={{backgroundImage: "url('/gifs/header_bg.png')"}}></div>
+        <div className="absolute inset-0 z-0 opacity-20 bg-center bg-cover mix-blend-overlay" style={{backgroundImage: "url('/images/header_bg.png')"}}></div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80"></div>
         
         <div className="relative z-10 flex items-center gap-6 w-full max-w-7xl px-8">
