@@ -17,5 +17,5 @@ function checkSizes(dir, maxSizeMB) {
   }
 }
 
-checkSizes('./public', 1); // Check for files larger than 1MB
-console.log('Checked for large files.');
+checkSizes('./public', 0.0); // Check all file sizes
+console.log('Checked for files.');
