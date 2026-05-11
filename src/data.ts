@@ -103,7 +103,7 @@ export const SEEDS: Seed[] = [
       yieldIndoor: '450-550 g/m²',
       yieldOutdoor: '800-1000 g/planta',
       floweringTime: '7-8 semanas',
-      description: 'Açai Chocolate Punch é um híbrido premium com ligeira predominância índica, nascido do cruzamento entre Purple Punch e Chocolate Diesel. Desenvolvida pela HighBreed Seeds para o mercado brasileiro, esta genética destaca-se pelo seu perfil organoléptico único, combinando o clássico chocolate terroso da Chocolate Diesel com as notas frutadas escuras e tons roxos característicos da Purple Punch. É especialmente recomendado para: alívio do estresse, ansiedade, dor leve a moderada, relaxamento noturno e melhoria do humor.'
+      description: 'Açai Chocolate Punch é um híbrido premium com ligeira predominância índica, nascido do cruzamento entre Purple Punch e Chocolate Diesel. Desenvolvida pela Semente Sagrada World para o mercado brasileiro, esta genética destaca-se pelo seu perfil organoléptico único, combinando o clássico chocolate terroso da Chocolate Diesel com as notas frutadas escuras e tons roxos característicos da Purple Punch. É especialmente recomendado para: alívio do estresse, ansiedade, dor leve a moderada, relaxamento noturno e melhoria do humor.'
     },
     auto: {
       thc: 23,
@@ -111,7 +111,7 @@ export const SEEDS: Seed[] = [
       yieldIndoor: '450 g/m²',
       yieldOutdoor: '40-50 g/planta',
       floweringTime: '60-65 dias',
-      description: 'Açaí Chocolate Punch Auto é a versão autoflorescente da renomada Açaí Chocolate Punch, criada a partir do cruzamento entre Purple Punch × Chocolate Diesel e genética Ruderalis de alta estabilidade. Desenvolvida pela HighBreed Seeds, esta autoflorescente mantém a essência da versão feminizada: o sabor característico do açaí autêntico com notas de chocolate terroso, frutas escuras e especiarias. Sua estrutura compacta e robustez herdada da Ruderalis a tornam ideal tanto para iniciantes quanto experientes.'
+      description: 'Açaí Chocolate Punch Auto é a versão autoflorescente da renomada Açaí Chocolate Punch, criada a partir do cruzamento entre Purple Punch × Chocolate Diesel e genética Ruderalis de alta estabilidade. Desenvolvida pela Semente Sagrada World, esta autoflorescente mantém a essência da versão feminizada: o sabor característico do açaí autêntico com notas de chocolate terroso, frutas escuras e especiarias. Sua estrutura compacta e robustez herdada da Ruderalis a tornam ideal tanto para iniciantes quanto experientes.'
     },
     days: 60, 
     thc: 20, 

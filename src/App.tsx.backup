@@ -51,7 +51,7 @@ export default function App() {
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
   const [isAgeVerified, setIsAgeVerified] = useState<boolean>(() => {
-    return localStorage.getItem('age-verification-seed-v2') === 'true';
+    return localStorage.getItem('age-verification-seed-v1') === 'true';
   });
 
 
@@ -1076,6 +1076,31 @@ export default function App() {
                 />
               </div>
             </div>
+
+            <div className="flex flex-wrap justify-center gap-2">
+              <div className="relative">
+                <button className="pixel text-[12px] md:text-[14px] px-3 md:px-4 py-2 md:py-3 border-[3px] transition-all text-[var(--orange)] border-[var(--orange)] hover:bg-[#110a00] hover:scale-105 active:scale-95 bg-black/50" onClick={() => { playSfx('click'); setSpeedMenuOpen(!speedMenuOpen); }} onMouseEnter={() => playSfx('hover')}>
+                  ⏩ VELOCIDADE
+                </button>
+                {speedMenuOpen && (
+                  <div className="fixed top-[20%] md:top-[150px] left-1/2 md:left-auto md:right-10 transform -translate-x-1/2 md:translate-x-0 bg-[#001800] border-4 border-[var(--orange)] p-3 z-[1000] text-left min-w-[200px] shadow-[10px_10px_0_rgba(0,0,0,0.9)]">
+                    <div className="pixel text-[10px] md:text-[12px] text-yellow-300 mb-3 border-b border-[#333] pb-2">VELOCIDADE DO TEMPO</div>
+                    {[1, 5, 20, 60].map(v => (
+                      <button key={v} onMouseEnter={() => playSfx('hover')} onClick={() => { playSfx('click'); setG(p => ({...p, speed: v})); setSpeedMenuOpen(false); }} className={`block w-full px-3 py-2 bg-[#001100] border-2 border-[#004400] vt text-lg md:text-xl mb-2 hover:bg-[#003300] transition-colors ${G.speed === v ? 'text-yellow-300 border-yellow-300 shadow-[0_0_10px_rgba(255,255,0,0.3)]' : 'text-orange-400'}`}>
+                        {v === 1 ? '🐢 Normal (1x)' : v === 5 ? '🐇 Rápido (5x)' : v === 20 ? '⚡ Turbo (20x)' : '🚀 Ultra (1 dia/seg)'}
+                      </button>
+                    ))}
+                    <button onClick={() => setSpeedMenuOpen(false)} className="mt-2 text-[10px] w-full text-center text-gray-500">FECHAR [X]</button>
+                  </div>
+                )}
+              </div>
+              <button className="pixel text-[12px] md:text-[14px] px-3 md:px-4 py-2 md:py-3 border-[3px] transition-all text-[var(--cyan)] border-[var(--cyan)] hover:bg-[#001122] hover:scale-105 active:scale-95 bg-black/50" onMouseEnter={() => playSfx('hover')} onClick={() => { playSfx('click'); setPopup({title: '❓ COMO JOGAR', body: <>Plante, regue, adube, espere crescer e colha!<br/>Cuidado para não secar!</>})}}>
+                ❓ AJUDA
+              </button>
+              <button className="pixel text-[12px] md:text-[14px] px-3 md:px-4 py-2 md:py-3 border-[3px] transition-all text-[var(--red)] border-[var(--red)] hover:bg-[#220000] hover:text-white hover:scale-105 active:scale-95 bg-black/50" onMouseEnter={() => playSfx('hover')} onClick={() => { playSfx('click'); resetGame(); }}>
+                ↺ RESETAR JOGO
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1100,105 +1125,432 @@ export default function App() {
       <>
         <div className="flex flex-col max-w-[1240px] mx-auto w-full px-2 mt-2 gap-3">
         {/* RESIZED TOP SEED SHOP (HORIZONTAL SCROLLABLE) */}
-        <div className="bg-[#050505]/90 border-2 border-lime-500/20 p-8 rounded-3xl backdrop-blur-3xl relative overflow-hidden group/elite-section">
+        <div className="bg-[#000d00] border-2 border-[#003300] p-4 rounded-lg backdrop-blur-xl relative overflow-hidden group/elite-section">
           {/* FLASHY BACKGROUND EFFECTS */}
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none"></div>
-          <div className="absolute inset-0 bg-gradient-to-br from-green-950/20 via-black to-green-900/20 pointer-events-none"></div>
-          
-          {/* GLOWING ORBS */}
-          <div className="absolute -top-24 -left-24 w-64 h-64 bg-lime-500/10 blur-[100px] rounded-full animate-pulse"></div>
-          <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-lime-500/10 blur-[100px] rounded-full animate-pulse"></div>
+          <div className="absolute inset-0 bg-transparent opacity-5 pointer-events-none mix-blend-screen scale-150"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-green-900/40 via-transparent to-green-900/40 pointer-events-none"></div>
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#00ff00] to-transparent animate-pulse"></div>
 
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-20">
-            {/* LEFT SIDE: HEADING & TEXT */}
-            <div className="flex-1 text-center md:text-left order-2 md:order-1">
-              {/* TOP BANNER: FRETE GRÁTIS */}
-              <div className="mb-8 flex justify-center md:justify-start">
-                <div className="bg-black/40 border-2 border-lime-500/40 px-4 py-1.5 rounded-full flex items-center gap-3 hover:border-lime-500 transition-all group/banner-top cursor-default shadow-[0_0_20px_rgba(0,255,0,0.1)]">
-                  <span className="text-lg group-hover/banner-top:scale-125 transition-transform">🚚</span>
-                  <div className="flex flex-col">
-                    <span className="pixel text-[8px] text-lime-400 font-black tracking-[0.2em]">FRETE GRÁTIS</span>
-                    <span className="vt text-[9px] text-white/60 font-bold uppercase tracking-widest">PARA TODO O BRASIL!</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
-                <div className="h-[2px] w-12 bg-lime-500"></div>
-                <span className="pixel text-[10px] text-lime-400 font-black tracking-[0.4em] uppercase">
-                  INSTITUTO DE GENÉTICA
-                </span>
-              </div>
-              <h2 className="vt text-5xl md:text-7xl text-white font-black uppercase tracking-tighter leading-[0.8] mb-6 drop-shadow-[0_0_20px_rgba(0,255,0,0.3)]">
-                Sementes<br/><span className="text-lime-500">de Elite</span>
-              </h2>
-              <p className="vt text-lg md:text-xl text-white/60 max-sm leading-tight mb-8">
-                A seleção definitiva para cultivadores que buscam o topo da pirâmide genética. Estabilidade garantida e potência máxima.
-              </p>
-              
-              <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                <div className="bg-white/5 border border-white/10 px-4 py-2 rounded-xl flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-lime-500 animate-ping"></div>
-                  <span className="vt text-xs text-white uppercase tracking-widest font-black">LOTE 2026 ATIVO</span>
-                </div>
-                <div className="bg-lime-500 text-black px-6 py-2 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-white transition-all transform hover:scale-105 active:scale-95" onClick={() => { playSfx('click'); document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' }); }}>
-                  <span className="pixel text-[10px] font-black">EXPLORAR CATÁLOGO</span>
-                </div>
-              </div>
-
-              {/* BOTTOM BANNER: SEMENTE GRÁTIS */}
-              <div className="mt-10 flex justify-center md:justify-start">
-                <div className="bg-gradient-to-r from-lime-500/10 to-transparent border-l-4 border-lime-500 px-5 py-3 flex items-center gap-4 hover:from-lime-500/20 transition-all cursor-default group/banner-bot">
-                  <span className="text-2xl group-hover/banner-bot:rotate-12 transition-transform">🎁</span>
-                  <div className="flex flex-col">
-                      <span className="pixel text-[10px] text-white font-black tracking-widest">SEMENTE GRÁTIS</span>
-                      <span className="vt text-[11px] text-lime-400 font-black uppercase tracking-[0.2em] animate-pulse">TODOS OS DIAS EM TODOS OS PEDIDOS</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* MIDDLE SIDE: FEATURED PRODUCT (SUPER SAIYAN RUNTZ) */}
-            <div className="flex-1 flex justify-center order-1 md:order-2">
-               <div className="relative group/featured-prod">
-                  <div className="absolute inset-0 bg-lime-500/20 blur-[100px] scale-50 group-hover/featured-prod:scale-75 transition-transform duration-1000"></div>
-                  <motion.div 
-                    initial={{ y: 20, opacity: 0 }}
-                    whileInView={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.8 }}
-                    className="relative z-10"
-                  >
-                    <img 
-                      src="/gifs/ssr1.jpg" 
-                      alt="Super Saiyan Runtz Bud" 
-                      className="w-[280px] md:w-[350px] aspect-square object-contain rounded-2xl transition-all duration-500 scale-110 group-hover/featured-prod:scale-125" 
-                    />
-                  </motion.div>
-               </div>
-            </div>
-            
-            {/* RIGHT SIDE: THE MASCOT CARD */}
+          <div className="flex items-center gap-6 px-4 overflow-x-auto horizontal-scroll-custom no-scrollbar relative z-10">
+            {/* MATCHING SEED CARD SIZE & STYLE FOR HEADER (RESIZED SMALLER) */}
             <div 
-              className="w-full md:w-[280px] p-6 border-2 border-lime-500/40 bg-black rounded-3xl flex flex-col items-center justify-center relative overflow-hidden shadow-[0_0_60px_rgba(0,255,0,0.15)] group/elite-header transition-all hover:border-lime-500 order-3"
+              className="min-w-[160px] md:min-w-[200px] p-3 border-2 border-lime-500/20 bg-green-950/20 rounded-lg flex flex-col items-center justify-between relative overflow-hidden mr-4 shadow-inner cursor-pointer hover:border-lime-500/40 transition-all group/elite-header"
+              onClick={() => {
+                playSfx('click');
+                const underworldItem = document.getElementById('underworld');
+                if (underworldItem) underworldItem.scrollIntoView({ behavior: 'smooth' });
+              }}
             >
-              <div className="absolute inset-0 bg-gradient-to-t from-lime-500/10 to-transparent"></div>
+              <div className="absolute inset-0 bg-lime-500/5 opacity-0 group-hover/elite-header:opacity-100 transition-opacity"></div>
+              <span className="vt text-[14px] md:text-[18px] text-lime-400 font-black whitespace-nowrap uppercase tracking-[0.1em] drop-shadow-[0_0_10px_rgba(0,255,0,0.3)] italic leading-none text-center mt-1">
+                Sementes de Elite
+              </span>
               
-              <div className="w-full aspect-square flex items-center justify-center relative my-2 transform group-hover/elite-header:scale-105 transition-transform duration-700">
-                <div className="absolute inset-0 bg-lime-500/20 blur-[60px] rounded-full scale-50"></div>
-                <img src="/gifs/design_sem_nome_4.gif" alt="elite-gif" className="w-[80%] h-[80%] object-contain filter drop-shadow-[0_0_30px_#00ff00] contrast-125 z-10" />
+              <div className="w-full aspect-square flex items-center justify-center relative my-2 transform group-hover/elite-header:scale-110 transition-transform duration-500">
+                <img src="/gifs/elite_seed.gif" alt="elite-gif" className="w-full h-full object-contain filter drop-shadow-[0_0_15px_#00ff00] scale-110 brightness-110" />
               </div>
 
-              <div className="flex flex-col items-center gap-1 w-full relative z-10 mt-2">
-                <div className="h-[2px] w-12 bg-lime-500 mb-2"></div>
-                <span className="pixel text-[9px] text-yellow-400 font-black tracking-[0.3em] uppercase animate-pulse">
-                  MASTER SOURCE
+              <div className="flex items-center gap-2 w-full justify-center mb-1">
+                <div className="h-[1px] flex-grow bg-gradient-to-r from-transparent via-yellow-500/30 to-transparent"></div>
+                <span className="pixel text-[8px] text-yellow-400 font-black tracking-[0.2em] uppercase animate-pulse">
+                  CATÁLOGO
                 </span>
-                <span className="vt text-xs text-white/30 uppercase tracking-[.5em] font-bold mt-1">ID: ELITE-V5</span>
+                <div className="h-[1px] flex-grow bg-gradient-to-r from-transparent via-yellow-500/30 to-transparent"></div>
               </div>
             </div>
+            {SEEDS.filter(seed => {
+              if (!searchQuery) return true;
+              const q = normalize(searchQuery);
+              return (
+                normalize(seed.name).includes(q) ||
+                normalize(seed.subtitle).includes(q)
+              );
+            }).map((seed) => {
+              const i = SEEDS.findIndex(s => s.id === seed.id);
+              const variant = shopVariants[i] || { qty: 'X2', type: 'Feminizada' };
+              const handleChangeQty = (e: React.ChangeEvent<HTMLSelectElement>) => {
+                 e.stopPropagation();
+                 setShopVariants(prev => ({ ...prev, [i]: { ...variant, qty: e.target.value as Quantity } }));
+              };
+              const handleChangeType = (e: React.ChangeEvent<HTMLSelectElement>) => {
+                 e.stopPropagation();
+                 setShopVariants(prev => ({ ...prev, [i]: { ...variant, type: e.target.value as any } }));
+              };
+
+              return (
+              <div 
+                key={i} 
+                className={`min-w-[220px] md:min-w-[280px] p-4 border-2 transition-all cursor-pointer rounded-xl flex flex-col justify-between relative group/seed-card overflow-hidden ${G.selSeed === i ? 'border-lime-500 bg-green-950/40 shadow-[0_0_25px_rgba(0,255,0,0.4)] scale-[1.01] z-20' : 'border-[#002200] opacity-80 hover:opacity-100 hover:bg-[#002200]/50 hover:border-lime-600'}`} 
+                onClick={() => { 
+                  playSfx('click'); 
+                  if (!G.planted || G.harvested) {
+                    setG(p => ({ ...p, selSeed: i, isAuto: variant.type === 'Automatica' }));
+                  }
+                  setSelectedSeedId(seed.id); 
+                }}
+              >
+                {/* CARD BACKGROUND GLITCH EFFECT ON SELECTION */}
+                {G.selSeed === i && (
+                  <div className="absolute inset-0 bg-lime-500/5 animate-pulse pointer-events-none"></div>
+                )}
+
+                <div className="flex flex-col items-center mb-6 relative z-10">
+                   {/* BIG IMAGE */}
+                   <div className="w-full aspect-[4/3] bg-black/80 flex items-center justify-center border border-lime-500/20 mb-4 overflow-hidden rounded-lg relative group-hover/seed-card:border-lime-500/50 transition-colors">
+                      <div className="absolute inset-0 bg-gradient-to-t from-green-950/60 to-transparent z-0 opacity-60"></div>
+                      <img src={`${window.location.origin}${seed.image}`} alt={seed.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover/seed-card:scale-125 relative z-10 border-4 border-yellow-500" />
+                      
+                      <div className="absolute top-2 right-2 z-20">
+                         {G.selSeed === i && <div className="w-4 h-4 rounded-full bg-lime-500 animate-ping shadow-[0_0_15px_#00ff00]"></div>}
+                      </div>
+                   </div>
+                   
+                   <span className="vt text-[15px] font-black text-center leading-tight uppercase tracking-widest transition-all group-hover/seed-card:text-white group-hover/seed-card:scale-110 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" style={{color: G.selSeed === i ? 'white' : seed.color}}>
+                      {seed.name}
+                   </span>
+                </div>
+                
+                <div className="flex flex-col gap-3 mt-auto relative z-10 bg-black/40 p-3 rounded-lg border border-green-900/30">
+                  <div className="flex justify-between items-center text-[12px] vt">
+                    <span className="text-lime-400/60 uppercase font-black tracking-tighter">TIPO</span>
+                    <select value={variant.type} onClick={(e) => e.stopPropagation()} onChange={handleChangeType} className="bg-black text-lime-400 border border-green-800 rounded px-2 py-1 outline-none cursor-pointer text-[11px] font-black hover:border-lime-400 transition-colors focus:shadow-[0_0_10px_#00ff00]">
+                      <option value="Feminizada">Feminizada</option>
+                      <option value="Automatica">Automática</option>
+                    </select>
+                  </div>
+                  <div className="flex justify-between items-center text-[12px] vt">
+                    <span className="text-lime-400/60 uppercase font-black tracking-tighter">QTD</span>
+                    <select value={variant.qty} onClick={(e) => e.stopPropagation()} onChange={handleChangeQty} className="bg-black text-lime-400 border border-green-800 rounded px-2 py-1 outline-none cursor-pointer text-[11px] font-black hover:border-lime-400 transition-colors focus:shadow-[0_0_10px_#00ff00]">
+                      {QUANTITIES.map(q => <option key={q} value={q}>{getQtyLabel(q)}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex justify-between items-center vt mt-1 pt-3 border-t border-green-800/40">
+                     <span className="text-white/40 uppercase font-black text-[11px] tracking-widest">PREÇO</span>
+                     <span className="text-yellow-400 font-black tracking-[0.1em] text-lg drop-shadow-[0_0_10px_rgba(255,255,0,0.3)]">R$ {seed.prices[variant.qty]}</span>
+                  </div>
+                </div>
+              </div>
+            )})}
           </div>
         </div>
 
+        {/* MAIN GAME ZONE (ENLARGED) */}
+        <div id="game-section" className={`game-retro-zone relative flex-shrink-0 w-full h-[550px] md:h-[70vh] min-h-[500px] max-h-[750px] border-8 ${
+          G.isIndoor 
+            ? 'indoor border-[#00ffff] bg-[#000508] shadow-[0_0_50px_rgba(0,255,255,0.3)]' 
+            : isDay 
+              ? 'border-[#00aa00] bg-gradient-to-b from-[#60a5fa] to-[#dbeafe] shadow-[0_0_50px_rgba(0,255,0,0.3)]' 
+              : 'border-[#004400] bg-gradient-to-b from-[#0f172a] to-[#020617] shadow-[0_0_50px_rgba(0,0,0,0.8)]'
+        } overflow-hidden rounded-2xl mx-auto transition-all duration-[3000ms]`}>
+          {/* HEADER HUD: DAY & PHASE */}
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2">
+             <div className="vt text-lg md:text-3xl bg-black/95 px-6 py-2 border-2 border-lime-500 text-lime-400 rounded-full shadow-[0_0_30px_rgba(0,255,0,0.6)] whitespace-nowrap font-black tracking-tighter">
+                DIA {G.gameDay} | {(!G.planted && !G.harvested) ? 'ESPERANDO' : G.harvested ? 'COLHEITA' : s.stages[G.stage].toUpperCase()}
+             </div>
+          </div>
+
+          {/* CULTIVATION NOTIFICATIONS (CONSOLIDATED AT TOP) */}
+          <div className="absolute top-[90px] md:top-[120px] left-1/2 -translate-x-1/2 z-[60] w-full max-w-[90%] md:max-w-[500px] px-2 flex flex-col items-center gap-2 pointer-events-none">
+            {stageNotif && (
+              <div className="bg-black/95 border-4 border-yellow-400 px-6 py-2 animate-bounce shadow-[0_0_30px_rgba(255,255,0,0.5)] text-center rounded-lg">
+                <div className="vt text-sm md:text-2xl text-yellow-300 tracking-wider font-black">✨ {stageNotif}</div>
+              </div>
+            )}
+            {tipNotif && (
+               <div className="pointer-events-auto relative bg-cyan-950/95 border-4 border-cyan-400 p-5 w-full fade-in shadow-[0_0_40px_rgba(0,255,255,0.6)] rounded-2xl backdrop-blur-md">
+                  <button 
+                    className="absolute -top-4 -right-4 w-10 h-10 bg-cyan-500 text-black hover:bg-white text-2xl font-black rounded-full shadow-2xl cursor-pointer flex items-center justify-center z-20" 
+                    onClick={() => setTipNotif(null)}
+                  >
+                    X
+                  </button>
+                  <div className="vt text-xs md:text-xl text-cyan-50 leading-relaxed text-center">
+                     <span className="text-cyan-300 font-black text-sm md:text-2xl block mb-2 border-b-2 border-cyan-400/40 pb-1 italic">DICA DO MESTRE:</span>
+                     {tipNotif}
+                  </div>
+               </div>
+            )}
+          </div>
+
+          {/* LEFT HUD: PLANT STATS (MICRO) */}
+          <div className="absolute top-2 left-2 md:top-6 md:left-6 z-50 flex flex-col gap-1 md:gap-4 w-[85px] md:w-[220px] pointer-events-none">
+            {G.planted && !G.harvested && (
+              <>
+                <div className="bg-black/95 p-1.5 md:p-3 border-2 border-green-500/50 rounded-lg md:rounded-xl backdrop-blur-xl shadow-2xl">
+                  <div className="flex justify-between vt text-[9px] md:text-2xl text-green-400 mb-0.5 md:mb-1">
+                    <span className="font-bold">VP</span>
+                    <span className="font-black">{hpct}%</span>
+                  </div>
+                  <div className="w-full h-1.5 md:h-6 bg-black/50 border border-green-900 md:border-2 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-green-700 via-green-500 to-green-300 shadow-[0_0_15px_rgba(0,255,0,0.6)]" style={{width: `${hpct}%`}}></div>
+                  </div>
+                </div>
+                <div className="bg-black/95 p-1.5 md:p-3 border-2 border-blue-500/50 rounded-lg md:rounded-xl backdrop-blur-xl shadow-2xl">
+                  <div className="flex justify-between vt text-[9px] md:text-2xl text-blue-400 mb-0.5 md:mb-1">
+                    <span className="font-bold">H2O</span>
+                    <span className="font-black">{Math.round(G.water)}%</span>
+                  </div>
+                  <div className="w-full h-1.5 md:h-6 bg-black/50 border border-blue-900 md:border-2 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-blue-700 via-blue-500 to-blue-300 shadow-[0_0_15px_rgba(0,0,255,0.6)]" style={{width: `${G.water}%`}}></div>
+                  </div>
+                </div>
+                <div className="bg-black/95 p-1.5 md:p-3 border-2 border-orange-500/50 rounded-lg md:rounded-xl backdrop-blur-xl shadow-2xl">
+                  <div className="flex justify-between vt text-[9px] md:text-2xl text-orange-400 mb-0.5 md:mb-1">
+                    <span className="font-bold">NT</span>
+                    <span className="font-black">{Math.round(G.nutrients)}%</span>
+                  </div>
+                  <div className="w-full h-1.5 md:h-6 bg-black/50 border border-orange-900 md:border-2 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-orange-700 via-orange-500 to-orange-300 shadow-[0_0_15px_rgba(255,165,0,0.6)]" style={{width: `${G.nutrients}%`}}></div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* RIGHT HUD: ENVIRONMENT (MICRO) */}
+          <div className="absolute top-2 right-2 md:top-6 md:right-6 z-50 flex flex-col gap-1 md:gap-4 w-[95px] md:w-[220px]">
+             <div className="bg-black/95 p-1.5 md:p-3 border-2 border-cyan-500/50 rounded-lg md:rounded-xl backdrop-blur-xl shadow-2xl">
+                <div className="vt text-[9px] md:text-2xl text-cyan-400 flex justify-between items-center mb-1 md:mb-3">
+                   <span className="font-bold">TEMP</span>
+                   <span className={`font-black tracking-tighter ${G.temp > 28 || G.temp < 18 ? 'text-red-500 animate-pulse' : 'text-white'}`}>{G.temp.toFixed(1)}°C</span>
+                </div>
+                <div className="flex gap-1 md:gap-2">
+                   <button className="flex-1 bg-red-900/80 hover:bg-red-700 border border-red-500/40 text-sm md:text-3xl py-0.5 md:py-3 font-black cursor-pointer rounded-md md:rounded-xl transition-all active:scale-95" onClick={() => setG(p => ({...p, temp: p.temp - 1}))}>-</button>
+                   <button className="flex-1 bg-blue-900/80 hover:bg-blue-700 border border-blue-500/40 text-sm md:text-3xl py-0.5 md:py-3 font-black cursor-pointer rounded-md md:rounded-xl transition-all active:scale-95" onClick={() => setG(p => ({...p, temp: p.temp + 1}))}>+</button>
+                </div>
+                <div className="vt text-[9px] md:text-xl text-white flex justify-between items-center border-t border-white/10 mt-1 md:mt-3 pt-1 md:pt-3">
+                   <span className="font-bold">PH: {G.ph.toFixed(1)}</span>
+                   <div className="flex gap-1 md:gap-2">
+                      <button className="bg-yellow-900/70 hover:bg-yellow-600 px-1.5 py-0.5 border border-yellow-500/30 font-black cursor-pointer rounded md:rounded-lg transition-all" onClick={() => setG(p => ({...p, ph: Math.max(0, p.ph - 0.1)}))}>-</button>
+                      <button className="bg-yellow-900/70 hover:bg-yellow-600 px-1.5 py-0.5 border border-yellow-500/30 font-black cursor-pointer rounded md:rounded-lg transition-all" onClick={() => setG(p => ({...p, ph: Math.min(14, p.ph + 0.1)}))}>+</button>
+                   </div>
+                </div>
+             </div>
+             <div className={`bg-black/95 p-1.5 md:p-3 border-2 rounded-lg md:rounded-xl backdrop-blur-xl shadow-2xl transition-all ${G.pests > 10 ? 'border-red-500 shadow-[0_0_20px_rgba(255,0,0,0.5)]' : 'border-purple-500/50'}`}>
+                <div className="vt text-[9px] md:text-xl text-purple-400 text-center flex justify-between items-center mb-1 md:mb-3">
+                   <span className="font-bold uppercase">Pragas</span>
+                   <span className="font-black">{G.pests.toFixed(1)}</span>
+                </div>
+                <motion.button whileTap={{ scale: 0.9 }} className="w-full bg-purple-900/80 hover:bg-purple-700 border border-purple-500 text-[10px] md:text-xl py-1 md:py-2.5 vt uppercase font-black cursor-pointer rounded-md md:rounded-xl tracking-widest shadow-lg transition-all hover:brightness-125" onClick={doClearPests}>LIMPAR</motion.button>
+             </div>
+          </div>
+
+          {/* SUN / MOON OVERLAY (inside game zone) */}
+          <div className="absolute inset-0 z-[45] pointer-events-none overflow-hidden">
+             {G.isIndoor ? (
+                <div className="absolute top-16 left-1/2 -translate-x-1/2 text-4xl drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] animate-pulse">💡</div>
+             ) : (
+                <>
+                  {!isDay && (
+                     <div className="absolute inset-0 bg-[url('/gifs/underworld_bg.png')] opacity-20 mix-blend-screen" style={{ backgroundSize: '200px' }} />
+                  )}
+                  {isDay ? (
+                    <div 
+                      className="absolute text-5xl md:text-6xl drop-shadow-[0_0_20px_rgba(255,200,0,0.8)] spin-3d transition-all duration-[3000ms] ease-linear z-0"
+                      style={{
+                        left: `${((G.clock - 360) / 840) * 50 + 25}%`,
+                        top: `${Math.max(15, Math.abs(((G.clock - 360) / 840) - 0.5) * 50)}%`
+                      }}
+                    >
+                      ☀️
+                    </div>
+                  ) : (
+                    <div 
+                      className="absolute text-4xl md:text-5xl drop-shadow-[0_0_15px_rgba(200,220,255,0.8)] transition-all duration-[3000ms] ease-linear z-0"
+                      style={{
+                        left: `${((G.clock >= 1200 ? G.clock - 1200 : G.clock + 240) / 600) * 50 + 25}%`,
+                        top: `${Math.max(15, Math.abs(((G.clock >= 1200 ? G.clock - 1200 : G.clock + 240) / 600) - 0.5) * 50)}%`
+                      }}
+                    >
+                      🌙
+                    </div>
+                  )}
+                </>
+             )}
+          </div>
+
+          {/* BUGS OVERLAY */}
+          {G.pests > 10 && (
+             <div className="absolute inset-0 z-[40] pointer-events-none overflow-hidden">
+                {Array.from({ length: Math.floor(G.pests / 10) }).map((_, i) => (
+                   <div 
+                     key={i} 
+                     className="absolute text-xl animate-bounce opacity-80"
+                     style={{
+                        left: `${15 + (Math.sin(i * 99) * 0.5 + 0.5) * 70}%`,
+                        top: `${20 + (Math.cos(i * 77) * 0.5 + 0.5) * 60}%`,
+                        animationDelay: `${i * 0.15}s`,
+                        animationDuration: '1s'
+                     }}
+                   >
+                     🐛
+                   </div>
+                ))}
+             </div>
+          )}
+
+          {/* ACTION ANIMATIONS OVERLAY */}
+          {actionAnim === 'water' && (
+             <div className="absolute inset-x-0 top-10 h-64 z-[80] pointer-events-none">
+                <div className="absolute left-1/2 -translate-x-1/2 top-4 animate-[wiggle_1s_ease-in-out_infinite] z-20">
+                   <svg width="80" height="80" viewBox="0 0 64 64" className="drop-shadow-[0_0_15px_#00aaff]">
+                      <path fill="#00aaff" d="M12,24 C10,24 8,26 8,28 L8,52 C8,54 10,56 12,56 L44,56 C46,56 48,54 48,52 L48,28 C48,26 46,24 44,24 L38,24 L38,20 C38,18 36,16 34,16 L22,16 C20,16 18,18 18,20 L18,24 L12,24 Z M22,20 L34,20 L34,24 L22,24 L22,20 Z" />
+                      <path fill="#00ddff" d="M48,36 C52,36 56,38 56,42 C56,46 52,48 48,48 L48,36 Z" />
+                      <path fill="#00ddff" d="M8,40 L4,36 C2,34 2,30 4,28 L14,18 L18,22 L10,30 L10,34 L8,40 Z" />
+                   </svg>
+                </div>
+                {Array.from({ length: 8 }).map((_, i) => (
+                   <div 
+                     key={`drop-${i}`} 
+                     className="absolute text-xl animate-bounce drop-shadow-[0_0_10px_#00ccff]"
+                     style={{
+                        left: `${45 + Math.random() * 10}%`,
+                        top: `${40 + Math.random() * 30}%`,
+                        animationDelay: `${Math.random() * 0.3}s`,
+                        animationDuration: `${0.6 + Math.random() * 0.2}s`
+                     }}
+                   >
+                     💧
+                   </div>
+                ))}
+             </div>
+          )}
+          {actionAnim === 'fertilize' && (
+             <div className="absolute inset-0 flex items-center justify-center z-[80] pointer-events-none">
+                <div className="animate-bounce text-8xl drop-shadow-[0_0_20px_rgba(255,170,0,0.8)]" style={{animationDuration:'0.5s'}}>🧪</div>
+             </div>
+          )}
+          {actionAnim === 'prune' && (
+             <div className="absolute inset-0 flex items-center justify-center z-[80] pointer-events-none">
+                <div className="animate-ping text-8xl drop-shadow-[0_0_20px_rgba(0,255,0,0.8)]" style={{animationDuration:'0.5s'}}>✂️</div>
+             </div>
+          )}
+          {actionAnim === 'pests' && (
+             <div className="absolute inset-0 flex items-center justify-center z-[80] pointer-events-none">
+                <div className="animate-pulse text-8xl drop-shadow-[0_0_20px_rgba(255,0,255,0.8)]" style={{animationDuration:'0.3s'}}>💨</div>
+             </div>
+          )}
+
+          {/* HARVEST EFFECT OVERLAY */}
+          {G.showHarvestEffect && (
+             <div className="absolute inset-0 z-[90] pointer-events-none overflow-hidden bg-black/40 backdrop-blur-sm">
+                {/* Fireworks */}
+                {Array.from({ length: 25 }).map((_, i) => (
+                   <div 
+                     key={`fw-${i}`} 
+                     className="absolute animate-[ping_1s_ease-out_infinite]"
+                     style={{
+                        left: `${5 + Math.random() * 90}%`,
+                        top: `${5 + Math.random() * 80}%`,
+                        animationDelay: `${Math.random() * 2}s`,
+                        fontSize: `${30 + Math.random() * 60}px`
+                     }}
+                   >
+                     {['🎆', '🎇', '✨', '💥'][Math.floor(Math.random() * 4)]}
+                   </div>
+                ))}
+                {/* Big Cannabis Buds Bouncing */}
+                {Array.from({ length: 40 }).map((_, i) => (
+                   <div 
+                     key={`bud-${i}`} 
+                     className="absolute animate-bounce drop-shadow-[0_0_20px_#00ff00]"
+                     style={{
+                        left: `${Math.random() * 95}%`,
+                        top: `${-10 + Math.random() * 70}%`,
+                        animationDelay: `${Math.random() * 1.5}s`,
+                        animationDuration: `${1 + Math.random() * 1.5}s`,
+                        fontSize: `${40 + Math.random() * 80}px`,
+                        filter: `hue-rotate(${Math.random() * 60 - 30}deg)`
+                     }}
+                   >
+                     {['🥦', '🌿', '🌲', '🪴'][Math.floor(Math.random() * 4)]}
+                   </div>
+                ))}
+                <div className="absolute inset-0 flex items-center justify-center z-10">
+                   <div className="vt text-6xl md:text-8xl text-yellow-300 font-black drop-shadow-[0_0_40px_rgba(255,255,0,0.8)] text-center px-4 leading-none animate-[wiggle_0.5s_ease-in-out_infinite]">
+                       COLHEITA<br/><span className="text-lime-400">GIGANTE!</span>
+                   </div>
+                </div>
+             </div>
+          )}
+
+          {/* GARDEN VIEW (CANVAS AREA) */}
+          <div className="absolute inset-0 z-0 flex items-center justify-center pt-24 pb-[180px] md:pb-[250px]">
+            <canvas ref={canvasRef} className="cursor-crosshair max-h-full max-w-full object-contain" />
+          </div>
+
+          {/* ACTION BAR (BOTTOM OVERLAY) */}
+          <div className="absolute bottom-0 left-0 right-0 z-50 p-3 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col gap-2">
+            
+            {!G.planted || G.harvested ? (
+               <motion.button whileTap={{ scale: 0.95 }} className="w-full py-4 bg-green-700 hover:bg-green-600 text-white font-bold vt text-2xl border-b-[6px] border-green-900 transition-all shadow-2xl animate-pulse" onClick={(e) => { playSfx('click'); doPlant(); }}>
+                  🌱 PLANTAR {s.name.toUpperCase()}
+               </motion.button>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-4 gap-1.5 md:gap-3 px-1">
+                  <motion.button whileTap={!G.watered ? { scale: 0.9 } : undefined} className={`py-1 md:py-2 rounded-lg border-b-[3px] md:border-b-[4px] vt flex flex-col items-center justify-center gap-0.5 ${G.watered ? 'opacity-30 bg-black' : 'bg-blue-900 border-blue-950 shadow-[0_3px_0_rgba(0,0,0,0.7)] md:shadow-[0_4px_0_rgba(0,0,0,0.7)] hover:-translate-y-1 transition-transform'}`} onClick={(e) => { playSfx('click'); doWater(); }} disabled={G.watered}>
+                     <span className="text-xl md:text-4xl">💧</span>
+                     <span className="text-xs md:text-xl font-black uppercase tracking-tighter">Regar</span>
+                  </motion.button>
+                  <motion.button whileTap={!G.fertilized ? { scale: 0.9 } : undefined} className={`py-1 md:py-2 rounded-lg border-b-[3px] md:border-b-[4px] vt flex flex-col items-center justify-center gap-0.5 ${G.fertilized ? 'opacity-30 bg-black' : 'bg-orange-900 border-orange-950 shadow-[0_3px_0_rgba(0,0,0,0.7)] md:shadow-[0_4px_0_rgba(0,0,0,0.7)] hover:-translate-y-1 transition-transform'}`} onClick={(e) => { playSfx('click'); doFertilize(); }} disabled={G.fertilized}>
+                     <span className="text-xl md:text-4xl">🧪</span>
+                     <span className="text-xs md:text-xl font-black uppercase tracking-tighter">Adubar</span>
+                  </motion.button>
+                  <motion.button whileTap={!(G.pruned || G.stage < 2) ? { scale: 0.9 } : undefined} className={`py-1 md:py-2 rounded-lg border-b-[3px] md:border-b-[4px] vt flex flex-col items-center justify-center gap-0.5 ${G.pruned || G.stage < 2 ? 'opacity-30 bg-black' : 'bg-green-900 border-green-950 shadow-[0_3px_0_rgba(0,0,0,0.7)] md:shadow-[0_4px_0_rgba(0,0,0,0.7)] hover:-translate-y-1 transition-transform'}`} onClick={(e) => { playSfx('click'); doPrune(); }} disabled={G.stage < 2 || G.pruned}>
+                     <span className="text-xl md:text-4xl">✂️</span>
+                     <span className="text-xs md:text-xl font-black uppercase tracking-tighter">Podar</span>
+                  </motion.button>
+                  {G.stage >= 5 ? (
+                    <motion.button whileTap={{ scale: 0.9 }} className="py-1 md:py-2 rounded-lg border-b-[3px] md:border-b-[4px] vt text-xs md:text-xl font-black uppercase bg-red-700 border-red-950 animate-pulse shadow-xl" onClick={(e) => { playSfx('click'); doHarvest(); }}>
+                      Colher
+                    </motion.button>
+                  ) : (
+                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setG(p => ({...p, isIndoor: !p.isIndoor}))} className="py-1 md:py-2 rounded-lg border-b-[3px] md:border-b-[4px] vt text-xs md:text-xl font-black uppercase bg-gray-700 border-gray-900 shadow-lg flex flex-col items-center justify-center gap-0.5">
+                      <span className="text-xl md:text-4xl">{G.isIndoor ? '🌻' : '🏠'}</span>
+                      <span>{G.isIndoor ? 'OUT' : 'IN'}</span>
+                    </motion.button>
+                  )}
+                </div>
+                <div className="bg-black/95 p-2 md:p-4 h-[40px] md:h-[60px] flex items-center justify-center rounded-lg md:rounded-xl border-2 md:border-4 border-[#006600] shadow-[inset_0_0_15px_rgba(0,255,0,0.5)] md:shadow-[inset_0_0_25px_rgba(0,255,0,0.5)]">
+                   <div className="vt text-xs md:text-2xl text-lime-400 truncate font-black uppercase tracking-[0.1em]">
+                      {logs.length > 0 ? logs[logs.length-1].msg : 'SISTEMA OPERACIONAL'}
+                   </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* POPUP OVERLAY */}
+          {popup && (
+            <div className="fixed inset-0 bg-black/80 z-[1000] flex items-center justify-center p-6">
+              <div className="bg-[#001800] border-4 border-double border-green-500 p-6 max-w-sm w-full shadow-[0_0_30px_rgba(0,255,0,0.3)]">
+                <div className="pixel text-xs md:text-base text-yellow-300 mb-4 border-b-2 border-[#004400] pb-3 uppercase tracking-[0.2em] font-black">{popup.title}</div>
+                <div className="vt text-base md:text-xl text-[var(--lime)] leading-relaxed font-bold">{popup.body}</div>
+                <div className="text-right mt-6">
+                  <button 
+                    className="pixel text-xs md:text-sm bg-green-900 px-6 py-2 text-white border-2 border-green-500 hover:bg-green-700 active:scale-95 transition-all cursor-pointer font-black" 
+                    onClick={() => setPopup(null)}
+                  >
+                    FECHAR
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      
+      {/* ========================================================= */}
+      {/* PORTAL TO THE UNDERWORLD                                 */}
+      {/* ========================================================= */}
+      <div className="w-full bg-[#000] py-8 border-y-[6px] border-double border-[#660066]">
+          <div className="text-center">
+              <div className="pixel text-lg text-purple-400 animate-pulse">▼▼▼ DESCENDO ÀS RAÍZES ▼▼▼</div>
+              <div className="text-[#330033] my-2">〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️</div>
+              <a href="#underworld" className="pixel text-sm text-[#ff00ff] hover:text-white border-2 border-[#ff00ff] px-4 py-2 bg-[#110011]">IR PARA O UNDERWORLD</a>
+          </div>
       </div>
 
       {/* ========================================================= */}
@@ -1866,13 +2218,13 @@ export default function App() {
                   </p>
                 </div>
                 
-                <div className="flex flex-col items-center xl:items-end gap-6">
-                  <div className="flex items-center gap-4 sm:gap-6 w-full justify-center xl:justify-end">
+                <div className="flex flex-col items-end gap-6">
+                  <div className="flex items-center gap-6">
                     <div className="text-right">
-                      <div className="vt text-white/40 line-through text-lg sm:text-xl font-bold italic">R$ 259,70</div>
-                      <div className="pixel text-[2rem] sm:text-4xl text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)] whitespace-nowrap">R$ 179,90</div>
+                      <div className="vt text-white/40 line-through text-xl font-bold italic">R$ 259,70</div>
+                      <div className="pixel text-5xl text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]">R$ 179,90</div>
                     </div>
-                    <div className="bg-pink-600 text-white pixel text-xs p-3 rounded-full animate-bounce shadow-lg flex-shrink-0">
+                    <div className="bg-pink-600 text-white pixel text-xs p-3 rounded-full animate-bounce shadow-lg">
                       -35%
                     </div>
                   </div>
@@ -1886,447 +2238,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* ========================================================= */}
-      {/* PORTAL TO THE GAME                                 */}
-      {/* ========================================================= */}
-      <div className="w-full bg-[#000] py-8 border-y-[6px] border-double border-[#660066]">
-          <div className="text-center flex flex-col items-center gap-4">
-              <div className="pixel text-lg text-purple-400 animate-pulse">▼▼▼ JOGAR AGORA! ▼▼▼</div>
-              <div className="text-[#330033] my-2">〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️〰️</div>
-              
-              <div className="flex flex-wrap justify-center items-center gap-4">
-                <a href="#game-section" className="pixel text-sm text-[#ff00ff] hover:text-white border-2 border-[#ff00ff] px-6 py-3 bg-[#110011] transition-all hover:scale-105 active:scale-95">INICIAR CULTIVO INTERATIVO</a>
-                
-                {/* GAME CONTROLS REPOSITIONED HERE */}
-                <div className="flex gap-2 bg-black/40 p-2 rounded-lg border border-white/5 backdrop-blur-md">
-                  <div className="relative">
-                    <button className="pixel text-[10px] px-3 py-2 border-[2px] transition-all text-[#ffaa00] border-[#ffaa00] hover:bg-[#110a00] hover:scale-105 active:scale-95 bg-black" onClick={() => { playSfx('click'); setSpeedMenuOpen(!speedMenuOpen); }} onMouseEnter={() => playSfx('hover')}>
-                      ⏩ VELOCIDADE
-                    </button>
-                    {speedMenuOpen && (
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-[#001800] border-4 border-[#ffaa00] p-3 z-[1000] text-left min-w-[200px] shadow-[0_10px_30px_rgba(0,0,0,0.9)]">
-                        <div className="pixel text-[10px] text-yellow-300 mb-3 border-b border-[#333] pb-2 uppercase text-center">VELOCIDADE DO TEMPO</div>
-                        {[1, 5, 20, 60].map(v => (
-                          <button key={v} onMouseEnter={() => playSfx('hover')} onClick={() => { playSfx('click'); setG(p => ({...p, speed: v})); setSpeedMenuOpen(false); }} className={`block w-full px-3 py-2 bg-[#001100] border-2 border-[#004400] vt text-lg mb-2 hover:bg-[#003300] transition-colors ${G.speed === v ? 'text-yellow-300 border-yellow-300 shadow-[0_0_10px_rgba(255,255,0,0.3)]' : 'text-orange-400'}`}>
-                            {v === 1 ? '🐢 Normal (1x)' : v === 5 ? '🐇 Rápido (5x)' : v === 20 ? '⚡ Turbo (20x)' : '🚀 Ultra (1 dia/seg)'}
-                          </button>
-                        ))}
-                        <button onClick={() => setSpeedMenuOpen(false)} className="mt-2 text-[10px] w-full text-center text-gray-500">FECHAR [X]</button>
-                      </div>
-                    )}
-                  </div>
-                  <button className="pixel text-[10px] px-3 py-2 border-[2px] transition-all text-cyan-400 border-cyan-400 hover:bg-[#001122] hover:scale-105 active:scale-95 bg-black" onMouseEnter={() => playSfx('hover')} onClick={() => { playSfx('click'); setPopup({title: '❓ COMO JOGAR', body: <>Plante, regue, adube, espere crescer e colha!<br/>Cuidado para não secar!</>})}}>
-                    ❓ AJUDA
-                  </button>
-                  <button className="pixel text-[10px] px-3 py-2 border-[2px] transition-all text-red-500 border-red-500 hover:bg-[#220000] hover:text-white hover:scale-105 active:scale-95 bg-black" onMouseEnter={() => playSfx('hover')} onClick={() => { playSfx('click'); resetGame(); }}>
-                    ↺ RESETAR
-                  </button>
-                </div>
-              </div>
-
-              {/* SEED SELECTION MOVED HERE */}
-              <div id="catalog-selection" className="w-full max-w-[1240px] mx-auto overflow-x-auto horizontal-scroll-custom no-scrollbar px-4 py-6">
-                <div className="flex gap-6 items-stretch">
-                   {SEEDS.filter(seed => {
-                      if (!searchQuery) return true;
-                      const q = normalize(searchQuery);
-                      return (
-                        normalize(seed.name).includes(q) ||
-                        normalize(seed.subtitle).includes(q)
-                      );
-                    }).map((seed) => {
-                      const i = SEEDS.findIndex(s => s.id === seed.id);
-                      const variant = shopVariants[i] || { qty: 'X2', type: 'Feminizada' };
-                      const handleChangeQty = (e: React.ChangeEvent<HTMLSelectElement>) => {
-                         e.stopPropagation();
-                         setShopVariants(prev => ({ ...prev, [i]: { ...variant, qty: e.target.value as Quantity } }));
-                      };
-                      const handleChangeType = (e: React.ChangeEvent<HTMLSelectElement>) => {
-                         e.stopPropagation();
-                         setShopVariants(prev => ({ ...prev, [i]: { ...variant, type: e.target.value as any } }));
-                      };
-
-                      return (
-                      <div 
-                        key={i} 
-                        className={`min-w-[260px] md:min-w-[320px] p-6 border-2 transition-all cursor-pointer rounded-2xl flex flex-col justify-between relative group/seed-card overflow-hidden backdrop-blur-xl ${G.selSeed === i ? 'border-lime-400 bg-lime-500/10 shadow-[0_0_50px_rgba(0,255,0,0.3)] scale-[1.02] z-20' : 'border-white/5 bg-white/5 opacity-80 hover:opacity-100 hover:bg-white/10 hover:border-white/20'}`} 
-                        onClick={() => { 
-                          playSfx('click'); 
-                          if (!G.planted || G.harvested) {
-                            setG(p => ({ ...p, selSeed: i, isAuto: variant.type === 'Automatica' }));
-                          }
-                          setSelectedSeedId(seed.id); 
-                        }}
-                      >
-                        {/* RARE/PREMIUM BADGE */}
-                        <div className="absolute top-4 left-4 z-30">
-                          <span className={`pixel text-[8px] px-3 py-1.5 rounded-sm shadow-xl ${seed.badge === 'RARE' ? 'bg-purple-600' : 'bg-lime-500'} text-black font-black`}>
-                            {seed.badge}
-                          </span>
-                        </div>
-
-                        <div className="flex flex-col items-center mb-6 relative z-10">
-                           <div className="w-full aspect-square bg-gradient-to-br from-black to-green-950 flex items-center justify-center border border-white/10 mb-5 overflow-hidden rounded-xl relative group-hover/seed-card:border-lime-500/40 transition-all duration-700 shadow-2xl">
-                              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,255,0,0.15)_0%,transparent_70%)]"></div>
-                              <img src={`${window.location.origin}${seed.image}`} alt={seed.name} className="w-[85%] h-[85%] object-cover rounded-xl shadow-2xl transition-transform duration-700 group-hover/seed-card:scale-110 relative z-10 border-2 border-white/10" />
-                              <div className="absolute bottom-3 right-3 z-20">
-                                 {G.selSeed === i && <div className="w-4 h-4 rounded-full bg-lime-400 shadow-[0_0_20px_#00ff00] animate-pulse"></div>}
-                              </div>
-                           </div>
-                           
-                           <span className="vt text-[20px] md:text-[24px] font-black text-center leading-none uppercase tracking-[0.1em] transition-all group-hover/seed-card:text-white drop-shadow-[0_2px_15px_rgba(0,0,0,1)]" style={{color: G.selSeed === i ? 'white' : seed.color}}>
-                              {seed.name}
-                           </span>
-                           <span className="vt text-[10px] text-white/40 uppercase tracking-[0.4em] mt-2 font-bold">SELEÇÃO PREMIUM</span>
-                        </div>
-                        
-                        <div className="flex flex-col gap-4 mt-auto relative z-10 p-4 rounded-xl border border-white/5 bg-black/60 backdrop-blur-md">
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="flex flex-col gap-1">
-                              <span className="text-white/30 text-[9px] uppercase font-black tracking-tighter">LINHAGEM</span>
-                              <select value={variant.type} onClick={(e) => e.stopPropagation()} onChange={handleChangeType} className="bg-neutral-900 text-white border border-white/10 rounded-md px-2 py-2 outline-none cursor-pointer text-[10px] font-black hover:border-lime-400 transition-all focus:ring-1 focus:ring-lime-400">
-                                <option value="Feminizada">Feminizada</option>
-                                <option value="Automatica">Automática</option>
-                              </select>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <span className="text-white/30 text-[9px] uppercase font-black tracking-tighter">PACK</span>
-                              <select value={variant.qty} onClick={(e) => e.stopPropagation()} onChange={handleChangeQty} className="bg-neutral-900 text-white border border-white/10 rounded-md px-2 py-2 outline-none cursor-pointer text-[10px] font-black hover:border-lime-400 transition-all focus:ring-1 focus:ring-lime-400">
-                                {QUANTITIES.map(q => <option key={q} value={q}>{getQtyLabel(q)}</option>)}
-                              </select>
-                            </div>
-                          </div>
-
-                          <div className="flex justify-between items-end vt mt-2 pt-4 border-t border-white/10">
-                             <div className="flex flex-col">
-                               <span className="text-white/30 uppercase font-black text-[9px] tracking-widest leading-none mb-1">CUSTO SEMENTES</span>
-                               <div className="flex items-center gap-1">
-                                <span className="text-[11px] text-lime-500 font-black">R$</span>
-                                <span className="text-white font-black tracking-[0.1em] text-2xl leading-none">
-                                  {seed.prices[variant.qty]}
-                                </span>
-                               </div>
-                             </div>
-                             <div className={`px-4 py-2 rounded-lg text-[10px] font-black transition-all ${G.selSeed === i ? 'bg-lime-500 text-black shadow-[0_0_20px_#00ff00]' : 'border border-lime-500/30 text-lime-400 bg-lime-500/5 group-hover:bg-lime-500 group-hover:text-black'}`}>
-                               {G.selSeed === i ? 'SELECIONADO' : 'ESCOLHER'}
-                             </div>
-                          </div>
-                        </div>
-                      </div>
-                    )})}
-                </div>
-              </div>
-          </div>
-      </div>
-
-
-      <div className="flex flex-col max-w-[1240px] mx-auto w-full px-2 mt-2 gap-3">
-        {/* MAIN GAME ZONE (ENLARGED) */}
-        <div id="game-section" className={`game-retro-zone relative flex-shrink-0 w-full h-[550px] md:h-[70vh] min-h-[500px] max-h-[750px] border-8 ${
-          G.isIndoor 
-            ? 'indoor border-[#00ffff] bg-[#000508] shadow-[0_0_50px_rgba(0,255,255,0.3)]' 
-            : isDay 
-              ? 'border-[#00aa00] bg-gradient-to-b from-[#60a5fa] to-[#dbeafe] shadow-[0_0_50px_rgba(0,255,0,0.3)]' 
-              : 'border-[#004400] bg-gradient-to-b from-[#0f172a] to-[#020617] shadow-[0_0_50px_rgba(0,0,0,0.8)]'
-        } overflow-hidden rounded-2xl mx-auto transition-all duration-[3000ms]`}>
-          {/* HEADER HUD: DAY & PHASE */}
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2">
-             <div className="vt text-lg md:text-3xl bg-black/95 px-6 py-2 border-2 border-lime-500 text-lime-400 rounded-full shadow-[0_0_30px_rgba(0,255,0,0.6)] whitespace-nowrap font-black tracking-tighter">
-                DIA {G.gameDay} | {(!G.planted && !G.harvested) ? 'ESPERANDO' : G.harvested ? 'COLHEITA' : s.stages[G.stage].toUpperCase()}
-             </div>
-          </div>
-
-          {/* CULTIVATION NOTIFICATIONS (CONSOLIDATED AT TOP) */}
-          <div className="absolute top-[90px] md:top-[120px] left-1/2 -translate-x-1/2 z-[60] w-full max-w-[90%] md:max-w-[500px] px-2 flex flex-col items-center gap-2 pointer-events-none">
-            {stageNotif && (
-              <div className="bg-black/95 border-4 border-yellow-400 px-6 py-2 animate-bounce shadow-[0_0_30px_rgba(255,255,0,0.5)] text-center rounded-lg">
-                <div className="vt text-sm md:text-2xl text-yellow-300 tracking-wider font-black">✨ {stageNotif}</div>
-              </div>
-            )}
-            {tipNotif && (
-               <div className="pointer-events-auto relative bg-cyan-950/95 border-4 border-cyan-400 p-5 w-full fade-in shadow-[0_0_40px_rgba(0,255,255,0.6)] rounded-2xl backdrop-blur-md">
-                  <button 
-                    className="absolute -top-4 -right-4 w-10 h-10 bg-cyan-500 text-black hover:bg-white text-2xl font-black rounded-full shadow-2xl cursor-pointer flex items-center justify-center z-20" 
-                    onClick={() => setTipNotif(null)}
-                  >
-                    X
-                  </button>
-                  <div className="vt text-xs md:text-xl text-cyan-50 leading-relaxed text-center">
-                     <span className="text-cyan-300 font-black text-sm md:text-2xl block mb-2 border-b-2 border-cyan-400/40 pb-1 italic">DICA DO MESTRE:</span>
-                     {tipNotif}
-                  </div>
-               </div>
-            )}
-          </div>
-
-          {/* LEFT HUD: PLANT STATS (MICRO) */}
-          <div className="absolute top-2 left-2 md:top-6 md:left-6 z-50 flex flex-col gap-1 md:gap-4 w-[85px] md:w-[220px] pointer-events-none">
-            {G.planted && !G.harvested && (
-              <>
-                <div className="bg-black/95 p-1.5 md:p-3 border-2 border-green-500/50 rounded-lg md:rounded-xl backdrop-blur-xl shadow-2xl">
-                  <div className="flex justify-between vt text-[9px] md:text-2xl text-green-400 mb-0.5 md:mb-1">
-                    <span className="font-bold">VP</span>
-                    <span className="font-black">{hpct}%</span>
-                  </div>
-                  <div className="w-full h-1.5 md:h-6 bg-black/50 border border-green-900 md:border-2 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-green-700 via-green-500 to-green-300 shadow-[0_0_15px_rgba(0,255,0,0.6)]" style={{width: `${hpct}%`}}></div>
-                  </div>
-                </div>
-                <div className="bg-black/95 p-1.5 md:p-3 border-2 border-blue-500/50 rounded-lg md:rounded-xl backdrop-blur-xl shadow-2xl">
-                  <div className="flex justify-between vt text-[9px] md:text-2xl text-blue-400 mb-0.5 md:mb-1">
-                    <span className="font-bold">H2O</span>
-                    <span className="font-black">{Math.round(G.water)}%</span>
-                  </div>
-                  <div className="w-full h-1.5 md:h-6 bg-black/50 border border-blue-900 md:border-2 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-blue-700 via-blue-500 to-blue-300 shadow-[0_0_15px_rgba(0,0,255,0.6)]" style={{width: `${G.water}%`}}></div>
-                  </div>
-                </div>
-                <div className="bg-black/95 p-1.5 md:p-3 border-2 border-orange-500/50 rounded-lg md:rounded-xl backdrop-blur-xl shadow-2xl">
-                  <div className="flex justify-between vt text-[9px] md:text-2xl text-orange-400 mb-0.5 md:mb-1">
-                    <span className="font-bold">NT</span>
-                    <span className="font-black">{Math.round(G.nutrients)}%</span>
-                  </div>
-                  <div className="w-full h-1.5 md:h-6 bg-black/50 border border-orange-900 md:border-2 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-orange-700 via-orange-500 to-orange-300 shadow-[0_0_15px_rgba(255,165,0,0.6)]" style={{width: `${G.nutrients}%`}}></div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* RIGHT HUD: ENVIRONMENT (MICRO) */}
-          <div className="absolute top-2 right-2 md:top-6 md:right-6 z-50 flex flex-col gap-1 md:gap-4 w-[95px] md:w-[220px]">
-             <div className="bg-black/95 p-1.5 md:p-3 border-2 border-cyan-500/50 rounded-lg md:rounded-xl backdrop-blur-xl shadow-2xl">
-                <div className="vt text-[9px] md:text-2xl text-cyan-400 flex justify-between items-center mb-1 md:mb-3">
-                   <span className="font-bold">TEMP</span>
-                   <span className={`font-black tracking-tighter ${G.temp > 28 || G.temp < 18 ? 'text-red-500 animate-pulse' : 'text-white'}`}>{G.temp.toFixed(1)}°C</span>
-                </div>
-                <div className="flex gap-1 md:gap-2">
-                   <button className="flex-1 bg-red-900/80 hover:bg-red-700 border border-red-500/40 text-sm md:text-3xl py-0.5 md:py-3 font-black cursor-pointer rounded-md md:rounded-xl transition-all active:scale-95" onClick={() => setG(p => ({...p, temp: p.temp - 1}))}>-</button>
-                   <button className="flex-1 bg-blue-900/80 hover:bg-blue-700 border border-blue-500/40 text-sm md:text-3xl py-0.5 md:py-3 font-black cursor-pointer rounded-md md:rounded-xl transition-all active:scale-95" onClick={() => setG(p => ({...p, temp: p.temp + 1}))}>+</button>
-                </div>
-                <div className="vt text-[9px] md:text-xl text-white flex justify-between items-center border-t border-white/10 mt-1 md:mt-3 pt-1 md:pt-3">
-                   <span className="font-bold">PH: {G.ph.toFixed(1)}</span>
-                   <div className="flex gap-1 md:gap-2">
-                      <button className="bg-yellow-900/70 hover:bg-yellow-600 px-1.5 py-0.5 border border-yellow-500/30 font-black cursor-pointer rounded md:rounded-lg transition-all" onClick={() => setG(p => ({...p, ph: Math.max(0, p.ph - 0.1)}))}>-</button>
-                      <button className="bg-yellow-900/70 hover:bg-yellow-600 px-1.5 py-0.5 border border-yellow-500/30 font-black cursor-pointer rounded md:rounded-lg transition-all" onClick={() => setG(p => ({...p, ph: Math.min(14, p.ph + 0.1)}))}>+</button>
-                   </div>
-                </div>
-             </div>
-             <div className={`bg-black/95 p-1.5 md:p-3 border-2 rounded-lg md:rounded-xl backdrop-blur-xl shadow-2xl transition-all ${G.pests > 10 ? 'border-red-500 shadow-[0_0_20px_rgba(255,0,0,0.5)]' : 'border-purple-500/50'}`}>
-                <div className="vt text-[9px] md:text-xl text-purple-400 text-center flex justify-between items-center mb-1 md:mb-3">
-                   <span className="font-bold uppercase">Pragas</span>
-                   <span className="font-black">{G.pests.toFixed(1)}</span>
-                </div>
-                <motion.button whileTap={{ scale: 0.9 }} className="w-full bg-purple-900/80 hover:bg-purple-700 border border-purple-500 text-[10px] md:text-xl py-1 md:py-2.5 vt uppercase font-black cursor-pointer rounded-md md:rounded-xl tracking-widest shadow-lg transition-all hover:brightness-125" onClick={doClearPests}>LIMPAR</motion.button>
-             </div>
-          </div>
-
-          {/* SUN / MOON OVERLAY (inside game zone) */}
-          <div className="absolute inset-0 z-[45] pointer-events-none overflow-hidden">
-             {G.isIndoor ? (
-                <div className="absolute top-16 left-1/2 -translate-x-1/2 text-4xl drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] animate-pulse">💡</div>
-             ) : (
-                <>
-                  {!isDay && (
-                     <div className="absolute inset-0 bg-[url('/gifs/underworld_bg.png')] opacity-20 mix-blend-screen" style={{ backgroundSize: '200px' }} />
-                  )}
-                  {isDay ? (
-                    <div 
-                      className="absolute text-5xl md:text-6xl drop-shadow-[0_0_20px_rgba(255,200,0,0.8)] spin-3d transition-all duration-[3000ms] ease-linear z-0"
-                      style={{
-                        left: `${((G.clock - 360) / 840) * 50 + 25}%`,
-                        top: `${Math.max(15, Math.abs(((G.clock - 360) / 840) - 0.5) * 50)}%`
-                      }}
-                    >
-                      ☀️
-                    </div>
-                  ) : (
-                    <div 
-                      className="absolute text-4xl md:text-5xl drop-shadow-[0_0_15px_rgba(200,220,255,0.8)] transition-all duration-[3000ms] ease-linear z-0"
-                      style={{
-                        left: `${((G.clock >= 1200 ? G.clock - 1200 : G.clock + 240) / 600) * 50 + 25}%`,
-                        top: `${Math.max(15, Math.abs(((G.clock >= 1200 ? G.clock - 1200 : G.clock + 240) / 600) - 0.5) * 50)}%`
-                      }}
-                    >
-                      🌙
-                    </div>
-                  )}
-                </>
-             )}
-          </div>
-
-          {/* BUGS OVERLAY */}
-          {G.pests > 10 && (
-             <div className="absolute inset-0 z-[40] pointer-events-none overflow-hidden">
-                {Array.from({ length: Math.floor(G.pests / 10) }).map((_, i) => (
-                   <div 
-                     key={i} 
-                     className="absolute text-xl animate-bounce opacity-80"
-                     style={{
-                        left: `${15 + (Math.sin(i * 99) * 0.5 + 0.5) * 70}%`,
-                        top: `${20 + (Math.cos(i * 77) * 0.5 + 0.5) * 60}%`,
-                        animationDelay: `${i * 0.15}s`,
-                        animationDuration: '1s'
-                     }}
-                   >
-                     🐛
-                   </div>
-                ))}
-             </div>
-          )}
-
-          {/* ACTION ANIMATIONS OVERLAY */}
-          {actionAnim === 'water' && (
-             <div className="absolute inset-x-0 top-10 h-64 z-[80] pointer-events-none">
-                <div className="absolute left-1/2 -translate-x-1/2 top-4 animate-[wiggle_1s_ease-in-out_infinite] z-20">
-                   <svg width="80" height="80" viewBox="0 0 64 64" className="drop-shadow-[0_0_15px_#00aaff]">
-                      <path fill="#00aaff" d="M12,24 C10,24 8,26 8,28 L8,52 C8,54 10,56 12,56 L44,56 C46,56 48,54 48,52 L48,28 C48,26 46,24 44,24 L38,24 L38,20 C38,18 36,16 34,16 L22,16 C20,16 18,18 18,20 L18,24 L12,24 Z M22,20 L34,20 L34,24 L22,24 L22,20 Z" />
-                      <path fill="#00ddff" d="M48,36 C52,36 56,38 56,42 C56,46 52,48 48,48 L48,36 Z" />
-                      <path fill="#00ddff" d="M8,40 L4,36 C2,34 2,30 4,28 L14,18 L18,22 L10,30 L10,34 L8,40 Z" />
-                   </svg>
-                </div>
-                {Array.from({ length: 8 }).map((_, i) => (
-                   <div 
-                     key={`drop-${i}`} 
-                     className="absolute text-xl animate-bounce drop-shadow-[0_0_10px_#00ccff]"
-                     style={{
-                        left: `${45 + Math.random() * 10}%`,
-                        top: `${40 + Math.random() * 30}%`,
-                        animationDelay: `${Math.random() * 0.3}s`,
-                        animationDuration: `${0.6 + Math.random() * 0.2}s`
-                     }}
-                   >
-                     💧
-                   </div>
-                ))}
-             </div>
-          )}
-          {actionAnim === 'fertilize' && (
-             <div className="absolute inset-0 flex items-center justify-center z-[80] pointer-events-none">
-                <div className="animate-bounce text-8xl drop-shadow-[0_0_20px_rgba(255,170,0,0.8)]" style={{animationDuration:'0.5s'}}>🧪</div>
-             </div>
-          )}
-          {actionAnim === 'prune' && (
-             <div className="absolute inset-0 flex items-center justify-center z-[80] pointer-events-none">
-                <div className="animate-ping text-8xl drop-shadow-[0_0_20px_rgba(0,255,0,0.8)]" style={{animationDuration:'0.5s'}}>✂️</div>
-             </div>
-          )}
-          {actionAnim === 'pests' && (
-             <div className="absolute inset-0 flex items-center justify-center z-[80] pointer-events-none">
-                <div className="animate-pulse text-8xl drop-shadow-[0_0_20px_rgba(255,0,255,0.8)]" style={{animationDuration:'0.3s'}}>💨</div>
-             </div>
-          )}
-
-          {/* HARVEST EFFECT OVERLAY */}
-          {G.showHarvestEffect && (
-             <div className="absolute inset-0 z-[90] pointer-events-none overflow-hidden bg-black/40 backdrop-blur-sm">
-                {/* Fireworks */}
-                {Array.from({ length: 25 }).map((_, i) => (
-                   <div 
-                     key={`fw-${i}`} 
-                     className="absolute animate-[ping_1s_ease-out_infinite]"
-                     style={{
-                        left: `${5 + Math.random() * 90}%`,
-                        top: `${5 + Math.random() * 80}%`,
-                        animationDelay: `${Math.random() * 2}s`,
-                        fontSize: `${30 + Math.random() * 60}px`
-                     }}
-                   >
-                     {['🎆', '🎇', '✨', '💥'][Math.floor(Math.random() * 4)]}
-                   </div>
-                ))}
-                {/* Big Cannabis Buds Bouncing */}
-                {Array.from({ length: 40 }).map((_, i) => (
-                   <div 
-                     key={`bud-${i}`} 
-                     className="absolute animate-bounce drop-shadow-[0_0_20px_#00ff00]"
-                     style={{
-                        left: `${Math.random() * 95}%`,
-                        top: `${-10 + Math.random() * 70}%`,
-                        animationDelay: `${Math.random() * 1.5}s`,
-                        animationDuration: `${1 + Math.random() * 1.5}s`,
-                        fontSize: `${40 + Math.random() * 80}px`,
-                        filter: `hue-rotate(${Math.random() * 60 - 30}deg)`
-                     }}
-                   >
-                     {['🥦', '🌿', '🌲', '🪴'][Math.floor(Math.random() * 4)]}
-                   </div>
-                ))}
-                <div className="absolute inset-0 flex items-center justify-center z-10">
-                   <div className="vt text-6xl md:text-8xl text-yellow-300 font-black drop-shadow-[0_0_40px_rgba(255,255,0,0.8)] text-center px-4 leading-none animate-[wiggle_0.5s_ease-in-out_infinite]">
-                       COLHEITA<br/><span className="text-lime-400">GIGANTE!</span>
-                   </div>
-                </div>
-             </div>
-          )}
-
-          {/* GARDEN VIEW (CANVAS AREA) */}
-          <div className="absolute inset-0 z-0 flex items-center justify-center pt-24 pb-[180px] md:pb-[250px]">
-            <canvas ref={canvasRef} className="cursor-crosshair max-h-full max-w-full object-contain" />
-          </div>
-
-          {/* ACTION BAR (BOTTOM OVERLAY) */}
-          <div className="absolute bottom-0 left-0 right-0 z-50 p-3 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col gap-2">
-            
-            {!G.planted || G.harvested ? (
-               <motion.button whileTap={{ scale: 0.95 }} className="w-full py-4 bg-green-700 hover:bg-green-600 text-white font-bold vt text-2xl border-b-[6px] border-green-900 transition-all shadow-2xl animate-pulse" onClick={(e) => { playSfx('click'); doPlant(); }}>
-                  🌱 PLANTAR {s.name.toUpperCase()}
-               </motion.button>
-            ) : (
-              <div className="flex flex-col gap-4">
-                <div className="grid grid-cols-4 gap-1.5 md:gap-3 px-1">
-                  <motion.button whileTap={!G.watered ? { scale: 0.9 } : undefined} className={`py-1 md:py-2 rounded-lg border-b-[3px] md:border-b-[4px] vt flex flex-col items-center justify-center gap-0.5 ${G.watered ? 'opacity-30 bg-black' : 'bg-blue-900 border-blue-950 shadow-[0_3px_0_rgba(0,0,0,0.7)] md:shadow-[0_4px_0_rgba(0,0,0,0.7)] hover:-translate-y-1 transition-transform'}`} onClick={(e) => { playSfx('click'); doWater(); }} disabled={G.watered}>
-                     <span className="text-xl md:text-4xl">💧</span>
-                     <span className="text-xs md:text-xl font-black uppercase tracking-tighter">Regar</span>
-                  </motion.button>
-                  <motion.button whileTap={!G.fertilized ? { scale: 0.9 } : undefined} className={`py-1 md:py-2 rounded-lg border-b-[3px] md:border-b-[4px] vt flex flex-col items-center justify-center gap-0.5 ${G.fertilized ? 'opacity-30 bg-black' : 'bg-orange-900 border-orange-950 shadow-[0_3px_0_rgba(0,0,0,0.7)] md:shadow-[0_4px_0_rgba(0,0,0,0.7)] hover:-translate-y-1 transition-transform'}`} onClick={(e) => { playSfx('click'); doFertilize(); }} disabled={G.fertilized}>
-                     <span className="text-xl md:text-4xl">🧪</span>
-                     <span className="text-xs md:text-xl font-black uppercase tracking-tighter">Adubar</span>
-                  </motion.button>
-                  <motion.button whileTap={!(G.pruned || G.stage < 2) ? { scale: 0.9 } : undefined} className={`py-1 md:py-2 rounded-lg border-b-[3px] md:border-b-[4px] vt flex flex-col items-center justify-center gap-0.5 ${G.pruned || G.stage < 2 ? 'opacity-30 bg-black' : 'bg-green-900 border-green-950 shadow-[0_3px_0_rgba(0,0,0,0.7)] md:shadow-[0_4px_0_rgba(0,0,0,0.7)] hover:-translate-y-1 transition-transform'}`} onClick={(e) => { playSfx('click'); doPrune(); }} disabled={G.stage < 2 || G.pruned}>
-                     <span className="text-xl md:text-4xl">✂️</span>
-                     <span className="text-xs md:text-xl font-black uppercase tracking-tighter">Podar</span>
-                  </motion.button>
-                  {G.stage >= 5 ? (
-                    <motion.button whileTap={{ scale: 0.9 }} className="py-1 md:py-2 rounded-lg border-b-[3px] md:border-b-[4px] vt text-xs md:text-xl font-black uppercase bg-red-700 border-red-950 animate-pulse shadow-xl" onClick={(e) => { playSfx('click'); doHarvest(); }}>
-                      Colher
-                    </motion.button>
-                  ) : (
-                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setG(p => ({...p, isIndoor: !p.isIndoor}))} className="py-1 md:py-2 rounded-lg border-b-[3px] md:border-b-[4px] vt text-xs md:text-xl font-black uppercase bg-gray-700 border-gray-900 shadow-lg flex flex-col items-center justify-center gap-0.5">
-                      <span className="text-xl md:text-4xl">{G.isIndoor ? '🌻' : '🏠'}</span>
-                      <span>{G.isIndoor ? 'OUT' : 'IN'}</span>
-                    </motion.button>
-                  )}
-                </div>
-                <div className="bg-black/95 p-2 md:p-4 h-[40px] md:h-[60px] flex items-center justify-center rounded-lg md:rounded-xl border-2 md:border-4 border-[#006600] shadow-[inset_0_0_15px_rgba(0,255,0,0.5)] md:shadow-[inset_0_0_25px_rgba(0,255,0,0.5)]">
-                   <div className="vt text-xs md:text-2xl text-lime-400 truncate font-black uppercase tracking-[0.1em]">
-                      {logs.length > 0 ? logs[logs.length-1].msg : 'SISTEMA OPERACIONAL'}
-                   </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* POPUP OVERLAY */}
-          {popup && (
-            <div className="fixed inset-0 bg-black/80 z-[1000] flex items-center justify-center p-6">
-              <div className="bg-[#001800] border-4 border-double border-green-500 p-6 max-w-sm w-full shadow-[0_0_30px_rgba(0,255,0,0.3)]">
-                <div className="pixel text-xs md:text-base text-yellow-300 mb-4 border-b-2 border-[#004400] pb-3 uppercase tracking-[0.2em] font-black">{popup.title}</div>
-                <div className="vt text-base md:text-xl text-[var(--lime)] leading-relaxed font-bold">{popup.body}</div>
-                <div className="text-right mt-6">
-                  <button 
-                    className="pixel text-xs md:text-sm bg-green-900 px-6 py-2 text-white border-2 border-green-500 hover:bg-green-700 active:scale-95 transition-all cursor-pointer font-black" 
-                    onClick={() => setPopup(null)}
-                  >
-                    FECHAR
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
       {/* ========================================================= */}
       {/* ZONE: EDUCATIONAL / LEGAL MASTERCLASS                     */}
       {/* ========================================================= */}
@@ -2874,8 +2785,6 @@ export default function App() {
       </div>
 
       {/* ========================================================= */}
-
-      
 
       {/* FOOTER (HERBIES INSPIRED)                                */}
       {/* ========================================================= */}
