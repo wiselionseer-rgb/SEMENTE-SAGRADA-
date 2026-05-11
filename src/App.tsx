@@ -1972,7 +1972,7 @@ export default function App() {
                 <a href="#game-section" className="pixel text-sm text-[#ff00ff] hover:text-white border-2 border-[#ff00ff] px-6 py-3 bg-[#110011] transition-all hover:scale-105 active:scale-95">INICIAR CULTIVO INTERATIVO</a>
                 
                 {/* GAME CONTROLS REPOSITIONED HERE */}
-                <div className="flex gap-2 bg-black/40 p-2 rounded-lg border border-white/5 backdrop-blur-md">
+                <div className="flex gap-2 bg-black/40 p-2 rounded-lg border border-white/5 backdrop-blur-md relative z-50">
                   <div className="relative">
                     <button className="pixel text-[10px] px-3 py-2 border-[2px] transition-all text-[#ffaa00] border-[#ffaa00] hover:bg-[#110a00] hover:scale-105 active:scale-95 bg-black" onClick={() => { playSfx('click'); setSpeedMenuOpen(!speedMenuOpen); }} onMouseEnter={() => playSfx('hover')}>
                       ⏩ VELOCIDADE
