@@ -77,7 +77,7 @@ export function CartModal({ isOpen, onClose, cartItems, onCheckout }: { isOpen: 
              <p className="text-white/50 text-xs font-black pixel tracking-widest">SISTEMA VAZIO</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-5 max-h-[75vh] overflow-y-auto pr-2 custom-scrollbar pb-10">
+          <div className="flex flex-col gap-5 max-h-[75vh] overflow-y-auto overscroll-contain pr-2 custom-scrollbar pb-10 [-webkit-overflow-scrolling:touch]">
             {/* Rewards Progress UI */}
             <div className="bg-[#111111] border border-white/5 rounded-3xl p-6 mb-2 relative overflow-hidden group">
                <div className="flex justify-between items-start mb-4">
@@ -264,7 +264,7 @@ export function FavoritesModal({ isOpen, onClose, favorites }: { isOpen: boolean
              <p className="text-white/50 text-xs font-black pixel tracking-widest italic font-sans">Nenhum dado encontrado</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="flex flex-col gap-4 max-h-[60vh] overflow-y-auto overscroll-contain pr-2 custom-scrollbar [-webkit-overflow-scrolling:touch]">
             {favSeeds.map(seed => (
               <div key={seed.id} className="flex gap-5 items-center bg-black/40 border border-white/5 p-4 rounded-2xl group hover:border-[#ff00ff]/30 transition-all">
                 <div className="w-16 h-16 rounded-xl border border-white/5 overflow-hidden flex-shrink-0">
@@ -303,7 +303,7 @@ export function OrdersModal({ isOpen, onClose, orders }: { isOpen: boolean; onCl
               <p className="text-white/50 text-xs font-black pixel tracking-widest">SEM REGISTROS</p>
            </div>
         ) : (
-          <div className="flex flex-col gap-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="flex flex-col gap-6 max-h-[60vh] overflow-y-auto overscroll-contain pr-2 custom-scrollbar [-webkit-overflow-scrolling:touch]">
             {orders.sort((a,b) => b.createdAt - a.createdAt).map(order => (
               <div key={order.id} className="flex flex-col bg-black/40 border border-white/5 p-6 rounded-[2rem] shadow-inner">
                 <div className="flex flex-wrap gap-6 justify-between items-start mb-6 border-b border-white/5 pb-5">

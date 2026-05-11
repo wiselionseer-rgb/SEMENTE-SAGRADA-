@@ -227,6 +227,15 @@ export default function App() {
   const [popupMsg, setPopupMsg] = useState<{title: string, message: string, btnText: string} | null>(null);
 
   useEffect(() => {
+    if (selectedSeedId !== null || isCartOpen || isFavoritesOpen || isOrdersOpen || isAuthOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [selectedSeedId, isCartOpen, isFavoritesOpen, isOrdersOpen, isAuthOpen]);
+
+  useEffect(() => {
     if (selectedSeedId !== null) setCurrentImgIdx(0);
   }, [selectedSeedId]);
 
@@ -3206,8 +3215,8 @@ export default function App() {
         const isFavorite = favorites.includes(String(seed.id));
         
         return (
-          <div className="fixed inset-0 bg-black/95 z-[10000] flex items-center justify-center p-2 sm:p-6 overflow-y-auto font-sans" onClick={() => setSelectedSeedId(null)}>
-            <div className="bg-[#0a0a0a] border border-[#333] rounded-2xl w-full max-w-[1400px] h-[95vh] flex flex-col lg:flex-row relative shadow-[0_0_50px_rgba(0,0,0,1)] overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="fixed inset-0 bg-black/95 z-[10000] flex items-center justify-center p-2 sm:p-6 overflow-hidden font-sans" onClick={() => setSelectedSeedId(null)}>
+            <div className="bg-[#0a0a0a] border border-[#333] rounded-2xl w-full max-w-[1400px] h-[95vh] md:h-[90vh] flex flex-col lg:flex-row relative shadow-[0_0_50px_rgba(0,0,0,1)] overflow-hidden" onClick={e => e.stopPropagation()}>
               
               {/* CLOSE BUTTON */}
               <button 
@@ -3293,7 +3302,7 @@ export default function App() {
               </div>
               
               {/* RIGHT COLUMN: SCROLLABLE INFO & CART */}
-              <div className="lg:w-[60%] xl:w-[55%] h-[60vh] lg:h-[95vh] overflow-y-auto flex flex-col bg-[#050505] scrollbar-thin scrollbar-thumb-[#333] scrollbar-track-transparent">
+              <div className="lg:w-[60%] xl:w-[55%] flex-1 lg:h-full overflow-y-auto overscroll-contain flex flex-col bg-[#050505] scrollbar-thin scrollbar-thumb-[#333] scrollbar-track-transparent [-webkit-overflow-scrolling:touch]">
                 
                 {/* TOP HALF: SPECS & BUY BOX */}
                 <div className="flex flex-col xl:flex-row border-b border-[#222]">
