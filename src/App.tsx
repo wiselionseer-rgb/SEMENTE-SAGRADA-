@@ -53,9 +53,14 @@ export default function App() {
   const [isAgeVerified, setIsAgeVerified] = useState<boolean>(true); // Default to true while checking
 
   useEffect(() => {
-    const verified = localStorage.getItem('age-verified-v2') === 'true';
+    const verified = localStorage.getItem('age-verified-v5') === 'true';
     setIsAgeVerified(verified);
   }, []);
+
+  const handleAgeVerify = () => {
+    setIsAgeVerified(true);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  };
 
   const scrollToContent = () => {
     const el = document.getElementById('app-content');
@@ -600,7 +605,7 @@ export default function App() {
 
   return (
     <div className="font-[Comic Neue] min-h-screen text-[var(--green)]">
-      {!isAgeVerified && <AgeVerificationModal onVerify={() => setIsAgeVerified(true)} />}
+      {!isAgeVerified && <AgeVerificationModal onVerify={handleAgeVerify} />}
       
       {/* GLOBAL STICKY HEADER */}
       <div className="md:sticky relative top-0 z-[1000] w-full flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.8)]">

@@ -18,7 +18,7 @@ const AgeVerificationModal: React.FC<AgeVerificationModalProps> = ({ onVerify })
 
   const handleConfirm = () => {
     if (agreed) {
-      localStorage.setItem('age-verified-v2', 'true');
+      localStorage.setItem('age-verified-v5', 'true');
       onVerify();
     }
   };
