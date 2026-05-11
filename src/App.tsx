@@ -2453,10 +2453,14 @@ export default function App() {
             <div className="flex flex-col lg:flex-row-reverse items-center gap-16 mb-8 bg-white/[0.02] backdrop-blur-3xl border border-white/5 rounded-[4rem] p-8 md:p-16 shadow-2xl">
                <div className="lg:w-1/2 group relative">
                   <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-2 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
-                     <img 
+                     <motion.img 
                         src="/gifs/design_sem_nome_21_1.jpg" 
                         alt="Pedro Nicoletti" 
-                        className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
+                        initial={{ filter: 'grayscale(100%)' }}
+                        whileInView={{ filter: 'grayscale(0%)', scale: 1.05 }}
+                        viewport={{ once: true, amount: 0.3 }}
+                        transition={{ duration: 1.5 }}
+                        className="w-full h-full object-cover brightness-75 transition-all duration-1000" 
                      />
                      <div className="absolute inset-0 bg-gradient-to-t from-[#030803] via-transparent to-transparent"></div>
                      <div className="absolute bottom-8 left-8">
@@ -2509,10 +2513,14 @@ export default function App() {
                {/* Image Side */}
                <div className="lg:w-1/2 group relative">
                   <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-2 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
-                     <img 
+                     <motion.img 
                         src="/gifs/dr-guilherme-compressed.jpg" 
                         alt="Dr. Guilherme" 
-                        className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
+                        initial={{ filter: 'grayscale(100%)' }}
+                        whileInView={{ filter: 'grayscale(0%)', scale: 1.05 }}
+                        viewport={{ once: true, amount: 0.3 }}
+                        transition={{ duration: 1.5 }}
+                        className="w-full h-full object-cover brightness-75 transition-all duration-1000" 
                      />
                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent"></div>
                      <div className="absolute bottom-8 left-8">
@@ -2580,10 +2588,14 @@ export default function App() {
                {/* Image Side */}
                <div className="lg:w-1/2 group relative">
                   <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-2 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
-                     <img 
+                     <motion.img 
                         src="/gifs/wilian-1.jpg" 
                         alt="Engenheiro Wilian" 
-                        className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
+                        initial={{ filter: 'grayscale(100%)' }}
+                        whileInView={{ filter: 'grayscale(0%)', scale: 1.05 }}
+                        viewport={{ once: true, amount: 0.3 }}
+                        transition={{ duration: 1.5 }}
+                        className="w-full h-full object-cover brightness-75 transition-all duration-1000" 
                      />
                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent"></div>
                      <div className="absolute bottom-8 left-8">
@@ -2651,10 +2663,14 @@ export default function App() {
                {/* Image Side */}
                <div className="lg:w-1/2 group relative">
                   <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-2 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
-                     <img 
+                     <motion.img 
                         src="/gifs/suporte-juridico-compressed.jpg" 
                         alt="Suporte Jurídico Especializado" 
-                        className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
+                        initial={{ filter: 'grayscale(100%)' }}
+                        whileInView={{ filter: 'grayscale(0%)', scale: 1.05 }}
+                        viewport={{ once: true, amount: 0.3 }}
+                        transition={{ duration: 1.5 }}
+                        className="w-full h-full object-cover brightness-75 transition-all duration-1000" 
                      />
                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent"></div>
                      <div className="absolute bottom-8 left-8">
@@ -2722,10 +2738,14 @@ export default function App() {
                {/* Image Side */}
                <div className="lg:w-1/2 group relative">
                   <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border-2 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
-                     <img 
+                     <motion.img 
                         src="/gifs/whisk_compressed.jpg" 
                         alt="Acesso a Medicamentos Importados" 
-                        className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
+                        initial={{ filter: 'grayscale(100%)' }}
+                        whileInView={{ filter: 'grayscale(0%)', scale: 1.05 }}
+                        viewport={{ once: true, amount: 0.3 }}
+                        transition={{ duration: 1.5 }}
+                        className="w-full h-full object-cover brightness-75 transition-all duration-1000" 
                      />
                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent"></div>
                      <div className="absolute bottom-8 left-8">
