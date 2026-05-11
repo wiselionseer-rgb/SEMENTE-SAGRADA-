@@ -4,7 +4,17 @@ import { playSfx } from './audio';
 
 export default function CookiesPolicyPage({ onBack }: { onBack: () => void }) {
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const el = document.getElementById('app-content');
+    if (el) {
+      const offset = 120;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = el.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    } else {
+      window.scrollTo(0, 0);
+    }
   }, []);
 
   return (

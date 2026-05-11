@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SEEDS, Seed, Quantity, QUANTITIES } from './data';
+import { SEEDS, Seed, Quantity, QUANTITIES, getQtyLabel, getBonusSeeds } from './data';
 import { GameState, INITIAL_STATE } from './gameState';
-import { drawGarden } from './canvas';
+import { drawGarden, emitRain, emitFertilizer, emitPrune, emitHarvest } from './canvas';
 import { playSfx, toggleMusic, musicOn, getCurrentTrackName, changeTrack, setOnTrackChangeCallback, setVolume } from './audio';
 import { Search, User, Heart, ShoppingCart, Globe, ListFilter, ChevronLeft, ChevronRight, ChevronUp, MessageCircle, Trash2 } from 'lucide-react';
 import ManualPage from './ManualPage';
@@ -50,6 +50,20 @@ export default function App() {
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
 
+  const scrollToContent = () => {
+    const el = document.getElementById('app-content');
+    if (el) {
+      const offset = 120;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = el.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   useEffect(() => {
     // Validate Connection to Firestore
     const testConnection = async () => {
@@ -93,7 +107,7 @@ export default function App() {
 
   const [G, setG] = useState<GameState>(INITIAL_STATE);
   const [currentView, setCurrentView] = useState<'home' | 'manual' | 'checkout' | 'payment' | 'about' | 'terms' | 'disclaimer' | 'privacy' | 'cookies' | 'legal'>('home');
-  const [checkoutData, setCheckoutData] = useState<{ totalAmount: number; selectedBonuses: number[] } | null>(null);
+  const [checkoutData, setCheckoutData] = useState<{ totalAmount: number; selectedBonuses: number[]; shippingCost: number | null; zip: string } | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [popup, setPopup] = useState<{ title: string; content?: React.ReactNode; body?: React.ReactNode } | null>(null);
   const [floats, setFloats] = useState<{id: number; x: number; y: number; text: string}[]>([]);
@@ -101,6 +115,32 @@ export default function App() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCatalogTab, setActiveCatalogTab] = useState('Buscador');
+  const [shippingCep, setShippingCep] = useState('');
+  const [calculatedShipping, setCalculatedShipping] = useState<number | null>(null);
+
+  const handleCalculateShipping = (cep: string) => {
+    const cleanCep = cep.replace(/\D/g, '');
+    if (cleanCep.length < 5) {
+      setCalculatedShipping(null);
+      return;
+    }
+    const prefix = parseInt(cleanCep.substring(0, 2));
+    const fullPrefix = parseInt(cleanCep.substring(0, 3));
+    
+    if ((prefix >= 66 && prefix <= 69) || prefix === 77 || (fullPrefix >= 768 && fullPrefix <= 769)) {
+       setCalculatedShipping(99.90);
+    } else if (prefix >= 40 && prefix <= 65) {
+       setCalculatedShipping(79.90);
+    } else if ((prefix >= 70 && prefix <= 76) || (prefix >= 78 && prefix <= 79)) {
+       setCalculatedShipping(59.90);
+    } else if (prefix >= 1 && prefix <= 39) {
+       setCalculatedShipping(39.90);
+    } else if (prefix >= 80 && prefix <= 99) {
+       setCalculatedShipping(29.90);
+    } else {
+       setCalculatedShipping(null);
+    }
+  };
 
   const [openMegaMenu, setOpenMegaMenu] = useState<string | null>(null);
 
@@ -168,7 +208,10 @@ export default function App() {
   }, [selectedSeedId]);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    scrollToContent();
+    if (currentView !== 'home' && currentView !== 'manual') {
+      setSelectedSeedId(null);
+    }
   }, [currentView]);
 
   const addFloat = (text: string, e: React.MouseEvent) => {
@@ -320,12 +363,15 @@ export default function App() {
 
   // Render Loop
   useEffect(() => {
-    const timer = setInterval(() => {
+    let animationFrameId: number;
+    const render = () => {
       if (canvasRef.current) {
         drawGarden(canvasRef.current, gRef.current, SEEDS[gRef.current.selSeed]);
       }
-    }, 400);
-    return () => clearInterval(timer);
+      animationFrameId = requestAnimationFrame(render);
+    };
+    render();
+    return () => cancelAnimationFrame(animationFrameId);
   }, []);
 
   // Notification clearing
@@ -436,6 +482,8 @@ export default function App() {
   const doWater = () => {
     if (!G.planted || G.harvested) return;
     if (G.watered) { addLog('Já regou hoje! Aguarde.', '#ff8800'); playSfx('warning'); return; }
+    emitRain();
+    triggerAnim('water');
     setG(prev => ({ ...prev, water: Math.min(100, prev.water + 28), watered: true }));
     playSfx('water');
     addLog('💧 Regou a planta!', '#00ccff');
@@ -446,6 +494,8 @@ export default function App() {
   const doFertilize = () => {
     if (!G.planted || G.harvested) return;
     if (G.fertilized) { addLog('Já adubou hoje! Excesso queima.', '#ff8800'); playSfx('warning'); return; }
+    emitFertilizer();
+    triggerAnim('fertilize');
     setG(prev => ({ ...prev, nutrients: Math.min(100, prev.nutrients + 32), fertilized: true }));
     playSfx('fertilize');
     addLog(`🧪 Adubou!`, '#ffaa00');
@@ -457,6 +507,8 @@ export default function App() {
     if (!G.planted || G.harvested) return;
     if (G.stage < 2) { addLog('Só pode podar no vegetativo!', '#ff4444'); return; }
     if (G.pruned) { addLog('Já podou hoje.', '#ff8800'); return; }
+    emitPrune();
+    triggerAnim('prune');
     setG(prev => ({ ...prev, pruned: true, health: Math.min(100, prev.health + 5) }));
     playSfx('prune');
     addLog('✂️ Podou! Crescimento otimizado.', '#aaffaa');
@@ -466,6 +518,7 @@ export default function App() {
 
   const doClearPests = () => {
     playSfx('click'); 
+    emitFertilizer();
     setG(p => ({...p, pests: 0})); 
     addLog('🐛 Pragas eliminadas!', '#ff00ff'); 
     triggerAnim('pests');
@@ -477,6 +530,8 @@ export default function App() {
     const s = SEEDS[G.selSeed];
     const specs = G.isAuto ? s.auto : s.fem;
     const yieldStr = G.isIndoor ? specs.yieldIndoor : specs.yieldOutdoor;
+    
+    emitHarvest();
     
     // Helper to parse yield from strings like "400-500 g/planta" or "450 g/m²"
     const getRealYield = (str: string) => {
@@ -543,7 +598,12 @@ export default function App() {
         {/* TOP PROMO BAR */}
         <div className="w-full bg-lime-500 text-black py-2 px-4 text-center vt text-[10px] md:text-sm font-bold uppercase tracking-widest flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 shadow-[0_4px_15px_rgba(0,255,0,0.2)]">
           <img src="/gifs/verde_claro.png" className="h-6 w-6 pixelate inline-block" alt="Promo Promo" />
-          <span>Gaste mais R$300 para obter envio grátis discreto!</span>
+          {(() => {
+            const currentTotal = cartItems.reduce((acc, item) => acc + (item.priceNum || 0), 0);
+            const remaining = 680 - currentTotal;
+            if (remaining <= 0) return <span>Parabéns! Você liberou o ENVIO GRÁTIS DISCRETO!</span>;
+            return <span>Gaste mais R${remaining.toFixed(2).replace('.', ',')} para obter envio grátis discreto!</span>;
+          })()}
           <button 
             className="bg-black text-lime-400 px-4 py-1 hover:bg-white hover:text-black transition-colors rounded-full text-xs pixel shadow-inner border border-lime-700"
             onClick={() => {
@@ -561,7 +621,7 @@ export default function App() {
           <div className="max-w-[1200px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-6">
             {/* Logo */}
             <div 
-              className="flex items-center gap-3 cursor-pointer group"
+              className="flex items-center gap-3 sm:gap-4 cursor-pointer group relative"
               onClick={() => {
                 playSfx('click');
                 setActiveFilter(null);
@@ -570,10 +630,23 @@ export default function App() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
-              <img src="/gifs/vermelho_com_verde.png" className="w-[50px] h-[50px] pixelate animate-pulse drop-shadow-[0_0_15px_#ff00ff] group-hover:scale-110 transition-transform" alt="Mascot" />
-              <div className="flex flex-col">
-                 <span className="pixel text-2xl text-lime-500 whitespace-nowrap drop-shadow-[2px_2px_0px_#005500] leading-none group-hover:text-white transition-colors">SEMENTE SAGRADA</span>
-                 <span className="vt text-lg text-[#ff00ff] font-bold tracking-[0.4em] uppercase drop-shadow-[1px_1px_0px_#ffffff] leading-relaxed group-hover:tracking-[0.5em] transition-all">World</span>
+              <div className="relative shrink-0 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center">
+                <div className="absolute inset-0 bg-[#ff00ff]/10 blur-lg rounded-full group-hover:bg-[#ff00ff]/20 transition-all duration-700"></div>
+                <img 
+                  src="/gifs/flower_bed.gif" 
+                  className="w-full h-full pixelate animate-pulse relative z-10 group-hover:scale-110 transition-transform duration-500" 
+                  alt="Mascot" 
+                />
+              </div>
+              <div className="flex flex-col justify-center min-w-0">
+                 <div className="flex items-center">
+                    <span className="pixel text-[14px] xs:text-[18px] sm:text-2xl md:text-3xl text-lime-400 whitespace-nowrap drop-shadow-[0_2px_0px_#005500] md:drop-shadow-[0_3px_0px_#005500] leading-none group-hover:text-white transition-all duration-500">SEMENTE SAGRADA</span>
+                 </div>
+                 <div className="flex items-center gap-2 mt-0.5 md:mt-1">
+                    <div className="h-[1px] flex-1 bg-white/20 group-hover:bg-lime-400 transition-all duration-300"></div>
+                    <span className="vt text-[8px] xs:text-[10px] sm:text-xs md:text-sm lg:text-base bg-[#ff00ff] text-white px-2 py-0.5 rounded-sm font-black tracking-[0.2em] uppercase italic group-hover:scale-105 transition-all shadow-[1px_1px_0px_#fff]">World</span>
+                    <div className="h-[1px] flex-1 bg-white/20 group-hover:bg-lime-400 transition-all duration-300"></div>
+                 </div>
               </div>
             </div>
 
@@ -753,23 +826,30 @@ export default function App() {
                                   <div className="w-8 h-8 bg-lime-100 rounded-lg flex items-center justify-center text-lg">🎁</div>
                                   <div className="flex flex-col">
                                      <span className="text-[10px] font-black uppercase text-gray-400 leading-none mb-1">Status de Bonus</span>
-                                     <span className="text-xs font-black text-gray-700">{1 + Math.floor(cartItems.reduce((acc, item) => acc + (item.priceNum || 0), 0) / 116.63)} semente(s) grátis</span>
+                                     <span className="text-xs font-black text-gray-700">{cartItems.reduce((acc, item) => acc + (getBonusSeeds(item.quantity as Quantity) * (item.packCount || 1)), 0)} semente(s) grátis</span>
                                   </div>
                                </div>
                                <span className="bg-lime-500 text-black font-black text-[9px] px-2 py-1 rounded-md uppercase">Ativo</span>
                             </div>
-                            {cartItems.reduce((acc, item) => acc + (item.priceNum || 0), 0) % 116.63 !== 0 && (
-                               <p className="text-[9px] text-gray-400 font-bold leading-tight px-1">
-                                  Perto de mais um upgrade! Gaste <span className="text-lime-600 font-black">R$ {(116.63 - (cartItems.reduce((acc, item) => acc + (item.priceNum || 0), 0) % 116.63)).toFixed(2).replace('.', ',')}</span> e adicione +1 unidade ao seu kit free.
-                               </p>
-                            )}
+                            {(() => {
+                               // Simplified: only show if they have at least one item and we want to encourage more.
+                               // For now, let's just make it more consistent or remove if it doesn't make sense with the new pack system.
+                               // But the user specifically pointed it out in the red circle, maybe they want it corrected.
+                               // If they have an X2, the next step is X4.
+                               // Let's find the current largest pack and show distance to next.
+                               // Or just remove this legacy text for now to avoid confusion as requested "o certo seria apenas 1".
+                               return null; 
+                            })()}
                          </div>
 
                          <button 
                             onClick={(e) => { 
                                e.stopPropagation();
                                playSfx('click');
-                               if(user) setCurrentView('checkout'); 
+                               if(user) {
+                                 setCurrentView('checkout');
+                                 setSelectedSeedId(null);
+                               } 
                                else setIsAuthOpen(true); 
                             }} 
                             className="w-full bg-[#f6ab1c] hover:bg-[#ffb72a] text-black font-black py-4 rounded-2xl shadow-[0_10px_20px_rgba(246,171,28,0.3)] transition-all active:scale-95 text-xs pixel tracking-widest flex items-center justify-center gap-2 uppercase hover:-translate-y-0.5"
@@ -812,7 +892,10 @@ export default function App() {
                 </button>
               );
             })}
-            <button className="px-6 py-4 hover:bg-[#111] hover:text-lime-400 transition-colors whitespace-nowrap border-b-2 border-transparent hover:border-lime-500 ml-auto flex items-center gap-1 uppercase text-[#777]">
+            <button 
+              className="px-6 py-4 hover:bg-[#111] hover:text-lime-400 transition-colors whitespace-nowrap border-b-2 border-transparent hover:border-lime-500 ml-auto flex items-center gap-1 uppercase text-[#777]"
+              onClick={() => setOpenMegaMenu(openMegaMenu === 'Log / Ajuda' ? null : 'Log / Ajuda')}
+            >
               Log / Ajuda <span className="text-[#444]">▼</span>
             </button>
           </div>
@@ -846,6 +929,59 @@ export default function App() {
                    </div>
                 </div>
               </div>
+            </div>
+          </>
+        )}
+
+        {/* MEGA MENU - LOG / AJUDA */}
+        {openMegaMenu === 'Log / Ajuda' && (
+          <>
+            <div 
+               className="fixed inset-0 z-[55]" 
+               onClick={() => setOpenMegaMenu(null)}
+            />
+            <div className="absolute top-[100%] right-0 w-full md:w-[500px] bg-[#1a1a1a] border-t border-[#333] shadow-[0_20px_40px_rgba(0,0,0,0.8)] z-[60] p-6 text-[#ccc]">
+               <div className="flex flex-col gap-6">
+                 <div>
+                   <h3 className="vt font-bold text-lg mb-4 text-lime-500 border-b border-lime-900 pb-2 flex justify-between items-center">
+                     <span>Últimos Logs do Cultivo</span>
+                     <span className="text-[10px] text-gray-500">SISTEMA v1.0</span>
+                   </h3>
+                   <div className="flex flex-col gap-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                     {logs.length > 0 ? (
+                       [...logs].reverse().slice(0, 50).map(l => (
+                         <div key={l.id} className="flex gap-3 text-xs md:text-sm font-mono pb-2 border-b border-white/5">
+                           <span className="text-gray-500 shrink-0">[{l.time}]</span>
+                           <span style={{ color: l.color }}>{l.msg}</span>
+                         </div>
+                       ))
+                     ) : (
+                       <div className="text-gray-600 italic text-sm text-center py-4">Nenhum evento registrado. Inicie o cultivo.</div>
+                     )}
+                   </div>
+                 </div>
+
+                 <div>
+                   <h3 className="vt font-bold text-lg mb-4 text-cyan-500 border-b border-cyan-900 pb-2">Ajuda & Dicas</h3>
+                   <p className="text-xs md:text-sm text-gray-400 mb-3 leading-relaxed font-mono">
+                     🌿 <strong className="text-white">Como jogar:</strong> Cuide da sua planta como na vida real.
+                     Mantenha a saúde alta gerenciando os níveis de VP, H2O, e NT. 
+                     No início, ela precisa de muita água. Cuidado para não secar e não se afogar! Quando podar ou adubar, fique de olho na barra de Pragas.
+                   </p>
+                   <button 
+                     onClick={() => {
+                        setOpenMegaMenu(null);
+                        setPopup({
+                          title: '❓ MANUAL DE CULTIVO', 
+                          body: <div className="text-left w-full"><p className="mb-4">Cultivar é uma arte! Fique de olho na luz, na água e no nutrientes.</p><ul className="list-disc pl-5 flex flex-col gap-2 text-sm text-white"><li><strong>VP:</strong> Vida da planta. Mantenha próximo aos 100%.</li><li><strong>H2O:</strong> Nível de umidade. Não deixe muito alto (mofo) nem muito baixo (seca).</li><li><strong>NT:</strong> Nutrição. Cuidado com excesso que queima as raízes.</li><li><strong>Pragas:</strong> Se a barra vermelha subir muito, clique em limpar!</li></ul></div>
+                        });
+                     }}
+                     className="w-full bg-[#222] hover:bg-[#333] border border-[#444] hover:border-cyan-500 transition-colors py-3 px-4 rounded text-xs font-black tracking-widest text-white uppercase text-center cursor-pointer"
+                   >
+                     Abrir Manual Completo
+                   </button>
+                 </div>
+               </div>
             </div>
           </>
         )}
@@ -957,12 +1093,22 @@ export default function App() {
       </div>
 
       <div className="marquee-bar">
-        <span className="marquee-inner">
-          🌿 BEM VINDO AO SEMENTE SAGRADA WORLD 🌿 &nbsp;&nbsp; ★ AS MELHORES SEMENTES DA GALÁXIA ★ &nbsp;&nbsp; 🔥 NOVIDADE: Lemza Haze Ultra chegou! 🔥 &nbsp;&nbsp; 💧 Regue sua planta enquanto passeia pela loja! 💧 &nbsp;&nbsp; 🌱 SEMENTES DE QUALIDADE SUPREMA 🌱 &nbsp;&nbsp; 😎 MELHOR VISTO EM NETSCAPE 4.0 | 800x600 😎 &nbsp;&nbsp;
-        </span>
+        <div className="marquee-inner">
+          <span className="ticker-item ticker-item-promo">🔥 PROMOÇÕES IMPERDÍVEIS ATIVAS! 🔥</span>
+          <span className="ticker-item ticker-item-shipping">🚚 FRETE GRÁTIS EM TODO O BRASIL! 🚚</span>
+          <span className="ticker-item ticker-item-seeds">🎁 SEMENTES GRÁTIS EM TODOS OS PEDIDOS! 🎁</span>
+          <span className="ticker-item ticker-item-consult">👨‍🌾 CONSULTA ONLINE ESPECIALIZADA DISPONÍVEL! 👨‍🌾</span>
+          <span className="ticker-item ticker-item-welcome">🌿 BEM VINDO AO SEMENTE SAGRADA WORLD 🌿</span>
+          <span className="ticker-item ticker-item-promo">🔥 PROMOÇÕES IMPERDÍVEIS ATIVAS! 🔥</span>
+          <span className="ticker-item ticker-item-shipping">🚚 FRETE GRÁTIS EM TODO O BRASIL! 🚚</span>
+          <span className="ticker-item ticker-item-seeds">🎁 SEMENTES GRÁTIS EM TODOS OS PEDIDOS! 🎁</span>
+          <span className="ticker-item ticker-item-consult">👨‍🌾 CONSULTA ONLINE ESPECIALIZADA DISPONÍVEL! 👨‍🌾</span>
+          <span className="ticker-item ticker-item-welcome">🌿 BEM VINDO AO SEMENTE SAGRADA WORLD 🌿</span>
+        </div>
       </div>
 
-      {currentView === 'home' ? (
+      <div id="app-content">
+        {currentView === 'home' ? (
       <>
         <div className="flex flex-col max-w-[1240px] mx-auto w-full px-2 mt-2 gap-3">
         {/* RESIZED TOP SEED SHOP (HORIZONTAL SCROLLABLE) */}
@@ -987,7 +1133,7 @@ export default function App() {
                 Sementes de Elite
               </span>
               
-              <div className="w-full aspect-square flex items-center justify-center relative my-2 transform group-hover/elite-header:scale-110 transition-transform duration-500 border-2 border-red-500 bg-white">
+              <div className="w-full aspect-square flex items-center justify-center relative my-2 transform group-hover/elite-header:scale-110 transition-transform duration-500">
                 <img src="/gifs/elite_seed.gif" alt="elite-gif" className="w-full h-full object-contain filter drop-shadow-[0_0_15px_#00ff00] scale-110 brightness-110" />
               </div>
 
@@ -1062,7 +1208,7 @@ export default function App() {
                   <div className="flex justify-between items-center text-[12px] vt">
                     <span className="text-lime-400/60 uppercase font-black tracking-tighter">QTD</span>
                     <select value={variant.qty} onClick={(e) => e.stopPropagation()} onChange={handleChangeQty} className="bg-black text-lime-400 border border-green-800 rounded px-2 py-1 outline-none cursor-pointer text-[11px] font-black hover:border-lime-400 transition-colors focus:shadow-[0_0_10px_#00ff00]">
-                      {QUANTITIES.map(q => <option key={q} value={q}>{q}</option>)}
+                      {QUANTITIES.map(q => <option key={q} value={q}>{getQtyLabel(q)}</option>)}
                     </select>
                   </div>
                   <div className="flex justify-between items-center vt mt-1 pt-3 border-t border-green-800/40">
@@ -1076,37 +1222,37 @@ export default function App() {
         </div>
 
         {/* MAIN GAME ZONE (ENLARGED) */}
-        <div className={`game-retro-zone relative min-h-[650px] md:min-h-[850px] border-4 ${
+        <div id="game-section" className={`game-retro-zone relative flex-shrink-0 w-full h-[550px] md:h-[70vh] min-h-[500px] max-h-[750px] border-8 ${
           G.isIndoor 
-            ? 'indoor border-[#00ffff] bg-[#000508]' 
+            ? 'indoor border-[#00ffff] bg-[#000508] shadow-[0_0_50px_rgba(0,255,255,0.3)]' 
             : isDay 
-              ? 'border-[#00aa00] bg-gradient-to-b from-[#60a5fa] to-[#dbeafe]' 
-              : 'border-[#004400] bg-gradient-to-b from-[#0f172a] to-[#020617]'
-        } overflow-hidden rounded-xl shadow-2xl transition-all duration-[3000ms]`}>
+              ? 'border-[#00aa00] bg-gradient-to-b from-[#60a5fa] to-[#dbeafe] shadow-[0_0_50px_rgba(0,255,0,0.3)]' 
+              : 'border-[#004400] bg-gradient-to-b from-[#0f172a] to-[#020617] shadow-[0_0_50px_rgba(0,0,0,0.8)]'
+        } overflow-hidden rounded-2xl mx-auto transition-all duration-[3000ms]`}>
           {/* HEADER HUD: DAY & PHASE */}
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-1">
-             <div className="vt text-[9px] bg-black/90 px-3 py-0.5 border border-lime-500 text-lime-400 rounded-full shadow-[0_0_10px_rgba(0,255,0,0.3)]">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2">
+             <div className="vt text-lg md:text-3xl bg-black/95 px-6 py-2 border-2 border-lime-500 text-lime-400 rounded-full shadow-[0_0_30px_rgba(0,255,0,0.6)] whitespace-nowrap font-black tracking-tighter">
                 DIA {G.gameDay} | {(!G.planted && !G.harvested) ? 'ESPERANDO' : G.harvested ? 'COLHEITA' : s.stages[G.stage].toUpperCase()}
              </div>
           </div>
 
           {/* CULTIVATION NOTIFICATIONS (CONSOLIDATED AT TOP) */}
-          <div className="absolute top-[75px] md:top-[90px] left-1/2 -translate-x-1/2 z-[60] w-full sm:w-[250px] px-2 flex flex-col items-center gap-1 pointer-events-none">
+          <div className="absolute top-[90px] md:top-[120px] left-1/2 -translate-x-1/2 z-[60] w-full max-w-[90%] md:max-w-[500px] px-2 flex flex-col items-center gap-2 pointer-events-none">
             {stageNotif && (
-              <div className="bg-black/95 border-2 border-yellow-400 px-4 py-1 animate-bounce shadow-[0_0_20px_rgba(255,255,0,0.3)] text-center">
-                <div className="vt text-xs text-yellow-300 tracking-wider font-bold">✨ {stageNotif}</div>
+              <div className="bg-black/95 border-4 border-yellow-400 px-6 py-2 animate-bounce shadow-[0_0_30px_rgba(255,255,0,0.5)] text-center rounded-lg">
+                <div className="vt text-sm md:text-2xl text-yellow-300 tracking-wider font-black">✨ {stageNotif}</div>
               </div>
             )}
             {tipNotif && (
-               <div className="pointer-events-auto relative bg-cyan-900/90 border border-cyan-400 p-2 w-[180px] md:w-full fade-in shadow-[0_0_15px_rgba(0,255,255,0.2)]">
+               <div className="pointer-events-auto relative bg-cyan-950/95 border-4 border-cyan-400 p-5 w-full fade-in shadow-[0_0_40px_rgba(0,255,255,0.6)] rounded-2xl backdrop-blur-md">
                   <button 
-                    className="absolute top-0 right-1 text-cyan-400 hover:text-white text-xs font-bold p-1 cursor-pointer" 
+                    className="absolute -top-4 -right-4 w-10 h-10 bg-cyan-500 text-black hover:bg-white text-2xl font-black rounded-full shadow-2xl cursor-pointer flex items-center justify-center z-20" 
                     onClick={() => setTipNotif(null)}
                   >
                     X
                   </button>
-                  <div className="vt text-[9px] text-cyan-50 leading-tight text-center mt-1">
-                     <span className="text-cyan-300 font-black mr-1 block mb-1 border-b border-cyan-700/50 pb-0.5">TIPS:</span>
+                  <div className="vt text-xs md:text-xl text-cyan-50 leading-relaxed text-center">
+                     <span className="text-cyan-300 font-black text-sm md:text-2xl block mb-2 border-b-2 border-cyan-400/40 pb-1 italic">DICA DO MESTRE:</span>
                      {tipNotif}
                   </div>
                </div>
@@ -1114,34 +1260,34 @@ export default function App() {
           </div>
 
           {/* LEFT HUD: PLANT STATS (MICRO) */}
-          <div className="absolute top-4 left-3 z-50 flex flex-col gap-1.5 w-[90px] pointer-events-none">
+          <div className="absolute top-2 left-2 md:top-6 md:left-6 z-50 flex flex-col gap-1 md:gap-4 w-[85px] md:w-[220px] pointer-events-none">
             {G.planted && !G.harvested && (
               <>
-                <div className="bg-black/90 p-1 border border-green-900/50 rounded backdrop-blur-sm">
-                  <div className="flex justify-between vt text-[7px] text-green-400 mb-0.5">
-                    <span>HP</span>
-                    <span>{hpct}%</span>
+                <div className="bg-black/95 p-1.5 md:p-3 border-2 border-green-500/50 rounded-lg md:rounded-xl backdrop-blur-xl shadow-2xl">
+                  <div className="flex justify-between vt text-[9px] md:text-2xl text-green-400 mb-0.5 md:mb-1">
+                    <span className="font-bold">VP</span>
+                    <span className="font-black">{hpct}%</span>
                   </div>
-                  <div className="w-full h-1 bg-black border border-green-900 rounded-full overflow-hidden">
-                    <div className="h-full bg-green-500" style={{width: `${hpct}%`}}></div>
-                  </div>
-                </div>
-                <div className="bg-black/90 p-1 border border-blue-900/50 rounded backdrop-blur-sm">
-                  <div className="flex justify-between vt text-[7px] text-blue-400 mb-0.5">
-                    <span>H2O</span>
-                    <span>{Math.round(G.water)}%</span>
-                  </div>
-                  <div className="w-full h-1 bg-black border border-blue-900 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500" style={{width: `${G.water}%`}}></div>
+                  <div className="w-full h-1.5 md:h-6 bg-black/50 border border-green-900 md:border-2 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-green-700 via-green-500 to-green-300 shadow-[0_0_15px_rgba(0,255,0,0.6)]" style={{width: `${hpct}%`}}></div>
                   </div>
                 </div>
-                <div className="bg-black/90 p-1 border border-orange-900/50 rounded backdrop-blur-sm">
-                  <div className="flex justify-between vt text-[7px] text-orange-400 mb-0.5">
-                    <span>NUT</span>
-                    <span>{Math.round(G.nutrients)}%</span>
+                <div className="bg-black/95 p-1.5 md:p-3 border-2 border-blue-500/50 rounded-lg md:rounded-xl backdrop-blur-xl shadow-2xl">
+                  <div className="flex justify-between vt text-[9px] md:text-2xl text-blue-400 mb-0.5 md:mb-1">
+                    <span className="font-bold">H2O</span>
+                    <span className="font-black">{Math.round(G.water)}%</span>
                   </div>
-                  <div className="w-full h-1 bg-black border border-orange-900 rounded-full overflow-hidden">
-                    <div className="h-full bg-orange-500" style={{width: `${G.nutrients}%`}}></div>
+                  <div className="w-full h-1.5 md:h-6 bg-black/50 border border-blue-900 md:border-2 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-blue-700 via-blue-500 to-blue-300 shadow-[0_0_15px_rgba(0,0,255,0.6)]" style={{width: `${G.water}%`}}></div>
+                  </div>
+                </div>
+                <div className="bg-black/95 p-1.5 md:p-3 border-2 border-orange-500/50 rounded-lg md:rounded-xl backdrop-blur-xl shadow-2xl">
+                  <div className="flex justify-between vt text-[9px] md:text-2xl text-orange-400 mb-0.5 md:mb-1">
+                    <span className="font-bold">NT</span>
+                    <span className="font-black">{Math.round(G.nutrients)}%</span>
+                  </div>
+                  <div className="w-full h-1.5 md:h-6 bg-black/50 border border-orange-900 md:border-2 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-orange-700 via-orange-500 to-orange-300 shadow-[0_0_15px_rgba(255,165,0,0.6)]" style={{width: `${G.nutrients}%`}}></div>
                   </div>
                 </div>
               </>
@@ -1149,30 +1295,30 @@ export default function App() {
           </div>
 
           {/* RIGHT HUD: ENVIRONMENT (MICRO) */}
-          <div className="absolute top-4 right-3 z-50 flex flex-col gap-1 w-[100px]">
-             <div className="bg-black/90 p-1 border border-cyan-900/50 rounded backdrop-blur-sm">
-                <div className="vt text-[7px] text-cyan-400 flex justify-between items-center mb-1">
-                   <span>TEMP</span>
-                   <span className={G.temp > 28 || G.temp < 18 ? 'text-red-500 animate-pulse' : 'text-white'}>{G.temp.toFixed(1)}°C</span>
+          <div className="absolute top-2 right-2 md:top-6 md:right-6 z-50 flex flex-col gap-1 md:gap-4 w-[95px] md:w-[220px]">
+             <div className="bg-black/95 p-1.5 md:p-3 border-2 border-cyan-500/50 rounded-lg md:rounded-xl backdrop-blur-xl shadow-2xl">
+                <div className="vt text-[9px] md:text-2xl text-cyan-400 flex justify-between items-center mb-1 md:mb-3">
+                   <span className="font-bold">TEMP</span>
+                   <span className={`font-black tracking-tighter ${G.temp > 28 || G.temp < 18 ? 'text-red-500 animate-pulse' : 'text-white'}`}>{G.temp.toFixed(1)}°C</span>
                 </div>
-                <div className="flex gap-1">
-                   <button className="flex-1 bg-red-900/40 border border-red-500/20 text-[10px] py-0.5" onClick={() => setG(p => ({...p, temp: p.temp - 1}))}>-</button>
-                   <button className="flex-1 bg-blue-900/40 border border-blue-500/20 text-[10px] py-0.5" onClick={() => setG(p => ({...p, temp: p.temp + 1}))}>+</button>
+                <div className="flex gap-1 md:gap-2">
+                   <button className="flex-1 bg-red-900/80 hover:bg-red-700 border border-red-500/40 text-sm md:text-3xl py-0.5 md:py-3 font-black cursor-pointer rounded-md md:rounded-xl transition-all active:scale-95" onClick={() => setG(p => ({...p, temp: p.temp - 1}))}>-</button>
+                   <button className="flex-1 bg-blue-900/80 hover:bg-blue-700 border border-blue-500/40 text-sm md:text-3xl py-0.5 md:py-3 font-black cursor-pointer rounded-md md:rounded-xl transition-all active:scale-95" onClick={() => setG(p => ({...p, temp: p.temp + 1}))}>+</button>
                 </div>
-                <div className="vt text-[7px] text-white flex justify-between items-center border-t border-white/5 mt-1 pt-1">
-                   <span>PH:{G.ph.toFixed(1)}</span>
-                   <div className="flex gap-1">
-                      <button className="bg-yellow-900/40 px-1 border border-yellow-500/30" onClick={() => setG(p => ({...p, ph: Math.max(0, p.ph - 0.1)}))}>-</button>
-                      <button className="bg-yellow-900/40 px-1 border border-yellow-500/30" onClick={() => setG(p => ({...p, ph: Math.min(14, p.ph + 0.1)}))}>+</button>
+                <div className="vt text-[9px] md:text-xl text-white flex justify-between items-center border-t border-white/10 mt-1 md:mt-3 pt-1 md:pt-3">
+                   <span className="font-bold">PH: {G.ph.toFixed(1)}</span>
+                   <div className="flex gap-1 md:gap-2">
+                      <button className="bg-yellow-900/70 hover:bg-yellow-600 px-1.5 py-0.5 border border-yellow-500/30 font-black cursor-pointer rounded md:rounded-lg transition-all" onClick={() => setG(p => ({...p, ph: Math.max(0, p.ph - 0.1)}))}>-</button>
+                      <button className="bg-yellow-900/70 hover:bg-yellow-600 px-1.5 py-0.5 border border-yellow-500/30 font-black cursor-pointer rounded md:rounded-lg transition-all" onClick={() => setG(p => ({...p, ph: Math.min(14, p.ph + 0.1)}))}>+</button>
                    </div>
                 </div>
              </div>
-             <div className={`bg-black/90 p-1 border rounded backdrop-blur-sm transition-colors ${G.pests > 10 ? 'border-red-500' : 'border-purple-900'}`}>
-                <div className="vt text-[7px] text-purple-400 text-center flex justify-between items-center mb-1">
-                   <span>🪲 PRAGAS</span>
-                   <span>{G.pests.toFixed(1)}</span>
+             <div className={`bg-black/95 p-1.5 md:p-3 border-2 rounded-lg md:rounded-xl backdrop-blur-xl shadow-2xl transition-all ${G.pests > 10 ? 'border-red-500 shadow-[0_0_20px_rgba(255,0,0,0.5)]' : 'border-purple-500/50'}`}>
+                <div className="vt text-[9px] md:text-xl text-purple-400 text-center flex justify-between items-center mb-1 md:mb-3">
+                   <span className="font-bold uppercase">Pragas</span>
+                   <span className="font-black">{G.pests.toFixed(1)}</span>
                 </div>
-                <button className="w-full bg-purple-900/60 hover:bg-purple-800 border border-purple-500 text-[7px] py-0.5 vt uppercase" onClick={doClearPests}>LIMPAR</button>
+                <motion.button whileTap={{ scale: 0.9 }} className="w-full bg-purple-900/80 hover:bg-purple-700 border border-purple-500 text-[10px] md:text-xl py-1 md:py-2.5 vt uppercase font-black cursor-pointer rounded-md md:rounded-xl tracking-widest shadow-lg transition-all hover:brightness-125" onClick={doClearPests}>LIMPAR</motion.button>
              </div>
           </div>
 
@@ -1187,20 +1333,20 @@ export default function App() {
                   )}
                   {isDay ? (
                     <div 
-                      className="absolute text-5xl drop-shadow-[0_0_20px_rgba(255,200,0,0.8)] spin-3d transition-all duration-[3000ms] ease-linear"
+                      className="absolute text-5xl md:text-6xl drop-shadow-[0_0_20px_rgba(255,200,0,0.8)] spin-3d transition-all duration-[3000ms] ease-linear z-0"
                       style={{
-                        left: `${((G.clock - 360) / 840) * 100 - 10}%`,
-                        top: `${Math.max(10, Math.abs(((G.clock - 360) / 840) - 0.5) * 100)}%`
+                        left: `${((G.clock - 360) / 840) * 50 + 25}%`,
+                        top: `${Math.max(15, Math.abs(((G.clock - 360) / 840) - 0.5) * 50)}%`
                       }}
                     >
                       ☀️
                     </div>
                   ) : (
                     <div 
-                      className="absolute text-4xl drop-shadow-[0_0_15px_rgba(200,220,255,0.8)] transition-all duration-[3000ms] ease-linear"
+                      className="absolute text-4xl md:text-5xl drop-shadow-[0_0_15px_rgba(200,220,255,0.8)] transition-all duration-[3000ms] ease-linear z-0"
                       style={{
-                        left: `${((G.clock >= 1200 ? G.clock - 1200 : G.clock + 240) / 600) * 100 - 5}%`,
-                        top: `${Math.max(10, Math.abs(((G.clock >= 1200 ? G.clock - 1200 : G.clock + 240) / 600) - 0.5) * 80)}%`
+                        left: `${((G.clock >= 1200 ? G.clock - 1200 : G.clock + 240) / 600) * 50 + 25}%`,
+                        top: `${Math.max(15, Math.abs(((G.clock >= 1200 ? G.clock - 1200 : G.clock + 240) / 600) - 0.5) * 50)}%`
                       }}
                     >
                       🌙
@@ -1316,44 +1462,45 @@ export default function App() {
           )}
 
           {/* GARDEN VIEW (CANVAS AREA) */}
-          <div className="absolute inset-0 z-0 flex items-center justify-center pt-2 pb-24">
-            <canvas ref={canvasRef} className="cursor-crosshair max-h-full" />
+          <div className="absolute inset-0 z-0 flex items-center justify-center pt-24 pb-[180px] md:pb-[250px]">
+            <canvas ref={canvasRef} className="cursor-crosshair max-h-full max-w-full object-contain" />
           </div>
 
           {/* ACTION BAR (BOTTOM OVERLAY) */}
           <div className="absolute bottom-0 left-0 right-0 z-50 p-3 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col gap-2">
             
             {!G.planted || G.harvested ? (
-               <button className="w-full py-4 bg-green-700 hover:bg-green-600 text-white font-bold vt text-2xl border-b-6 border-green-900 transition-all active:translate-y-1 shadow-2xl animate-pulse" onClick={(e) => { playSfx('click'); doPlant(); }}>
+               <motion.button whileTap={{ scale: 0.95 }} className="w-full py-4 bg-green-700 hover:bg-green-600 text-white font-bold vt text-2xl border-b-[6px] border-green-900 transition-all shadow-2xl animate-pulse" onClick={(e) => { playSfx('click'); doPlant(); }}>
                   🌱 PLANTAR {s.name.toUpperCase()}
-               </button>
+               </motion.button>
             ) : (
               <div className="flex flex-col gap-4">
-                <div className="grid grid-cols-4 gap-3 px-1">
-                  <button className={`py-4 rounded-lg border-b-[6px] vt flex flex-col items-center justify-center gap-1 ${G.watered ? 'opacity-30 bg-black' : 'bg-blue-900 border-blue-950 shadow-[0_6px_0_rgba(0,0,0,0.7)] hover:scale-105 transition-transform'}`} onClick={(e) => { playSfx('click'); doWater(); }} disabled={G.watered}>
-                     <span className="text-2xl">💧</span>
-                     <span className="text-base font-black uppercase tracking-tighter">Regar</span>
-                  </button>
-                  <button className={`py-4 rounded-lg border-b-[6px] vt flex flex-col items-center justify-center gap-1 ${G.fertilized ? 'opacity-30 bg-black' : 'bg-orange-900 border-orange-950 shadow-[0_6px_0_rgba(0,0,0,0.7)] hover:scale-105 transition-transform'}`} onClick={(e) => { playSfx('click'); doFertilize(); }} disabled={G.fertilized}>
-                     <span className="text-2xl">🧪</span>
-                     <span className="text-base font-black uppercase tracking-tighter">Adubar</span>
-                  </button>
-                  <button className={`py-4 rounded-lg border-b-[6px] vt flex flex-col items-center justify-center gap-1 ${G.pruned || G.stage < 2 ? 'opacity-30 bg-black' : 'bg-green-900 border-green-950 shadow-[0_6px_0_rgba(0,0,0,0.7)] hover:scale-105 transition-transform'}`} onClick={(e) => { playSfx('click'); doPrune(); }} disabled={G.stage < 2 || G.pruned}>
-                     <span className="text-2xl">✂️</span>
-                     <span className="text-base font-black uppercase tracking-tighter">Podar</span>
-                  </button>
+                <div className="grid grid-cols-4 gap-1.5 md:gap-3 px-1">
+                  <motion.button whileTap={!G.watered ? { scale: 0.9 } : undefined} className={`py-1 md:py-2 rounded-lg border-b-[3px] md:border-b-[4px] vt flex flex-col items-center justify-center gap-0.5 ${G.watered ? 'opacity-30 bg-black' : 'bg-blue-900 border-blue-950 shadow-[0_3px_0_rgba(0,0,0,0.7)] md:shadow-[0_4px_0_rgba(0,0,0,0.7)] hover:-translate-y-1 transition-transform'}`} onClick={(e) => { playSfx('click'); doWater(); }} disabled={G.watered}>
+                     <span className="text-xl md:text-4xl">💧</span>
+                     <span className="text-xs md:text-xl font-black uppercase tracking-tighter">Regar</span>
+                  </motion.button>
+                  <motion.button whileTap={!G.fertilized ? { scale: 0.9 } : undefined} className={`py-1 md:py-2 rounded-lg border-b-[3px] md:border-b-[4px] vt flex flex-col items-center justify-center gap-0.5 ${G.fertilized ? 'opacity-30 bg-black' : 'bg-orange-900 border-orange-950 shadow-[0_3px_0_rgba(0,0,0,0.7)] md:shadow-[0_4px_0_rgba(0,0,0,0.7)] hover:-translate-y-1 transition-transform'}`} onClick={(e) => { playSfx('click'); doFertilize(); }} disabled={G.fertilized}>
+                     <span className="text-xl md:text-4xl">🧪</span>
+                     <span className="text-xs md:text-xl font-black uppercase tracking-tighter">Adubar</span>
+                  </motion.button>
+                  <motion.button whileTap={!(G.pruned || G.stage < 2) ? { scale: 0.9 } : undefined} className={`py-1 md:py-2 rounded-lg border-b-[3px] md:border-b-[4px] vt flex flex-col items-center justify-center gap-0.5 ${G.pruned || G.stage < 2 ? 'opacity-30 bg-black' : 'bg-green-900 border-green-950 shadow-[0_3px_0_rgba(0,0,0,0.7)] md:shadow-[0_4px_0_rgba(0,0,0,0.7)] hover:-translate-y-1 transition-transform'}`} onClick={(e) => { playSfx('click'); doPrune(); }} disabled={G.stage < 2 || G.pruned}>
+                     <span className="text-xl md:text-4xl">✂️</span>
+                     <span className="text-xs md:text-xl font-black uppercase tracking-tighter">Podar</span>
+                  </motion.button>
                   {G.stage >= 5 ? (
-                    <button className="py-4 rounded-lg border-b-[6px] vt text-lg font-black uppercase bg-red-700 border-red-950 animate-pulse shadow-xl" onClick={(e) => { playSfx('click'); doHarvest(); }}>
+                    <motion.button whileTap={{ scale: 0.9 }} className="py-1 md:py-2 rounded-lg border-b-[3px] md:border-b-[4px] vt text-xs md:text-xl font-black uppercase bg-red-700 border-red-950 animate-pulse shadow-xl" onClick={(e) => { playSfx('click'); doHarvest(); }}>
                       Colher
-                    </button>
+                    </motion.button>
                   ) : (
-                    <button onClick={() => setG(p => ({...p, isIndoor: !p.isIndoor}))} className="py-4 rounded-lg border-b-[6px] vt text-sm font-black uppercase bg-gray-700 border-gray-900 shadow-lg">
-                      {G.isIndoor ? '🌻 OUT' : '🏠 IN'}
-                    </button>
+                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setG(p => ({...p, isIndoor: !p.isIndoor}))} className="py-1 md:py-2 rounded-lg border-b-[3px] md:border-b-[4px] vt text-xs md:text-xl font-black uppercase bg-gray-700 border-gray-900 shadow-lg flex flex-col items-center justify-center gap-0.5">
+                      <span className="text-xl md:text-4xl">{G.isIndoor ? '🌻' : '🏠'}</span>
+                      <span>{G.isIndoor ? 'OUT' : 'IN'}</span>
+                    </motion.button>
                   )}
                 </div>
-                <div className="bg-black/95 p-4 h-[50px] flex items-center justify-center rounded-xl border-4 border-[#006600] shadow-[inset_0_0_20px_rgba(0,255,0,0.4)]">
-                   <div className="vt text-[20px] text-lime-400 truncate font-black uppercase tracking-[0.15em]">
+                <div className="bg-black/95 p-2 md:p-4 h-[40px] md:h-[60px] flex items-center justify-center rounded-lg md:rounded-xl border-2 md:border-4 border-[#006600] shadow-[inset_0_0_15px_rgba(0,255,0,0.5)] md:shadow-[inset_0_0_25px_rgba(0,255,0,0.5)]">
+                   <div className="vt text-xs md:text-2xl text-lime-400 truncate font-black uppercase tracking-[0.1em]">
                       {logs.length > 0 ? logs[logs.length-1].msg : 'SISTEMA OPERACIONAL'}
                    </div>
                 </div>
@@ -1365,9 +1512,16 @@ export default function App() {
           {popup && (
             <div className="fixed inset-0 bg-black/80 z-[1000] flex items-center justify-center p-6">
               <div className="bg-[#001800] border-4 border-double border-green-500 p-6 max-w-sm w-full shadow-[0_0_30px_rgba(0,255,0,0.3)]">
-                <div className="pixel text-[9px] text-yellow-300 mb-3 border-b border-[#004400] pb-2 uppercase tracking-widest">{popup.title}</div>
-                <div className="vt text-[14px] text-[var(--lime)] leading-relaxed">{popup.body}</div>
-                <div className="text-right mt-4"><button className="pixel text-[10px] bg-green-900 px-4 py-2 text-white border border-green-500 hover:bg-green-700" onClick={() => setPopup(null)}>FECHAR</button></div>
+                <div className="pixel text-xs md:text-base text-yellow-300 mb-4 border-b-2 border-[#004400] pb-3 uppercase tracking-[0.2em] font-black">{popup.title}</div>
+                <div className="vt text-base md:text-xl text-[var(--lime)] leading-relaxed font-bold">{popup.body}</div>
+                <div className="text-right mt-6">
+                  <button 
+                    className="pixel text-xs md:text-sm bg-green-900 px-6 py-2 text-white border-2 border-green-500 hover:bg-green-700 active:scale-95 transition-all cursor-pointer font-black" 
+                    onClick={() => setPopup(null)}
+                  >
+                    FECHAR
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -1820,7 +1974,7 @@ export default function App() {
                 }}
                 className="bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] p-5 rounded-2xl relative overflow-hidden group cursor-pointer shadow-sm"
               >
-                <div className="absolute right-0 bottom-0 pointer-events-none w-1/2 h-[120%] flex items-end justify-end"><img src="/gifs/elite_seed.gif" className="h-[90%] object-contain" alt="mascot" /></div>
+                <div className="absolute right-0 bottom-0 pointer-events-none w-1/2 h-[120%] flex items-end justify-end"><img src="/gifs/elite_seed.gif" className="h-[90%] object-contain filter mix-blend-multiply" alt="mascot" /></div>
                 <div className="relative z-10 w-2/3">
                   <h4 className="font-bold text-[#0f172a] text-lg leading-tight mb-2">Descubra sua Genética</h4>
                   <p className="text-xs text-[#334155] mb-4">Faça um teste rápido e ache a planta perfeita para o seu primeiro cultivo</p>
@@ -1891,7 +2045,35 @@ export default function App() {
               <div className="xl:w-1/4 flex flex-col justify-center">
                  <h3 className="text-xl font-bold text-[#455a64] mb-2 uppercase tracking-wide">Promos</h3>
                  <h4 className="text-4xl md:text-5xl font-black text-[#111827] leading-tight mb-6 tracking-tight">Condições<br/>Insanas</h4>
-                 <button className="bg-transparent border border-[#059669] text-[#047857] hover:bg-[#059669] hover:text-white font-bold text-sm px-6 py-3 rounded-full transition-colors self-start w-max">Ver todas as promos</button>
+                 <button 
+                    onClick={() => setPopup({
+                       title: '🏷️ TODAS AS PROMOÇÕES',
+                       body: (
+                          <div className="text-left space-y-6">
+                             <div>
+                                <h4 className="text-lime-500 font-black border-b border-white/10 pb-1 mb-2">PROGRESSIVA SSW</h4>
+                                <p className="text-sm text-gray-300">Quanto mais você compra, mais sementes bônus você ganha. Válido para todo o site.</p>
+                             </div>
+                             <div>
+                                <h4 className="text-yellow-500 font-black border-b border-white/10 pb-1 mb-2">TRINCA DE OURO</h4>
+                                <p className="text-sm text-gray-300">Leve 3 e pague 2 em toda a linha de Genéticas Selecionadas.</p>
+                             </div>
+                             <div>
+                                <h4 className="text-rose-500 font-black border-b border-white/10 pb-1 mb-2">STARTER PACK</h4>
+                                <p className="text-sm text-gray-300">Pacote com 3 linhagens premium por apenas R$ 179,90.</p>
+                             </div>
+                             <div className="bg-white/5 p-4 rounded-lg text-center">
+                                <p className="text-xs font-bold uppercase tracking-widest text-lime-400">Cupom Atendimento:</p>
+                                <p className="text-2xl font-black text-white">BENVINDO10</p>
+                                <p className="text-[10px] text-gray-500">10% OFF EXTRA NO PIX</p>
+                             </div>
+                          </div>
+                       )
+                    })}
+                    className="bg-transparent border border-[#059669] text-[#047857] hover:bg-[#059669] hover:text-white font-bold text-sm px-6 py-3 rounded-full transition-colors self-start w-max"
+                 >
+                    Ver todas as promos
+                 </button>
               </div>
 
               <div className="xl:w-3/4 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1899,16 +2081,36 @@ export default function App() {
                  <div className="bg-white rounded-[24px] overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col">
                     <div className="h-40 bg-[#429d98] relative flex overflow-hidden">
                        <div className="p-6 font-black text-white text-3xl leading-none z-10 flex flex-col justify-center drop-shadow-md">
-                          <span>3+1</span>
-                          <span>5+2</span>
-                          <span>10+4</span>
+                          <span>4+2</span>
+                          <span>7+3</span>
+                          <span>14+4</span>
                        </div>
-                       <div className="absolute right-0 bottom-0 w-[60%] h-full flex items-end justify-end"><img src="/gifs/elite_seed.gif" alt="Promo" className="h-[120%] object-contain" /></div>
+                       <div className="absolute right-0 bottom-0 w-[60%] h-full flex items-end justify-end">
+                          <img src="/gifs/elite_seed.gif" alt="Promo" className="h-[120%] object-contain relative z-10" />
+                       </div>
                     </div>
                     <div className="p-6 flex-1 flex flex-col text-left">
                        <h5 className="font-bold text-[#1f2937] text-lg mb-2 leading-tight">Bônus Semente Sagrada World</h5>
-                       <p className="text-[#4b5563] text-xs leading-relaxed mb-4 flex-1">Leve mais pagando menos: a cada 3 seeds, a 4ª é por nossa conta. Aproveite a seleção promocional.</p>
-                       <span className="text-[#059669] text-xs font-bold mt-auto hover:underline cursor-pointer">Mais informações</span>
+                       <p className="text-[#4b5563] text-xs leading-relaxed mb-4 flex-1">Leve mais pagando menos: ganhe bônus progressivo de sementes extras em todos os pacotes. Aproveite a seleção promocional.</p>
+                       <button 
+                          onClick={() => setPopup({
+                             title: '🎁 BÔNUS SEMENTE SAGRADA',
+                             body: (
+                                <div className="text-left space-y-4">
+                                   <p>Nossa promoção progressiva é automática e cumulativa!</p>
+                                   <ul className="list-disc pl-5 space-y-2 text-sm text-gray-300 font-mono">
+                                      <li><strong>Pack 4+2:</strong> Compre 4 sementes e receba 6 no total (2 bônus).</li>
+                                      <li><strong>Pack 7+3:</strong> Compre 7 sementes e receba 10 no total (3 bônus).</li>
+                                      <li><strong>Pack 14+4:</strong> Compre 14 sementes e receba 18 no total (4 bônus).</li>
+                                   </ul>
+                                   <p className="text-xs text-lime-400 font-bold">Válido para todas as genéticas do catálogo enquanto durar o estoque!</p>
+                                </div>
+                             )
+                          })}
+                          className="text-[#059669] text-xs font-bold mt-auto hover:underline cursor-pointer border-none bg-transparent p-0 text-left"
+                       >
+                          Mais informações
+                       </button>
                     </div>
                  </div>
 
@@ -1922,7 +2124,23 @@ export default function App() {
                     <div className="p-6 flex-1 flex flex-col text-left">
                        <h5 className="font-bold text-[#1f2937] text-lg mb-2 leading-tight">Trinca de Ouro SSW</h5>
                        <p className="text-[#4b5563] text-xs leading-relaxed mb-4 flex-1">Adicione 3 packs da nossa linha exclusiva no carrinho e o de menor valor sai inteiramente de graça.</p>
-                       <span className="text-[#059669] text-xs font-bold mt-auto hover:underline cursor-pointer">Mais informações</span>
+                       <button 
+                          onClick={() => setPopup({
+                             title: '🏆 TRINCA DE OURO SSW',
+                             body: (
+                                <div className="text-left space-y-4">
+                                   <p>A promoção "Trinca de Ouro" é focada na nossa linha exclusiva de Genéticas Selecionadas (SSW).</p>
+                                   <div className="bg-black/20 p-4 border-l-4 border-yellow-500 text-sm italic font-mono">
+                                      "Adicione qualquer 3 packs da linha SSW ao carrinho. O sistema aplicará automaticamente um desconto de 100% no pack de menor valor."
+                                   </div>
+                                   <p className="text-xs text-gray-400">Essa oferta não é cumulativa com outros cupons de desconto, mas dá direito aos brindes de envio.</p>
+                                </div>
+                             )
+                          })}
+                          className="text-[#059669] text-xs font-bold mt-auto hover:underline cursor-pointer border-none bg-transparent p-0 text-left"
+                       >
+                          Mais informações
+                       </button>
                     </div>
                  </div>
 
@@ -1930,9 +2148,9 @@ export default function App() {
                  <div className="bg-white rounded-[24px] overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col">
                     <div className="h-40 bg-[#f43f5e] relative flex overflow-hidden">
                        <div className="p-6 font-black text-white text-3xl leading-none z-10 flex flex-col justify-center drop-shadow-md">
-                          <span>3+1</span>
-                          <span>5+2</span>
-                          <span>10+4</span>
+                          <span>4+2</span>
+                          <span>7+3</span>
+                          <span>14+4</span>
                        </div>
                        <div className="absolute right-4 top-1/2 -translate-y-1/2 font-black text-yellow-300 text-3xl rotate-[-10deg] drop-shadow-md blur-[0.5px]">
                           Seed<br/>Keepers
@@ -1940,8 +2158,31 @@ export default function App() {
                     </div>
                     <div className="p-6 flex-1 flex flex-col text-left">
                        <h5 className="font-bold text-[#1f2937] text-lg mb-2 leading-tight">Oferta Exclusiva Seedkeepers</h5>
-                       <p className="text-[#4b5563] text-xs leading-relaxed mb-4 flex-1">Estoque limitado: compre 3 e leve 4, compre 5 e leve 7. Genéticas de coleção com bônus absurdo!</p>
-                       <span className="text-[#059669] text-xs font-bold mt-auto hover:underline cursor-pointer">Mais informações</span>
+                       <p className="text-[#4b5563] text-xs leading-relaxed mb-4 flex-1">Estoque limitado: compre 4 e leve 6, compre 7 e leve 10. Genéticas de coleção com bônus absurdo!</p>
+                       <button 
+                          onClick={() => setPopup({
+                             title: '🔥 OFERTA SEEDKEEPERS',
+                             body: (
+                                <div className="text-left space-y-4">
+                                   <p>O Seedkeepers é nosso programa de preservação genética. Ao adquirir estes pacotes, você ajuda a manter linhagens raras vivas.</p>
+                                   <div className="grid grid-cols-2 gap-4 text-center">
+                                      <div className="border border-white/10 p-2 rounded bg-white/5">
+                                         <div className="text-rose-500 font-black">4+2 SEEDS</div>
+                                         <div className="text-[10px]">R$ 179,90</div>
+                                      </div>
+                                      <div className="border border-white/10 p-2 rounded bg-white/5">
+                                         <div className="text-rose-500 font-black">7+3 SEEDS</div>
+                                         <div className="text-[10px]">R$ 299,90</div>
+                                      </div>
+                                   </div>
+                                   <p className="text-xs text-gray-400 italic">Bônus inclusos: Adesivos exclusivos + Guia de Preservação Digital.</p>
+                                </div>
+                             )
+                          })}
+                          className="text-[#059669] text-xs font-bold mt-auto hover:underline cursor-pointer border-none bg-transparent p-0 text-left"
+                       >
+                          Mais informações
+                       </button>
                     </div>
                  </div>
               </div>
@@ -1961,7 +2202,6 @@ export default function App() {
                   <h3 className="pixel text-3xl md:text-5xl text-white mb-4 italic tracking-tight" style={{textShadow: "3px 3px #ff00ff"}}>SUPREME STARTER PACK</h3>
                   <p className="vt text-pink-300 text-xl max-w-2xl leading-relaxed">
                     Três das nossas linhagens mais premiadas em um pacote exclusivo para novos colecionadores.
-                    Inclui <span className="text-white font-bold underline">Lemon Haze</span>, <span className="text-white font-bold underline">Blue Dream</span> e <span className="text-white font-bold underline">Purple Kush</span>.
                   </p>
                 </div>
                 
@@ -1969,7 +2209,7 @@ export default function App() {
                   <div className="flex items-center gap-6">
                     <div className="text-right">
                       <div className="vt text-white/40 line-through text-xl font-bold italic">R$ 259,70</div>
-                      <div className="pixel text-5xl text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]">R$ 169,90</div>
+                      <div className="pixel text-5xl text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]">R$ 179,90</div>
                     </div>
                     <div className="bg-pink-600 text-white pixel text-xs p-3 rounded-full animate-bounce shadow-lg">
                       -35%
@@ -2520,6 +2760,8 @@ export default function App() {
           cartItems={cartItems}
           selectedBonuses={checkoutData?.selectedBonuses || []}
           totalAmount={checkoutData?.totalAmount || 0}
+          initialShippingCost={checkoutData?.shippingCost || null}
+          initialZip={checkoutData?.zip || ''}
           onBack={() => setCurrentView('checkout')}
           onSuccess={() => {
             setCurrentView('home');
@@ -2527,6 +2769,7 @@ export default function App() {
           }}
         />
       )}
+      </div>
 
       {/* ========================================================= */}
       {/* FOOTER (HERBIES INSPIRED)                                */}
@@ -2602,27 +2845,27 @@ export default function App() {
                   const title = target.textContent || '';
                   if (title === 'Termos e Condições') {
                     setCurrentView('terms');
-                    window.scrollTo(0, 0);
+                    scrollToContent();
                     return;
                   }
                   if (title === 'Isenção de Responsabilidade Limitada') {
                     setCurrentView('disclaimer');
-                    window.scrollTo(0, 0);
+                    scrollToContent();
                     return;
                   }
                   if (title === 'Política de Privacidade') {
                     setCurrentView('privacy');
-                    window.scrollTo(0, 0);
+                    scrollToContent();
                     return;
                   }
                   if (title === 'Política de Cookies') {
                     setCurrentView('cookies');
-                    window.scrollTo(0, 0);
+                    scrollToContent();
                     return;
                   }
                   if (title === 'Aviso Legal') {
                     setCurrentView('legal');
-                    window.scrollTo(0, 0);
+                    scrollToContent();
                     return;
                   }
                   setPopup({
@@ -2920,7 +3163,7 @@ export default function App() {
                      <div className="bg-[#111] border border-lime-900/40 rounded-xl p-4 flex flex-col gap-2 mb-6 shadow-inner">
                         <div className="flex items-center justify-between">
                             <span className="text-lime-500/80 text-[10px] font-black uppercase tracking-widest">Cupom Ativos</span>
-                            <span className="border border-lime-500/50 text-lime-500 bg-lime-500/20 px-2 py-0.5 rounded text-[9px] font-bold">+2 Sementes</span>
+                            <span className="border border-lime-500/50 text-lime-500 bg-lime-500/20 px-2 py-0.5 rounded text-[9px] font-bold">+{getBonusSeeds(variant.qty) > 0 ? getBonusSeeds(variant.qty) : '2'} Sementes</span>
                         </div>
                         <div className="bg-[#000] border border-[#222] px-3 py-2 rounded text-xs font-black text-lime-500 tracking-wider flex justify-between uppercase">HIGHBREEDPROMO <span className="cursor-pointer text-gray-500 hover:text-white">📋</span></div>
                      </div>
@@ -2936,101 +3179,103 @@ export default function App() {
                         </h5>
 
                         <div className="flex flex-col gap-1">
-                           <div className="flex justify-between items-end mb-1">
-                              <span className="text-xs text-gray-400 font-black">0%</span>
-                              <div className="bg-lime-500/10 border border-lime-500/30 text-lime-500 px-2 py-0.5 rounded text-xs font-black">
-                                 {(() => {
-                                   const total = parseFloat(seed.prices[variant.qty].replace('.', '').replace(',', '.'));
-                                   if (total >= 408.2) return '4%';
-                                   if (total >= 116.63) return '1%';
-                                   return '0%';
-                                 })()}
-                              </div>
-                           </div>
-                           
-                           {/* PROGRESS BAR */}
-                           <div className="h-2.5 bg-[#222] rounded-full relative overflow-visible mt-2">
-                              {/* Background Rail */}
-                              <div className="absolute inset-0 bg-[#151515] rounded-full border border-white/5" />
-                              
-                              {/* Active Fill */}
-                              <div 
-                                className="absolute left-0 top-0 bottom-0 bg-lime-500 transition-all duration-500 ease-out shadow-[0_0_15px_rgba(163,230,53,0.6)] rounded-full z-10"
-                                style={{ 
-                                   width: `${Math.min(100, (parseFloat(seed.prices[variant.qty].replace('.', '').replace(',', '.')) / 408.2) * 100)}%` 
-                                }}
-                              >
-                                 <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-4 border-lime-500 shadow-[0_0_10px_white] z-30" />
-                              </div>
-                              
-                              {/* Markers */}
-                              <div className="absolute inset-0 flex items-center px-0 pointer-events-none z-20">
-                                 {/* Mark 1: Free Seed (116.63) */}
-                                 <div 
-                                    className="absolute w-2 h-2 bg-black border border-white/20 rounded-full" 
-                                    style={{ left: `${(116.63 / 408.2) * 100}%`, transform: 'translateX(-50%)' }}
-                                 />
-                                 {/* Mark 2: Discount (408.20) */}
-                                 <div 
-                                    className="absolute w-2 h-2 bg-black border border-white/20 rounded-full" 
-                                    style={{ left: '100%', transform: 'translateX(-50%)' }}
-                                 />
-                              </div>
-                           </div>
-                           
-                           <div className="flex justify-center mt-3 h-6 relative">
-                              <div 
-                                className="text-lime-500 drop-shadow-[0_0_8px_rgba(163,230,53,0.8)] transform -scale-x-100 absolute transition-all duration-500 animate-bounce"
-                                style={{ 
-                                   left: `${Math.min(100, (parseFloat(seed.prices[variant.qty].replace('.', '').replace(',', '.')) / 408.2) * 100)}%`,
-                                   transform: 'translateX(-50%) scaleX(-1)'
-                                }}
-                              >🍃</div>
-                           </div>
+                            {(() => {
+                               const thisPrice = parseFloat(seed.prices[variant.qty].replace(/\./g, '').replace(',', '.'));
+                               const progressPercent = Math.min(100, (thisPrice / 408.2) * 100);
+                               
+                               return (
+                                  <>
+                                     <div className="flex justify-between items-end mb-1">
+                                        <span className="text-xs text-gray-400 font-black">0%</span>
+                                        <div className="bg-lime-500/10 border border-lime-500/30 text-lime-500 px-2 py-0.5 rounded text-xs font-black">
+                                           {thisPrice >= 408.2 ? '4%' : thisPrice >= 116.63 ? '1%' : '0%'}
+                                        </div>
+                                     </div>
+                                     
+                                     {/* PROGRESS BAR */}
+                                     <div className="h-2.5 bg-[#222] rounded-full relative overflow-visible mt-2">
+                                        {/* Background Rail */}
+                                        <div className="absolute inset-0 bg-[#151515] rounded-full border border-white/5" />
+                                        
+                                        {/* Active Fill */}
+                                        <div 
+                                          className="absolute left-0 top-0 bottom-0 bg-lime-500 transition-all duration-500 ease-out shadow-[0_0_15px_rgba(163,230,53,0.6)] rounded-full z-10"
+                                          style={{ width: `${progressPercent}%` }}
+                                        >
+                                           <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-4 border-lime-500 shadow-[0_0_10px_white] z-30" />
+                                        </div>
+                                        
+                                        {/* Markers */}
+                                        <div className="absolute inset-0 flex items-center px-0 pointer-events-none z-20">
+                                           {/* Mark 1: Free Seed (116.63) */}
+                                           <div 
+                                              className="absolute w-2 h-2 bg-black border border-white/20 rounded-full" 
+                                              style={{ left: `${(116.63 / 408.2) * 100}%`, transform: 'translateX(-50%)' }}
+                                           />
+                                           {/* Mark 2: Discount (408.20) */}
+                                           <div 
+                                              className="absolute w-2 h-2 bg-black border border-white/20 rounded-full" 
+                                              style={{ left: '100%', transform: 'translateX(-50%)' }}
+                                           />
+                                        </div>
+                                     </div>
+                                     
+                                     <div className="flex justify-center mt-3 h-6 relative">
+                                        <div 
+                                          className="text-lime-500 drop-shadow-[0_0_8px_rgba(163,230,53,0.8)] transform -scale-x-100 absolute transition-all duration-500 animate-bounce"
+                                          style={{ 
+                                             left: `${progressPercent}%`,
+                                             transform: 'translateX(-50%) scaleX(-1)'
+                                          }}
+                                        >🍃</div>
+                                     </div>
 
-                           <div className="flex justify-between text-[10px] font-bold text-gray-500 mt-1">
-                              <span>R$ 0.00</span>
-                              <span>R$ 408.20</span>
-                           </div>
-                        </div>
+                                     <div className="flex justify-between text-[10px] font-bold text-gray-500 mt-1">
+                                        <span>R$ 0.00</span>
+                                        <span>R$ 408.20</span>
+                                     </div>
 
-                           <div className="space-y-4 pt-3 border-t border-white/5 mt-1">
-                           <div className="flex items-center justify-between text-xs">
-                              <div className="flex items-center gap-2">
-                                 <div className="w-9 h-9 rounded-full bg-lime-500/10 flex items-center justify-center text-lime-500 border border-lime-500/20">🍃</div>
-                                 <div className="flex flex-col">
-                                    <span className="text-gray-300 font-bold">Gaste <span className="text-lime-400">R$ 116.63</span></span>
-                                 </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                 <span className="text-gray-600 font-black">→</span>
-                                 <div className="flex flex-col items-end">
-                                    <span className="text-gray-400 font-bold">Receba</span>
-                                    <span className="text-lime-400 font-black text-sm">1 semente grátis</span>
-                                 </div>
-                              </div>
-                           </div>
+                                     <div className="space-y-4 pt-3 border-t border-white/5 mt-1">
+                                        <div className={`flex items-center justify-between text-xs transition-opacity duration-300 ${thisPrice >= 116.63 ? 'opacity-100' : 'opacity-40'}`}>
+                                           <div className="flex items-center gap-2">
+                                              <div className={`w-9 h-9 rounded-full flex items-center justify-center border transition-colors ${thisPrice >= 116.63 ? 'bg-lime-500/20 text-lime-500 border-lime-500/40' : 'bg-white/5 text-white/20 border-white/10'}`}>🍃</div>
+                                              <div className="flex flex-col">
+                                                 <span className="text-gray-300 font-bold">Gaste <span className={thisPrice >= 116.63 ? 'text-lime-400' : 'text-gray-500'}>R$ 116.63</span></span>
+                                              </div>
+                                           </div>
+                                           <div className="flex items-center gap-2">
+                                              <span className="text-gray-600 font-black">→</span>
+                                              <div className="flex flex-col items-end">
+                                                 <span className="text-gray-400 font-bold">Receba</span>
+                                                 <span className={`font-black text-sm ${thisPrice >= 116.63 ? 'text-lime-400' : 'text-gray-600'}`}>{getBonusSeeds(variant.qty)} sementes grátis</span>
+                                              </div>
+                                           </div>
+                                        </div>
 
-                           <div className="flex items-center justify-between text-xs">
-                              <div className="flex items-center gap-2">
-                                 <div className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 italic font-black">%</div>
-                                 <div className="flex flex-col">
-                                    <span className="text-gray-300 font-bold">Gaste <span className="text-white">R$ 408.20</span></span>
-                                 </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                 <span className="text-gray-600 font-black">→</span>
-                                 <div className="flex flex-col items-end">
-                                    <span className="text-gray-400 font-bold">Receba</span>
-                                    <span className="text-white font-black text-sm"><span className="text-lime-400">4%</span> de desconto</span>
-                                 </div>
-                              </div>
-                           </div>
-                        </div>
+                                        <div className={`flex items-center justify-between text-xs transition-opacity duration-300 ${thisPrice >= 408.20 ? 'opacity-100' : 'opacity-40'}`}>
+                                           <div className="flex items-center gap-2">
+                                              <div className={`w-9 h-9 rounded-full flex items-center justify-center border transition-colors italic font-black ${thisPrice >= 408.20 ? 'bg-lime-500/20 text-lime-500 border-lime-500/40' : 'bg-white/5 text-white/20 border-white/10'}`}>%</div>
+                                              <div className="flex flex-col">
+                                                 <span className="text-gray-300 font-bold">Gaste <span className={thisPrice >= 408.20 ? 'text-lime-400' : 'text-gray-500'}>R$ 408.20</span></span>
+                                              </div>
+                                           </div>
+                                           <div className="flex items-center gap-2">
+                                              <span className="text-gray-600 font-black">→</span>
+                                              <div className="flex flex-col items-end">
+                                                 <span className="text-gray-400 font-bold">Receba</span>
+                                                 <span className={`font-black text-sm ${thisPrice >= 408.20 ? 'text-lime-400' : 'text-gray-600'}`}><span className="text-lime-400">4%</span> de desconto</span>
+                                              </div>
+                                           </div>
+                                        </div>
+                                     </div>
+                                  </>
+                               );
+                            })()}
+                         </div>
 
                         <div className="flex flex-wrap gap-2 mt-2">
                            <span className="bg-lime-500/10 border border-lime-500/30 text-lime-500 px-3 py-1 rounded-lg text-[10px] font-bold">1 semente/pedido</span>
-                           <span className="bg-lime-500/10 border border-lime-500/30 text-lime-500 px-3 py-1 rounded-lg text-[10px] font-bold">1 semente bônus</span>
+                           <span className="bg-lime-500/10 border border-lime-500/30 text-lime-500 px-3 py-1 rounded-lg text-[10px] font-bold">{getBonusSeeds(variant.qty)} semente bônus</span>
                            <span className="bg-lime-500/10 border border-lime-500/30 text-lime-500 px-3 py-1 rounded-lg text-[10px] font-bold">
                               {(() => {
                                  const total = parseFloat(seed.prices[variant.qty].replace('.', '').replace(',', '.'));
@@ -3155,22 +3400,88 @@ export default function App() {
                        Adicionar ao carrinho
                      </button>
 
-                     <div className="bg-white/5 rounded-full py-2.5 px-4 flex items-center gap-3 mb-6 border border-white/5">
-                        <span className="text-gray-400 text-[10px] font-black uppercase tracking-wider flex items-center gap-2">
-                           <div className="w-1.5 h-1.5 rounded-full bg-lime-500 animate-pulse" />
-                           Envio: Em até 24 horas úteis
-                        </span>
-                     </div>
-
-                     <div className="bg-white/5 border border-white/5 rounded-xl p-4 flex items-center justify-between mb-6 group cursor-pointer hover:bg-white/10 transition-all">
-                        <div className="flex items-center gap-3">
-                           <div className="w-10 h-10 rounded-full bg-lime-500/10 flex items-center justify-center text-2xl">🤝</div>
-                           <div className="flex flex-col">
-                              <span className="text-gray-200 text-xs font-black leading-tight mb-0.5">As sementes não germinaram?</span>
-                              <span className="text-gray-500 text-[10px] font-bold">Nós enviamos outras para você! <span className="text-lime-500 underline">Política de Retorno</span></span>
+                     {(() => {
+                        const currentCartTotal = cartItems.reduce((acc, item) => acc + (item.priceNum || 0), 0);
+                        const itemPrice = parseFloat(seed.prices[variant.qty].replace(/\./g, '').replace(',', '.'));
+                        const potentialTotal = currentCartTotal + itemPrice;
+                        const hasFreeShipping = potentialTotal >= 680.00;
+                        const alreadyExploited = currentCartTotal >= 680.00;
+                        const missingForFree = 680.00 - potentialTotal;
+                        
+                        return (
+                           <div className="flex flex-col gap-2 mb-6">
+                              {hasFreeShipping ? (
+                                 <div className="bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full py-2.5 px-4 flex items-center justify-center gap-3">
+                                    <span className="text-[10px] font-black uppercase tracking-wider flex items-center gap-2">
+                                       <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                                       {alreadyExploited ? 'Frete Grátis Já Aplicado' : 'Ganhe Frete Grátis com este pack'}
+                                    </span>
+                                 </div>
+                              ) : (
+                                 <div className="bg-white/5 border border-white/10 text-white/40 rounded-full py-2.5 px-4 flex items-center justify-center gap-3">
+                                    <span className="text-[10px] font-black uppercase tracking-wider flex items-center gap-2">
+                                       <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                                       Faltam R$ {missingForFree.toFixed(2).replace('.', ',')} para Frete Grátis
+                                    </span>
+                                 </div>
+                              )}
+                              <div className="bg-white/5 rounded-full py-2.5 px-4 flex items-center justify-center gap-3 border border-white/5">
+                                 <span className="text-gray-400 text-[10px] font-black uppercase tracking-wider flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-lime-500 animate-pulse" />
+                                    Envio: Em até 24 horas úteis
+                                 </span>
+                              </div>
                            </div>
+                        );
+                     })()}
+
+                     <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-3 mb-6 shadow-inner">
+                        <div className="flex items-center gap-3">
+                           <div className="w-8 h-8 rounded-full bg-lime-500/10 flex items-center justify-center text-lime-500">
+                              <Globe size={16} />
+                           </div>
+                           <span className="text-white text-xs font-black uppercase tracking-wider">Calcular Frete Estimado</span>
                         </div>
-                        <ChevronRight size={16} className="text-gray-600 group-hover:text-white" />
+                        
+                        <div className="flex gap-2">
+                           <input 
+                              type="text" 
+                              placeholder="Digite seu CEP"
+                              value={shippingCep}
+                              onChange={(e) => {
+                                 let val = e.target.value.replace(/\D/g, '');
+                                 if (val.length > 8) val = val.slice(0, 8);
+                                 if (val.length > 5) {
+                                    val = val.slice(0, 5) + '-' + val.slice(5);
+                                 }
+                                 setShippingCep(val);
+                                 if (val.length === 9) handleCalculateShipping(val);
+                              }}
+                              className="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-white text-xs w-full focus:outline-none focus:border-lime-500/50 transition-colors font-mono"
+                           />
+                           <button 
+                              onClick={() => handleCalculateShipping(shippingCep)}
+                              className="bg-lime-500 hover:bg-lime-400 text-black font-black uppercase text-[10px] px-4 py-2 rounded-lg transition-all active:scale-95"
+                           >
+                              Ok
+                           </button>
+                        </div>
+
+                        {calculatedShipping !== null && (
+                           <div className="flex items-center justify-between pt-2 border-t border-white/5 mt-1">
+                              <span className="text-gray-500 text-[10px] font-bold uppercase">Valor do Frete:</span>
+                              <span className="text-lime-400 font-black text-sm">
+                                 {(() => {
+                                    const currentCartTotal = cartItems.reduce((acc, item) => acc + (item.priceNum || 0), 0);
+                                    const itemPrice = parseFloat(seed.prices[variant.qty].replace(/\./g, '').replace(',', '.'));
+                                    const potentialTotal = currentCartTotal + itemPrice;
+                                    if (potentialTotal >= 680) return "FRETE GRÁTIS";
+                                    return `R$ ${calculatedShipping.toFixed(2).replace('.', ',')}`;
+                                 })()}
+                              </span>
+                           </div>
+                        )}
+                        <span className="text-[9px] text-gray-500 font-bold uppercase">* Frete grátis para compras acima de R$ 680,00</span>
                      </div>
                      
                      <div className="flex flex-col gap-3 py-4 border-t border-white/5">
@@ -3639,27 +3950,27 @@ export default function App() {
                                         const title = target.textContent || '';
                                         if (title === 'Termos e Condições') {
                                           setCurrentView('terms');
-                                          window.scrollTo(0, 0);
+                                          scrollToContent();
                                           return;
                                         }
                                         if (title === 'Isenção de Responsabilidade Limitada') {
                                           setCurrentView('disclaimer');
-                                          window.scrollTo(0, 0);
+                                          scrollToContent();
                                           return;
                                         }
                                         if (title === 'Política de Privacidade') {
                                           setCurrentView('privacy');
-                                          window.scrollTo(0, 0);
+                                          scrollToContent();
                                           return;
                                         }
                                         if (title === 'Política de Cookies') {
                                           setCurrentView('cookies');
-                                          window.scrollTo(0, 0);
+                                          scrollToContent();
                                           return;
                                         }
                                         if (title === 'Aviso Legal') {
                                           setCurrentView('legal');
-                                          window.scrollTo(0, 0);
+                                          scrollToContent();
                                           return;
                                         }
                                         setPopup({
@@ -3731,7 +4042,10 @@ export default function App() {
         isOpen={isCartOpen} 
         onClose={() => setIsCartOpen(false)} 
         cartItems={cartItems} 
-        onCheckout={() => setCurrentView('checkout')}
+        onCheckout={() => { 
+          setCurrentView('checkout');
+          setSelectedSeedId(null);
+        }}
       />
       <FavoritesModal isOpen={isFavoritesOpen} onClose={() => setIsFavoritesOpen(false)} favorites={favorites} />
       <OrdersModal isOpen={isOrdersOpen} onClose={() => setIsOrdersOpen(false)} orders={orders} />

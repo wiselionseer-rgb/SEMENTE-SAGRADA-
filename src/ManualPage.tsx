@@ -3,7 +3,17 @@ import { SEEDS, QUANTITIES, Quantity } from './data';
 
 export default function ManualPage({ onBack, onSelectSeed }: { onBack: () => void, onSelectSeed?: (id: number) => void }) {
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const el = document.getElementById('app-content');
+    if (el) {
+      const offset = 120;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = el.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    } else {
+      window.scrollTo(0, 0);
+    }
   }, []);
 
   const [activeTab, setActiveTab] = useState('fem_reg');

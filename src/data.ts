@@ -56,6 +56,30 @@ export type Seed = {
   prices: Record<Quantity, string>;
 };
 
+export const getQtyLabel = (q: Quantity) => {
+  const map: Record<string, string> = {
+    'X2': '2+1',
+    'X4': '4+2',
+    'X7': '7+3',
+    'X12': '12+4',
+    'X50': '50',
+    'X100': '100'
+  };
+  return map[q] || q;
+};
+
+export const getBonusSeeds = (q: Quantity): number => {
+  const map: Record<string, number> = {
+    'X2': 1,
+    'X4': 2,
+    'X7': 3,
+    'X12': 4,
+    'X50': 0,
+    'X100': 0
+  };
+  return map[q] || 0;
+};
+
 export const QUANTITIES: Quantity[] = ['X2', 'X4', 'X7', 'X12', 'X50', 'X100'];
 
 export const SEEDS: Seed[] = [
@@ -106,7 +130,7 @@ export const SEEDS: Seed[] = [
     category: 'best', 
     rating: '5.0',
     reviews: 124,
-    prices: { 'X2': '85,00', 'X4': '130,00', 'X7': '205,00', 'X12': '290,00', 'X50': '900,00', 'X100': '1375,00' },
+    prices: { 'X2': '219,90', 'X4': '339,90', 'X7': '529,90', 'X12': '749,90', 'X50': '900,00', 'X100': '1375,00' },
     isHighThc: true,
     isIndoor: true,
     isOutdoor: true
@@ -158,7 +182,7 @@ export const SEEDS: Seed[] = [
     category: 'best', 
     rating: '4.9',
     reviews: 89,
-    prices: { 'X2': '70,00', 'X4': '110,00', 'X7': '170,00', 'X12': '240,00', 'X50': '750,00', 'X100': '1250,00' },
+    prices: { 'X2': '179,90', 'X4': '279,90', 'X7': '439,90', 'X12': '619,90', 'X50': '750,00', 'X100': '1250,00' },
     isBeginnerFriendly: true,
     isIndoor: true
   },
@@ -209,7 +233,7 @@ export const SEEDS: Seed[] = [
     category: 'best', 
     rating: '5.0',
     reviews: 156,
-    prices: { 'X2': '70,00', 'X4': '110,00', 'X7': '170,00', 'X12': '240,00', 'X50': '750,00', 'X100': '1250,00' },
+    prices: { 'X2': '179,90', 'X4': '279,90', 'X7': '439,90', 'X12': '619,90', 'X50': '750,00', 'X100': '1250,00' },
     isHighThc: true,
     isHighYield: true,
     isOutdoor: true
@@ -261,7 +285,7 @@ export const SEEDS: Seed[] = [
     category: 'best', 
     rating: '4.9',
     reviews: 72,
-    prices: { 'X2': '70,00', 'X4': '110,00', 'X7': '170,00', 'X12': '240,00', 'X50': '750,00', 'X100': '1250,00' },
+    prices: { 'X2': '179,90', 'X4': '279,90', 'X7': '439,90', 'X12': '619,90', 'X50': '750,00', 'X100': '1250,00' },
     isFastFlowering: true,
     isIndoor: true
   },
@@ -312,7 +336,7 @@ export const SEEDS: Seed[] = [
     category: 'best', 
     rating: '5.0',
     reviews: 213,
-    prices: { 'X2': '70,00', 'X4': '110,00', 'X7': '170,00', 'X12': '240,00', 'X50': '750,00', 'X100': '1250,00' },
+    prices: { 'X2': '179,90', 'X4': '279,90', 'X7': '439,90', 'X12': '619,90', 'X50': '750,00', 'X100': '1250,00' },
     isHighThc: true,
     isIndoor: true
   },
@@ -363,7 +387,7 @@ export const SEEDS: Seed[] = [
     category: 'best', 
     rating: '4.9',
     reviews: 104,
-    prices: { 'X2': '70,00', 'X4': '110,00', 'X7': '170,00', 'X12': '240,00', 'X50': '750,00', 'X100': '1250,00' },
+    prices: { 'X2': '179,90', 'X4': '279,90', 'X7': '439,90', 'X12': '619,90', 'X50': '750,00', 'X100': '1250,00' },
     isHighThc: true,
     isFastFlowering: true,
     isIndoor: true,

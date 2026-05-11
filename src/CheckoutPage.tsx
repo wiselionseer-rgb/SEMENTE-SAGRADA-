@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Trash2, ChevronRight, Globe, CheckCircle2, Ticket, Heart, Plus, Minus } from 'lucide-react';
-import { SEEDS, Seed } from './data';
+import { ShoppingCart, Trash2, ChevronRight, Globe, CheckCircle2, Ticket, Heart, Plus, Minus, Gift } from 'lucide-react';
+import { SEEDS, Seed, getQtyLabel, getBonusSeeds } from './data';
 import { db, auth, handleFirestoreError, OperationType } from './firebase';
 import { collection, doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { playSfx } from './audio';
@@ -8,34 +8,86 @@ import { playSfx } from './audio';
 interface CheckoutPageProps {
   cartItems: any[];
   onBack: () => void;
-  onProceed: (data: { totalAmount: number; selectedBonuses: number[] }) => void;
+  onProceed: (data: { totalAmount: number; selectedBonuses: number[]; shippingCost: number | null; zip: string }) => void;
 }
 
 export default function CheckoutPage({ cartItems, onBack, onProceed }: CheckoutPageProps) {
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const el = document.getElementById('app-content');
+    if (el) {
+      const offset = 120;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = el.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    } else {
+      window.scrollTo(0, 0);
+    }
   }, []);
 
   const [coupon, setCoupon] = useState('');
-  const [discount, setDiscount] = useState(0);
   const totalItemsRef = cartItems.reduce((acc, item) => acc + (item.priceNum || 0), 0);
   
-  // Bonus seeds logic: 1 per order + 1 per R$116 spent
-  const bonusSeedsCount = 1 + Math.floor(totalItemsRef / 116.63);
+  // Dynamic promotional logic
+  const discountAmount = totalItemsRef >= 408.20 ? 4 : 0;
+  const isFreeShipping = totalItemsRef >= 680.00;
+  
+  // Calculate total bonus seeds from packs
+  const totalBonusSeedsFromPacks = cartItems.reduce((acc, item) => {
+    const bonusPerPack = getBonusSeeds(item.quantity);
+    return acc + (bonusPerPack * (item.packCount || 1));
+  }, 0);
+
+  // Selectable bonus seeds logic: follows the pack bonuses
+  const extraBonusCount = totalBonusSeedsFromPacks;
   const nextTierProgress = (totalItemsRef % 116.63) / 116.63 * 100;
   const missingForNext = 116.63 - (totalItemsRef % 116.63);
 
   const [selectedBonuses, setSelectedBonuses] = useState<number[]>([]);
+  const [shippingCepCart, setShippingCepCart] = useState('');
+  const [calculatedShipping, setCalculatedShipping] = useState<number | null>(null);
 
-  // Choose 8 seeds for the bonus list
-  const bonusOptions = SEEDS.slice(0, 8);
+  const handleCalculateShipping = (cep: string) => {
+    const cleanCep = cep.replace(/\D/g, '');
+    if (cleanCep.length < 5) {
+      setCalculatedShipping(null);
+      return;
+    }
+    const prefix = parseInt(cleanCep.substring(0, 2));
+    const fullPrefix = parseInt(cleanCep.substring(0, 3));
+    
+    if ((prefix >= 66 && prefix <= 69) || prefix === 77 || (fullPrefix >= 768 && fullPrefix <= 769)) {
+       setCalculatedShipping(99.90);
+    } else if (prefix >= 40 && prefix <= 65) {
+       setCalculatedShipping(79.90);
+    } else if ((prefix >= 70 && prefix <= 76) || (prefix >= 78 && prefix <= 79)) {
+       setCalculatedShipping(59.90);
+    } else if (prefix >= 1 && prefix <= 39) {
+       setCalculatedShipping(39.90);
+    } else if (prefix >= 80 && prefix <= 99) {
+       setCalculatedShipping(29.90);
+    } else {
+       setCalculatedShipping(null);
+    }
+  };
+
+  // Choose bonus seeds that match item species in cart
+  const cartSeedIds = new Set(cartItems.map(item => String(item.seedId)));
+  const bonusOptions = SEEDS.filter(seed => cartSeedIds.has(String(seed.id)));
+
+  // Ensure selected bonuses are still valid species if cart changed
+  useEffect(() => {
+    const validIds = new Set(bonusOptions.map(b => b.id));
+    setSelectedBonuses(prev => prev.filter(id => validIds.has(id)));
+  }, [cartItems]);
 
   const toggleBonus = (id: number) => {
     playSfx('click');
     if (selectedBonuses.includes(id)) {
       setSelectedBonuses(prev => prev.filter(b => b !== id));
     } else {
-      if (selectedBonuses.length < bonusSeedsCount) {
+      if (selectedBonuses.length < extraBonusCount) {
         setSelectedBonuses(prev => [...prev, id]);
       }
     }
@@ -77,10 +129,12 @@ export default function CheckoutPage({ cartItems, onBack, onProceed }: CheckoutP
   const handleProceedAction = () => {
     if (cartItems.length === 0) return;
     playSfx('click');
-    const finalPrice = totalItemsRef * (1 - discount/100);
+    const itemsPrice = totalItemsRef * (1 - discountAmount/100);
     onProceed({
-      totalAmount: finalPrice,
-      selectedBonuses: selectedBonuses
+      totalAmount: itemsPrice,
+      selectedBonuses: selectedBonuses,
+      shippingCost: isFreeShipping ? 0 : calculatedShipping,
+      zip: shippingCepCart
     });
   };
 
@@ -100,8 +154,8 @@ export default function CheckoutPage({ cartItems, onBack, onProceed }: CheckoutP
               <h1 className="text-xl md:text-2xl font-black pixel text-lime-400 tracking-tighter">CARRINHO ({cartItems.length})</h1>
            </div>
            <div className="hidden md:flex items-center gap-3">
-              <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] pt-1">SUBTOTAL:</span>
-              <span className="text-2xl vt text-lime-500">R$ {totalItemsRef.toFixed(2).replace('.', ',')}</span>
+              <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] pt-1">VALOR TOTAL:</span>
+              <span className="text-2xl vt text-lime-500">R$ {(totalItemsRef * (1 - discountAmount/100) + (isFreeShipping ? 0 : (calculatedShipping || 0))).toFixed(2).replace('.', ',')}</span>
            </div>
         </div>
       </div>
@@ -148,7 +202,7 @@ export default function CheckoutPage({ cartItems, onBack, onProceed }: CheckoutP
                         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                            <div className="max-w-md">
                               <h3 className="font-black text-xl md:text-2xl text-white tracking-tight pixel leading-none group-hover:text-lime-400 transition-colors mb-2 uppercase">{seed.name}</h3>
-                              <p className="text-[10px] text-white/40 font-bold uppercase tracking-[0.2em]">PACK: {item.quantity.replace('X','')} UNIDADES • GENÉTICA PREMIUM</p>
+                              <p className="text-[10px] text-white/40 font-bold uppercase tracking-[0.2em]">PACK: {getQtyLabel(item.quantity).toUpperCase()} • GENÉTICA PREMIUM</p>
                            </div>
                            <div className="flex flex-col items-end">
                               <span className="text-3xl vt text-white tracking-tight leading-none">R$ {itemTotal.toFixed(2).replace('.', ',')}</span>
@@ -192,9 +246,9 @@ export default function CheckoutPage({ cartItems, onBack, onProceed }: CheckoutP
              <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
                 <div>
                    <h2 className="text-2xl font-black pixel text-white leading-none uppercase mb-2">Protocolo de Bônus</h2>
-                   <p className="text-xs font-black text-white/40 uppercase tracking-[0.2em]">Selecione {bonusSeedsCount - selectedBonuses.length} unidades grátis</p>
+                   <p className="text-xs font-black text-white/40 uppercase tracking-[0.2em]">Selecione {extraBonusCount - selectedBonuses.length} unidades extras grátis</p>
                 </div>
-                {selectedBonuses.length === bonusSeedsCount && (
+                {selectedBonuses.length === extraBonusCount && (
                   <div className="flex items-center gap-3 text-lime-500 bg-lime-500/10 px-5 py-2.5 rounded-2xl border border-lime-500/20 shadow-[0_0_20px_rgba(132,204,22,0.1)]">
                      <CheckCircle2 size={18} />
                      <span className="text-[10px] font-black pixel uppercase tracking-tighter">SINCRONIA COMPLETA</span>
@@ -205,14 +259,14 @@ export default function CheckoutPage({ cartItems, onBack, onProceed }: CheckoutP
              <div className="bg-lime-500/5 border border-lime-500/10 rounded-2xl p-5 flex items-center gap-5 mb-10">
                 <div className="w-12 h-12 rounded-xl bg-lime-500/20 flex items-center justify-center text-2xl shadow-inner border border-lime-500/20">🎁</div>
                 <p className="text-[11px] font-bold text-lime-100 uppercase tracking-wide leading-relaxed">
-                   Injeção de hardware grátis: <span className="text-white">+1 unidade</span> por pedido base + <span className="text-white">+1 unidade</span> a cada <span className="text-lime-400">R$ 116,63</span> liquidados.
+                   Bônus de Sementes: Você ganha sementes grátis conforme o <span className="text-white">pacote escolhido</span> (ex: 2+1, 12+4). Selecione abaixo.
                 </p>
              </div>
 
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                 {bonusOptions.map(option => {
                   const isSelected = selectedBonuses.includes(option.id);
-                  const canSelectMore = selectedBonuses.length < bonusSeedsCount;
+                  const canSelectMore = selectedBonuses.length < extraBonusCount;
 
                   return (
                     <div 
@@ -332,11 +386,54 @@ export default function CheckoutPage({ cartItems, onBack, onProceed }: CheckoutP
                    <span className="text-[11px] font-black text-white/40 uppercase tracking-widest pixel">Preço Base:</span>
                    <span className="text-xl vt text-white">R$ {totalItemsRef.toFixed(2).replace('.', ',')}</span>
                 </div>
-                {discount > 0 && (
+                {extraBonusCount > 0 && (
+                   <div className="flex justify-between items-end border-b border-white/5 pb-4">
+                      <span className="text-[11px] font-black text-lime-500 uppercase tracking-widest pixel">Sementes Bônus ({selectedBonuses.length}/{extraBonusCount}):</span>
+                      <span className="text-xl vt text-lime-500">+{selectedBonuses.length} UN</span>
+                   </div>
+                )}
+                {discountAmount > 0 && (
                   <div className="flex justify-between items-end border-b border-white/5 pb-4">
-                     <span className="text-[11px] font-black text-lime-500 uppercase tracking-widest pixel">Desconto Operacional:</span>
-                     <span className="text-xl vt text-lime-500">-R$ {(totalItemsRef * discount / 100).toFixed(2).replace('.', ',')}</span>
+                     <span className="text-[11px] font-black text-lime-500 uppercase tracking-widest pixel">Desconto Operacional ({discountAmount}%):</span>
+                     <span className="text-xl vt text-lime-500">-R$ {(totalItemsRef * discountAmount / 100).toFixed(2).replace('.', ',')}</span>
                   </div>
+                )}
+                {isFreeShipping ? (
+                  <div className="flex justify-between items-end border-b border-white/5 pb-4">
+                     <span className="text-[11px] font-black text-blue-500 uppercase tracking-widest pixel">Frete Express:</span>
+                     <span className="text-xl vt text-blue-500">GRÁTIS</span>
+                  </div>
+                ) : (
+                   <div className="flex flex-col gap-3 border-b border-white/5 pb-4">
+                      <div className="flex justify-between items-center">
+                         <span className="text-[11px] font-black text-white/40 uppercase tracking-widest pixel">Frete Estimado:</span>
+                         <span className="text-xl vt text-white/60">
+                            {calculatedShipping !== null ? `+ R$ ${calculatedShipping.toFixed(2).replace('.', ',')}` : 'PENDENTE'}
+                         </span>
+                      </div>
+                      <div className="flex gap-2">
+                         <input 
+                            type="text" 
+                            placeholder="Seu CEP"
+                            value={shippingCepCart}
+                            onChange={(e) => {
+                               let val = e.target.value.replace(/\D/g, '');
+                               if (val.length > 8) val = val.slice(0, 8);
+                               if (val.length > 5) val = val.slice(0, 5) + '-' + val.slice(5);
+                               setShippingCepCart(val);
+                               if (val.length === 9) handleCalculateShipping(val);
+                            }}
+                            className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-lime-400 w-full focus:outline-none focus:border-lime-500/50"
+                         />
+                         <button 
+                            type="button"
+                            onClick={() => handleCalculateShipping(shippingCepCart)}
+                            className="bg-white/10 hover:bg-white/20 text-white font-black text-[9px] px-3 py-1.5 rounded-lg transition-all"
+                         >
+                            OK
+                         </button>
+                      </div>
+                   </div>
                 )}
                 <div className="flex justify-between items-end border-b border-white/5 pb-4">
                    <span className="text-[11px] font-black text-yellow-500 uppercase tracking-widest pixel">Economia Acumulada:</span>
@@ -346,11 +443,11 @@ export default function CheckoutPage({ cartItems, onBack, onProceed }: CheckoutP
 
              <div className="mb-10">
                 <div className="flex justify-between items-end">
-                   <span className="text-[10px] font-black pixel text-white uppercase tracking-widest mb-1 underline underline-offset-8 decoration-lime-500/50">SUBTOTAL LÍQUIDO:</span>
+                   <span className="text-[10px] font-black pixel text-white uppercase tracking-widest mb-1 underline underline-offset-8 decoration-lime-500/50">VALOR TOTAL:</span>
                    <div className="text-right">
-                      <span className="text-[9px] font-black text-white/20 block mb-1 pixel tracking-[0.3em]">CURRENCY: BRL</span>
+                      <span className="text-[9px] font-black text-white/20 block mb-1 pixel tracking-[0.3em]">BRL FINAL</span>
                       <span className="text-[3.5rem] vt text-lime-500 leading-none tracking-tighter drop-shadow-[0_0_15px_rgba(132,204,22,0.3)]">
-                        R$ {(totalItemsRef * (1 - discount/100)).toFixed(2).replace('.', ',')}
+                        R$ {(totalItemsRef * (1 - discountAmount/100) + (isFreeShipping ? 0 : (calculatedShipping || 0))).toFixed(2).replace('.', ',')}
                       </span>
                    </div>
                 </div>

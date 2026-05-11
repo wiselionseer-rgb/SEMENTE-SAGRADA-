@@ -9,18 +9,31 @@ interface PaymentPageProps {
   cartItems: any[];
   selectedBonuses: number[];
   totalAmount: number;
+  initialShippingCost?: number | null;
+  initialZip?: string;
   onBack: () => void;
   onSuccess: () => void;
 }
 
-export default function PaymentPage({ cartItems, selectedBonuses, totalAmount, onBack, onSuccess }: PaymentPageProps) {
+export default function PaymentPage({ cartItems, selectedBonuses, totalAmount, initialShippingCost, initialZip, onBack, onSuccess }: PaymentPageProps) {
   const [loading, setLoading] = useState(false);
   
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const el = document.getElementById('app-content');
+    if (el) {
+      const offset = 120;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = el.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    } else {
+      window.scrollTo(0, 0);
+    }
   }, []);
 
-  const [paymentMethod, setPaymentMethod] = useState<'PIX' | 'CRYPTO' | 'BOLETO'>('PIX');
+  const [paymentMethod, setPaymentMethod] = useState<'PIX'>('PIX');
+  const [shippingCost, setShippingCost] = useState<number | null>(initialShippingCost !== undefined ? initialShippingCost : null);
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -30,22 +43,68 @@ export default function PaymentPage({ cartItems, selectedBonuses, totalAmount, o
     phone: '',
     address: '',
     city: '',
-    zip: '',
+    zip: initialZip || '',
     country: 'Brasil',
     notes: ''
   });
 
+  const calculateShipping = (zip: string) => {
+    const totalBeforeShipping = totalAmount;
+    if (totalBeforeShipping >= 680) {
+      setShippingCost(0);
+      return;
+    }
+
+    const cleanCep = zip.replace(/\D/g, '');
+    if (cleanCep.length < 5) {
+      setShippingCost(null);
+      return;
+    }
+    const prefix = parseInt(cleanCep.substring(0, 2));
+    const fullPrefix = parseInt(cleanCep.substring(0, 3));
+    
+    if ((prefix >= 66 && prefix <= 69) || prefix === 77 || (fullPrefix >= 768 && fullPrefix <= 769)) {
+       setShippingCost(99.90);
+    } else if (prefix >= 40 && prefix <= 65) {
+       setShippingCost(79.90);
+    } else if ((prefix >= 70 && prefix <= 76) || (prefix >= 78 && prefix <= 79)) {
+       setShippingCost(59.90);
+    } else if (prefix >= 1 && prefix <= 39) {
+       setShippingCost(39.90);
+    } else if (prefix >= 80 && prefix <= 99) {
+       setShippingCost(29.90);
+    } else {
+       setShippingCost(null);
+    }
+  };
+
+  useEffect(() => {
+    calculateShipping(formData.zip);
+  }, [formData.zip, totalAmount]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    let finalValue = value;
+    if (name === 'zip') {
+      finalValue = value.replace(/\D/g, '');
+      if (finalValue.length > 8) finalValue = finalValue.slice(0, 8);
+      if (finalValue.length > 5) {
+        finalValue = finalValue.slice(0, 5) + '-' + finalValue.slice(5);
+      }
+    }
+    setFormData(prev => ({ ...prev, [name]: finalValue }));
   };
+
+  const baseAmount = cartItems.reduce((acc, item) => acc + (item.priceNum || 0), 0);
+  const discountAmt = Math.max(0, baseAmount - totalAmount);
+  const finalTotalAmount = totalAmount + (shippingCost || 0);
 
   const handleFinalize = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth.currentUser) return;
     
     // Simple validation
-    if (!formData.firstName || !formData.cpf || !formData.email || !formData.address || !formData.phone) {
+    if (!formData.firstName || !formData.cpf || !formData.email || !formData.address || !formData.phone || !formData.zip) {
       alert('Por favor, preencha todos os campos obrigatórios.');
       return;
     }
@@ -58,7 +117,9 @@ export default function PaymentPage({ cartItems, selectedBonuses, totalAmount, o
       const newOrderRef = doc(collection(db, `users/${auth.currentUser.uid}/orders`));
       
       batch.set(newOrderRef, {
-        totalAmount,
+        totalAmount: finalTotalAmount,
+        itemsPrice: totalAmount,
+        shippingCost: shippingCost || 0,
         items: cartItems,
         bonusSeeds: selectedBonuses,
         shippingInfo: formData,
@@ -256,45 +317,23 @@ export default function PaymentPage({ cartItems, selectedBonuses, totalAmount, o
                 <h3 className="text-xl font-black pixel text-white uppercase tracking-tighter">Canal de Liquidação</h3>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <button 
                   type="button"
-                  onClick={() => { playSfx('click'); setPaymentMethod('PIX'); }}
-                  className={`flex flex-col items-center gap-4 p-6 rounded-3xl border transition-all ${paymentMethod === 'PIX' ? 'bg-lime-500/10 border-lime-500 shadow-[0_0_20px_rgba(132,204,22,0.1)]' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}
+                  onClick={() => { playSfx('click'); }}
+                  className="flex flex-col items-center gap-4 p-8 rounded-3xl border bg-lime-500/10 border-lime-500 shadow-[0_0_20px_rgba(132,204,22,0.1)] cursor-default"
                 >
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${paymentMethod === 'PIX' ? 'bg-lime-500 text-black' : 'bg-white/10 text-white/40'}`}>
-                    <CheckCircle2 size={24} />
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-lime-500 text-black">
+                    <CheckCircle2 size={32} />
                   </div>
-                  <span className="text-xs font-black pixel uppercase tracking-widest">PIX E-WALLET</span>
-                 </button>
-                 <button 
-                   type="button"
-                   onClick={() => { playSfx('click'); setPaymentMethod('CRYPTO'); }}
-                   className={`flex flex-col items-center gap-4 p-6 rounded-3xl border transition-all ${paymentMethod === 'CRYPTO' ? 'bg-[#ff00ff]/10 border-[#ff00ff] shadow-[0_0_20px_rgba(255,0,255,0.1)]' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}
-                 >
-                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${paymentMethod === 'CRYPTO' ? 'bg-[#ff00ff] text-white' : 'bg-white/10 text-white/40'}`}>
-                     <Wallet size={24} />
-                   </div>
-                   <span className="text-xs font-black pixel uppercase tracking-widest">CRIPTO ATIVOS</span>
-                 </button>
-                 <button 
-                   type="button"
-                   onClick={() => { playSfx('click'); setPaymentMethod('BOLETO'); }}
-                   className={`flex flex-col items-center gap-4 p-6 rounded-3xl border transition-all ${paymentMethod === 'BOLETO' ? 'bg-yellow-500/10 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.1)]' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}
-                 >
-                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${paymentMethod === 'BOLETO' ? 'bg-yellow-500 text-black' : 'bg-white/10 text-white/40'}`}>
-                     <CreditCard size={24} />
-                   </div>
-                   <span className="text-xs font-black pixel uppercase tracking-widest">BOLETO BANCÁRIO</span>
+                  <span className="text-sm font-black pixel uppercase tracking-widest">PIX E-WALLET</span>
                  </button>
               </div>
 
-              <div className="mt-8 bg-black/60 p-6 rounded-[2rem] border border-white/5 flex items-start gap-4">
-                 <Info className="text-lime-500 shrink-0 mt-1" size={18} />
+              <div className="mt-8 bg-black/60 p-8 rounded-[2.5rem] border border-white/5 flex items-start gap-5">
+                 <Info className="text-lime-500 shrink-0 mt-1" size={24} />
                  <p className="text-sm text-white/70 leading-relaxed font-bold sans uppercase tracking-wide">
-                   {paymentMethod === 'PIX' && 'O código PIX será gerado após a confirmação. Pagamentos PIX são processados instantaneamente por nossa rede e garantem bônus extras.'}
-                   {paymentMethod === 'CRYPTO' && 'Aceitamos BTC, ETH e USDT. Os detalhes da carteira serão enviados para sua rede de contato segura após a finalização.'}
-                   {paymentMethod === 'BOLETO' && 'O boleto bancário tem um prazo de compensação de até 48 horas úteis através do banco central.'}
+                   O código PIX será gerado após a confirmação. Pagamentos PIX são processados instantaneamente por nossa rede e garantem bônus extras.
                  </p>
               </div>
             </div>
@@ -339,14 +378,34 @@ export default function PaymentPage({ cartItems, selectedBonuses, totalAmount, o
                </div>
 
                <div className="flex flex-col gap-4 border-t border-white/5 pt-8 mb-10">
-                  <div className="flex justify-between items-end">
-                    <span className="text-xs font-black pixel text-white/50 uppercase tracking-widest italic">VALOR TOTAL:</span>
-                    <div className="text-right">
-                       <span className="text-[10px] font-black text-white/30 block mb-2 pixel tracking-[0.3em]">BRL LÍQUIDO</span>
-                       <span className="text-5xl vt text-lime-500 leading-none tracking-tighter drop-shadow-[0_0_10px_rgba(132,204,22,0.5)]">
-                         R$ {totalAmount.toFixed(2).replace('.', ',')}
-                       </span>
-                    </div>
+                  <div className="flex justify-between items-center text-xs font-black pixel text-white/40 uppercase tracking-widest">
+                     <span>Preço Base:</span>
+                     <span className="vt text-white/60 text-lg">R$ {baseAmount.toFixed(2).replace('.', ',')}</span>
+                  </div>
+                  {discountAmt > 0 && (
+                     <div className="flex justify-between items-center text-xs font-black pixel text-lime-500 uppercase tracking-widest">
+                        <span>Desconto Operacional:</span>
+                        <span className="vt text-lg">-R$ {discountAmt.toFixed(2).replace('.', ',')}</span>
+                     </div>
+                  )}
+                  <div className="flex justify-between items-center text-xs font-black pixel text-white/40 uppercase tracking-widest">
+                     <span>Subtotal Líquido:</span>
+                     <span className="vt text-white/60 text-lg">R$ {totalAmount.toFixed(2).replace('.', ',')}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs font-black pixel text-white/40 uppercase tracking-widest">
+                     <span>Frete Estimado:</span>
+                     <span className={`vt text-lg ${shippingCost === 0 ? 'text-lime-500' : 'text-white/60'}`}>
+                        {shippingCost === null ? 'PENDENTE' : shippingCost === 0 ? 'GRÁTIS' : `+ R$ ${shippingCost.toFixed(2).replace('.', ',')}`}
+                     </span>
+                  </div>
+                  <div className="flex justify-between items-end mt-2 pt-4 border-t border-white/5">
+                     <span className="text-xs font-black pixel text-white/50 uppercase tracking-widest italic">VALOR TOTAL:</span>
+                     <div className="text-right">
+                        <span className="text-[10px] font-black text-white/30 block mb-2 pixel tracking-[0.3em]">BRL FINAL</span>
+                        <span className="text-5xl vt text-lime-500 leading-none tracking-tighter drop-shadow-[0_0_10px_rgba(132,204,22,0.5)]">
+                          R$ {finalTotalAmount.toFixed(2).replace('.', ',')}
+                        </span>
+                     </div>
                   </div>
                </div>
 

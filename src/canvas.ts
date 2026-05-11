@@ -1,6 +1,74 @@
 import { GameState } from './gameState';
 import { Seed } from './data';
 
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  type: string; // 'water', 'nutri', 'magic'
+  life: number;
+  maxLife: number;
+}
+let particles: Particle[] = [];
+let lastTime = performance.now();
+
+export function emitRain() {
+  for (let i = 0; i < 50; i++) {
+    particles.push({
+      x: Math.random() * 320,
+      y: Math.random() * -200, 
+      vx: (Math.random() - 0.5) * 1,
+      vy: 8 + Math.random() * 5,
+      type: 'water',
+      life: 1,
+      maxLife: 1.5 + Math.random()
+    });
+  }
+}
+
+export function emitFertilizer() {
+   for (let i = 0; i < 50; i++) {
+    particles.push({
+      x: 60 + Math.random() * 200,
+      y: 350 + (Math.random() - 0.5) * 50, 
+      vx: (Math.random() - 0.5) * 3,
+      vy: -(2 + Math.random() * 4), 
+      type: 'nutri',
+      life: 1,
+      maxLife: 1.5 + Math.random() * 1.5
+    });
+  }   
+}
+
+export function emitPrune() {
+  for (let i = 0; i < 15; i++) {
+    particles.push({
+      x: 120 + Math.random() * 80,
+      y: 150 + Math.random() * 100, 
+      vx: (Math.random() - 0.5) * 4,
+      vy: -1 + Math.random() * 2, 
+      type: 'leaf',
+      life: 1,
+      maxLife: 2 + Math.random()
+    });
+  }
+}
+
+export function emitHarvest() {
+  for (let i = 0; i < 100; i++) {
+    particles.push({
+      x: 160,
+      y: 150, 
+      vx: (Math.random() - 0.5) * 15,
+      vy: (Math.random() - 0.5) * 15, 
+      type: 'magic',
+      life: 1,
+      maxLife: 2 + Math.random() * 2
+    });
+  }
+}
+
 export function drawGarden(canvas: HTMLCanvasElement, G: GameState, s: Seed) {
   // Balanced resolution for a crisp "90s PC Game" pixel art feel
   const RES_W = 320;
@@ -184,14 +252,72 @@ export function drawGarden(canvas: HTMLCanvasElement, G: GameState, s: Seed) {
   
   if (stage >= 5) {
     ctx.fillStyle = '#ffff00';
-    ctx.font = '10px "Press Start 2P"'; ctx.textAlign = 'center';
-    ctx.fillText('✨ COLHER! ✨', cx, soilY - baseH - 30);
+    ctx.font = '22px "Press Start 2P", monospace'; ctx.textAlign = 'center';
+    ctx.fillText('✨ COLHER! ✨', cx, soilY - baseH - 50);
   }
   
   ctx.fillStyle = s.color;
-  ctx.font = '8px "Press Start 2P"'; ctx.textAlign = 'center';
-  ctx.fillText(s.name.toUpperCase(), cx, soilY + 15);
-  ctx.font = '6px "Press Start 2P"';
+  ctx.font = '18px "Press Start 2P", monospace'; ctx.textAlign = 'center';
+  ctx.fillText(s.name.toUpperCase(), cx, soilY + 25);
+  ctx.font = '14px "Press Start 2P", monospace';
   ctx.fillStyle = '#aaffaa';
-  ctx.fillText(`${s.stages[stage]} | DIA ${age}`, cx, soilY + 28);
+  ctx.fillText(`${s.stages[stage]} | DIA ${age}`, cx, soilY + 50);
+
+  // Add ambient particles randomly
+  if (Math.random() < 0.1 && !G.harvested) {
+    particles.push({
+      x: Math.random() * RES_W,
+      y: RES_H, 
+      vx: (Math.random() - 0.5) * 1,
+      vy: -(0.5 + Math.random() * 1),
+      type: 'ambient',
+      life: 1,
+      maxLife: 3 + Math.random() * 2
+    });
+  }
+
+  // Draw background effect slightly
+  // Let's draw particles
+  const now = performance.now();
+  const dt = Math.min((now - lastTime) / 1000, 0.1); // clamp dt to 0.1s
+  lastTime = now;
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    let p = particles[i];
+    p.life -= dt;
+    if (p.life <= 0) {
+      particles.splice(i, 1);
+      continue;
+    }
+
+    p.x += p.vx;
+    p.y += p.vy;
+    
+    // Apply gravity
+    if (p.type === 'water') {
+      p.vy += 0.2; // gravity
+      ctx.fillStyle = 'rgba(0, 200, 255, ' + (p.life/p.maxLife) + ')';
+      ctx.fillRect(p.x, p.y, 2, 6);
+    } else if (p.type === 'nutri') {
+      p.vy += 0.05;
+      p.x += Math.sin(p.life * 10) * 0.5; // wobble
+      ctx.fillStyle = 'rgba(255, 150, 0, ' + (p.life/p.maxLife) + ')';
+      ctx.fillRect(p.x, p.y, 3, 3);
+    } else if (p.type === 'leaf') {
+      p.vy += 0.1;
+      p.x += Math.sin(p.life * 5) * 1;
+      ctx.fillStyle = `rgba(0, ${150 + Math.random()*50}, 0, ` + (p.life/p.maxLife) + ')';
+      ctx.fillRect(p.x, p.y, 4, 4);
+    } else if (p.type === 'magic') {
+      p.vy += 0.1;
+      ctx.fillStyle = `hsla(${Math.random()*360}, 100%, 50%, ${p.life/p.maxLife})`;
+      ctx.fillRect(p.x, p.y, 4, 4);
+    } else if (p.type === 'ambient') {
+      p.x += Math.sin(p.life * 3) * 0.5;
+      ctx.fillStyle = `rgba(${s.color.replace('#', '').match(/.{2}/g)?.map(c => parseInt(c, 16)).join(',') || '0,255,0'}, ${(p.life/p.maxLife) * 0.3})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
 }
