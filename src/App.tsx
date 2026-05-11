@@ -129,6 +129,17 @@ export default function App() {
   const [shippingCep, setShippingCep] = useState('');
   const [calculatedShipping, setCalculatedShipping] = useState<number | null>(null);
   const [eliteIdx, setEliteIdx] = useState(5); // Start with Super Saiyan Runtz (index 5)
+  const [isEliteHovered, setIsEliteHovered] = useState(false);
+
+  useEffect(() => {
+    if (isEliteHovered) return;
+    
+    const interval = setInterval(() => {
+      setEliteIdx(prev => (prev + 1) % SEEDS.length);
+    }, 4000); // Mudar a cada 4 segundos
+
+    return () => clearInterval(interval);
+  }, [isEliteHovered]);
 
   const handleCalculateShipping = (cep: string) => {
     const cleanCep = cep.replace(/\D/g, '');
@@ -1160,7 +1171,29 @@ export default function App() {
             </div>
 
             {/* MIDDLE SIDE: FEATURED PRODUCT (DYNAMIC SELECTION) */}
-            <div className="flex-1 flex items-center justify-center order-1 md:order-2 group/elite-featured">
+            <div 
+              className="flex-1 flex items-center justify-center order-1 md:order-2 group/elite-featured"
+              onMouseEnter={() => setIsEliteHovered(true)}
+              onMouseLeave={() => setIsEliteHovered(false)}
+              onTouchStart={(e) => {
+                const touch = e.touches[0];
+                (window as any).touchStartX = touch.clientX;
+              }}
+              onTouchEnd={(e) => {
+                const touchEnd = e.changedTouches[0].clientX;
+                const touchStart = (window as any).touchStartX || 0;
+                const diff = touchStart - touchEnd;
+                
+                if (Math.abs(diff) > 50) { // Sensibilidade do swipe
+                  playSfx('click');
+                  if (diff > 0) {
+                    setEliteIdx(prev => (prev + 1) % SEEDS.length);
+                  } else {
+                    setEliteIdx(prev => (prev - 1 + SEEDS.length) % SEEDS.length);
+                  }
+                }
+              }}
+            >
                <div className="relative flex items-center gap-4">
                   {/* LEFT ARROW */}
                   <button 
