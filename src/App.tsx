@@ -128,6 +128,7 @@ export default function App() {
   const [activeCatalogTab, setActiveCatalogTab] = useState('Buscador');
   const [shippingCep, setShippingCep] = useState('');
   const [calculatedShipping, setCalculatedShipping] = useState<number | null>(null);
+  const [eliteIdx, setEliteIdx] = useState(5); // Start with Super Saiyan Runtz (index 5)
 
   const handleCalculateShipping = (cep: string) => {
     const cleanCep = cep.replace(/\D/g, '');
@@ -1158,22 +1159,53 @@ export default function App() {
               </div>
             </div>
 
-            {/* MIDDLE SIDE: FEATURED PRODUCT (SUPER SAIYAN RUNTZ) */}
-            <div className="flex-1 flex justify-center order-1 md:order-2">
-               <div className="relative group/featured-prod">
-                  <div className="absolute inset-0 bg-lime-500/20 blur-[100px] scale-50 group-hover/featured-prod:scale-75 transition-transform duration-1000"></div>
-                  <motion.div 
-                    initial={{ y: 20, opacity: 0 }}
-                    whileInView={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.8 }}
-                    className="relative z-10"
+            {/* MIDDLE SIDE: FEATURED PRODUCT (DYNAMIC SELECTION) */}
+            <div className="flex-1 flex items-center justify-center order-1 md:order-2 group/elite-featured">
+               <div className="relative flex items-center gap-4">
+                  {/* LEFT ARROW */}
+                  <button 
+                    className="absolute -left-4 md:-left-16 z-30 p-3 rounded-full border-2 border-lime-500/30 bg-black/60 text-lime-400 hover:text-black hover:bg-lime-500 hover:border-lime-500 transition-all opacity-0 group-hover/elite-featured:opacity-100 backdrop-blur-xl shadow-[0_0_20px_rgba(0,255,0,0.2)]"
+                    onClick={() => {
+                      playSfx('click');
+                      setEliteIdx(prev => (prev - 1 + SEEDS.length) % SEEDS.length);
+                    }}
                   >
-                    <img 
-                      src="/gifs/ssr1.jpg" 
-                      alt="Super Saiyan Runtz Bud" 
-                      className="w-[280px] md:w-[350px] aspect-square object-contain rounded-2xl transition-all duration-500 scale-110 group-hover/featured-prod:scale-125" 
-                    />
-                  </motion.div>
+                    <ChevronLeft size={28} />
+                  </button>
+
+                  <div className="relative group/featured-prod">
+                    <div className="absolute inset-0 bg-lime-500/20 blur-[100px] scale-50 group-hover/featured-prod:scale-75 transition-transform duration-1000"></div>
+                    <motion.div 
+                      key={eliteIdx}
+                      initial={{ x: 50, opacity: 0, scale: 0.8 }}
+                      animate={{ x: 0, opacity: 1, scale: 1 }}
+                      transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+                      className="relative z-10 flex flex-col items-center"
+                    >
+                      <img 
+                        src={SEEDS[eliteIdx].image} 
+                        alt={SEEDS[eliteIdx].name}
+                        className="w-[280px] md:w-[350px] aspect-square object-contain rounded-2xl transition-all duration-500 scale-110 group-hover/featured-prod:scale-125" 
+                      />
+                      <div className="absolute -bottom-4 bg-black/80 border border-lime-500/40 px-6 py-2 rounded-xl backdrop-blur-xl z-20 shadow-2xl transform group-hover/featured-prod:-translate-y-2 transition-transform">
+                        <div className="flex flex-col items-center">
+                           <span className="pixel text-[10px] text-lime-400 font-black tracking-[0.2em] mb-1">{SEEDS[eliteIdx].badge} EDITION</span>
+                           <span className="vt text-lg text-white font-black uppercase tracking-widest">{SEEDS[eliteIdx].name}</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+
+                  {/* RIGHT ARROW */}
+                  <button 
+                    className="absolute -right-4 md:-right-16 z-30 p-3 rounded-full border-2 border-lime-500/30 bg-black/60 text-lime-400 hover:text-black hover:bg-lime-500 hover:border-lime-500 transition-all opacity-0 group-hover/elite-featured:opacity-100 backdrop-blur-xl shadow-[0_0_20px_rgba(0,255,0,0.2)]"
+                    onClick={() => {
+                      playSfx('click');
+                      setEliteIdx(prev => (prev + 1) % SEEDS.length);
+                    }}
+                  >
+                    <ChevronRight size={28} />
+                  </button>
                </div>
             </div>
             
