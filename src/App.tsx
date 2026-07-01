@@ -3,10 +3,11 @@ import { SEEDS, Seed, Quantity, QUANTITIES, getQtyLabel, getBonusSeeds } from '.
 import { GameState, INITIAL_STATE } from './gameState';
 import { drawGarden, emitRain, emitFertilizer, emitPrune, emitHarvest } from './canvas';
 import { playSfx, toggleMusic, musicOn, getCurrentTrackName, changeTrack, setOnTrackChangeCallback, setVolume } from './audio';
-import { Search, User, Heart, ShoppingCart, Globe, ListFilter, ChevronLeft, ChevronRight, ChevronUp, MessageCircle, Trash2 } from 'lucide-react';
+import { Search, User, Heart, ShoppingCart, Globe, ListFilter, ChevronLeft, ChevronRight, ChevronUp, MessageCircle, Trash2, Shield } from 'lucide-react';
 import ManualPage from './ManualPage';
 
 import { AuthModal } from './AuthModal';
+import { AdminModal } from './AdminModal';
 import { CartModal, FavoritesModal, OrdersModal } from './StoreModals';
 import CheckoutPage from './CheckoutPage';
 import PaymentPage from './PaymentPage';
@@ -44,6 +45,7 @@ const reviews = [
 export default function App() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -118,7 +120,7 @@ export default function App() {
 
   const [G, setG] = useState<GameState>(INITIAL_STATE);
   const [currentView, setCurrentView] = useState<'home' | 'manual' | 'checkout' | 'payment' | 'about' | 'terms' | 'disclaimer' | 'privacy' | 'cookies' | 'legal'>('home');
-  const [checkoutData, setCheckoutData] = useState<{ totalAmount: number; selectedBonuses: number[]; shippingCost: number | null; zip: string } | null>(null);
+  const [checkoutData, setCheckoutData] = useState<{ totalAmount: number; selectedBonuses: number[]; shippingCost: number | null; zip: string; appliedCoupon: { id: string, code: string } | null } | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [popup, setPopup] = useState<{ title: string; content?: React.ReactNode; body?: React.ReactNode } | null>(null);
   const [floats, setFloats] = useState<{id: number; x: number; y: number; text: string}[]>([]);
@@ -151,15 +153,15 @@ export default function App() {
     const fullPrefix = parseInt(cleanCep.substring(0, 3));
     
     if ((prefix >= 66 && prefix <= 69) || prefix === 77 || (fullPrefix >= 768 && fullPrefix <= 769)) {
-       setCalculatedShipping(99.90);
+       setCalculatedShipping(114.88);
     } else if (prefix >= 40 && prefix <= 65) {
-       setCalculatedShipping(79.90);
+       setCalculatedShipping(91.89);
     } else if ((prefix >= 70 && prefix <= 76) || (prefix >= 78 && prefix <= 79)) {
-       setCalculatedShipping(59.90);
+       setCalculatedShipping(68.88);
     } else if (prefix >= 1 && prefix <= 39) {
-       setCalculatedShipping(39.90);
+       setCalculatedShipping(45.88);
     } else if (prefix >= 80 && prefix <= 99) {
-       setCalculatedShipping(29.90);
+       setCalculatedShipping(34.38);
     } else {
        setCalculatedShipping(null);
     }
@@ -227,7 +229,7 @@ export default function App() {
   const [popupMsg, setPopupMsg] = useState<{title: string, message: string, btnText: string} | null>(null);
 
   useEffect(() => {
-    if (selectedSeedId !== null || isCartOpen || isFavoritesOpen || isOrdersOpen || isAuthOpen) {
+    if (selectedSeedId !== null || isCartOpen || isFavoritesOpen || isOrdersOpen || isAuthOpen || isAdminOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -754,6 +756,9 @@ export default function App() {
                  <Globe size={18} className="text-[#ff00ff]" /> <span className="font-bold text-xs uppercase tracking-widest">Global</span>
                </div>
                <div className="flex items-center gap-5 px-2">
+                  {user && user.email === 'lucasdanieltrader@gmail.com' && (
+                     <Shield onClick={() => setIsAdminOpen(true)} className="cursor-pointer text-[#ff00ff] hover:text-lime-400 transition-colors drop-shadow-[0_0_10px_rgba(255,0,255,0.5)]" size={20} title="Painel Admin" />
+                  )}
                   <User onClick={() => user ? setIsOrdersOpen(true) : setIsAuthOpen(true)} className="cursor-pointer hover:text-lime-400 transition-colors" size={20} />
                   <Heart onClick={() => user ? setIsFavoritesOpen(true) : setIsAuthOpen(true)} className="cursor-pointer hover:text-[#ff00ff] transition-colors" size={20} />
                   {/* ListFilter missing implementation here for now */}
@@ -1105,11 +1110,13 @@ export default function App() {
         <div className="marquee-inner">
           <span className="ticker-item ticker-item-promo">🔥 PROMOÇÕES IMPERDÍVEIS ATIVAS! 🔥</span>
           <span className="ticker-item ticker-item-shipping">🚚 FRETE GRÁTIS EM TODO O BRASIL! 🚚</span>
+          <span className="ticker-item ticker-item-promo">💰 ATÉ 15% DE DESCONTO EM TODAS AS COMPRAS! 💰</span>
           <span className="ticker-item ticker-item-seeds">🎁 SEMENTES GRÁTIS EM TODOS OS PEDIDOS! 🎁</span>
           <span className="ticker-item ticker-item-consult">👨‍🌾 CONSULTA ONLINE ESPECIALIZADA DISPONÍVEL! 👨‍🌾</span>
           <span className="ticker-item ticker-item-welcome">🌿 BEM VINDO AO SEMENTE SAGRADA WORLD 🌿</span>
           <span className="ticker-item ticker-item-promo">🔥 PROMOÇÕES IMPERDÍVEIS ATIVAS! 🔥</span>
           <span className="ticker-item ticker-item-shipping">🚚 FRETE GRÁTIS EM TODO O BRASIL! 🚚</span>
+          <span className="ticker-item ticker-item-promo">💰 ATÉ 15% DE DESCONTO EM TODAS AS COMPRAS! 💰</span>
           <span className="ticker-item ticker-item-seeds">🎁 SEMENTES GRÁTIS EM TODOS OS PEDIDOS! 🎁</span>
           <span className="ticker-item ticker-item-consult">👨‍🌾 CONSULTA ONLINE ESPECIALIZADA DISPONÍVEL! 👨‍🌾</span>
           <span className="ticker-item ticker-item-welcome">🌿 BEM VINDO AO SEMENTE SAGRADA WORLD 🌿</span>
@@ -1794,8 +1801,12 @@ export default function App() {
                                 <p className="text-sm text-gray-300">Leve 3 e pague 2 em toda a linha de Genéticas Selecionadas.</p>
                              </div>
                              <div>
-                                <h4 className="text-rose-500 font-black border-b border-white/10 pb-1 mb-2">STARTER PACK</h4>
-                                <p className="text-sm text-gray-300">Pacote com 3 linhagens premium por apenas R$ 179,90.</p>
+                                <h4 className="text-rose-500 font-black border-b border-white/10 pb-1 mb-2">CUPOM 13% OFF</h4>
+                                <p className="text-sm text-gray-300">Utilize o cupom QUALIDADE13 e ganhe 13% de desconto em todo o site.</p>
+                             </div>
+                             <div>
+                                <h4 className="text-[#00ffff] font-black border-b border-white/10 pb-1 mb-2">DESCONTO PROGRESSIVO</h4>
+                                <p className="text-sm text-gray-300">Ganhe descontos automáticos de 4% a 15% de acordo com o valor do seu carrinho.</p>
                              </div>
                              <div className="bg-white/5 p-4 rounded-lg text-center">
                                 <p className="text-xs font-bold uppercase tracking-widest text-lime-400">Cupom Atendimento:</p>
@@ -1933,25 +1944,29 @@ export default function App() {
               
               <div className="relative z-10 flex flex-col xl:flex-row items-center justify-between gap-12">
                 <div className="text-left flex-1">
-                  <div className="inline-block bg-white text-black pixel text-[10px] px-2 py-1 mb-4 uppercase font-bold">Oferta de Tempo Limitado</div>
-                  <h3 className="pixel text-3xl md:text-5xl text-white mb-4 italic tracking-tight" style={{textShadow: "3px 3px #ff00ff"}}>SUPREME STARTER PACK</h3>
+                  <div className="inline-block bg-white text-black pixel text-[10px] px-2 py-1 mb-4 uppercase font-bold">Cupom de Desconto</div>
+                  <h3 className="pixel text-3xl md:text-5xl text-white mb-4 italic tracking-tight" style={{textShadow: "3px 3px #ff00ff"}}>13% OFF EM TUDO</h3>
                   <p className="vt text-pink-300 text-xl max-w-2xl leading-relaxed">
-                    Três das nossas linhagens mais premiadas em um pacote exclusivo para novos colecionadores.
+                    Utilize o cupom abaixo no carrinho e garanta 13% de desconto em qualquer genética do nosso catálogo.
                   </p>
                 </div>
                 
                 <div className="flex flex-col items-center xl:items-end gap-6">
                   <div className="flex items-center gap-4 sm:gap-6 w-full justify-center xl:justify-end">
                     <div className="text-right">
-                      <div className="vt text-white/40 line-through text-lg sm:text-xl font-bold italic">R$ 259,70</div>
-                      <div className="pixel text-[2rem] sm:text-4xl text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)] whitespace-nowrap">R$ 179,90</div>
-                    </div>
-                    <div className="bg-pink-600 text-white pixel text-xs p-3 rounded-full animate-bounce shadow-lg flex-shrink-0">
-                      -35%
+                      <div className="vt text-white/40 text-lg sm:text-xl font-bold italic mb-1 uppercase tracking-widest text-center xl:text-right">Código Promocional</div>
+                      <div className="pixel text-[2rem] sm:text-4xl text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)] whitespace-nowrap bg-white/5 border border-white/20 px-6 py-2 rounded-xl">QUALIDADE13</div>
                     </div>
                   </div>
-                  <button className="w-full xl:w-auto bg-gradient-to-r from-lime-500 to-lime-600 text-black pixel text-lg px-12 py-6 hover:scale-105 transition-all shadow-[10px_10px_0px_rgba(255,255,255,0.1)] active:translate-y-1 font-black">
-                    RESGATAR AGORA
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText('QUALIDADE13');
+                      setPopup({title: 'CUPOM COPIADO', body: 'O cupom QUALIDADE13 foi copiado para a área de transferência. Adicione seus itens ao carrinho e aplique o desconto na hora de finalizar o pedido!'});
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="w-full xl:w-auto bg-gradient-to-r from-lime-500 to-lime-600 text-black pixel text-lg px-12 py-6 hover:scale-105 transition-all shadow-[10px_10px_0px_rgba(255,255,255,0.1)] active:translate-y-1 font-black"
+                  >
+                    COPIAR CUPOM
                   </button>
                 </div>
               </div>
@@ -2566,7 +2581,7 @@ export default function App() {
                       <button 
                          onClick={() => {
                             playSfx('click');
-                            window.open('https://api.whatsapp.com/send?phone=SEUNUMERO', '_blank');
+                            window.open('https://api.whatsapp.com/send?phone=5566996280883', '_blank');
                          }}
                          className="w-full bg-gradient-to-r from-[#38bdf8] to-[#2563eb] text-white vt text-xl md:text-2xl px-8 py-6 rounded-3xl shadow-[0_20px_50px_rgba(37,99,235,0.3)] hover:scale-105 active:scale-95 transition-all group"
                       >
@@ -2958,6 +2973,7 @@ export default function App() {
           totalAmount={checkoutData?.totalAmount || 0}
           initialShippingCost={checkoutData?.shippingCost || null}
           initialZip={checkoutData?.zip || ''}
+          appliedCoupon={checkoutData?.appliedCoupon || null}
           onBack={() => setCurrentView('checkout')}
           onSuccess={() => {
             setCurrentView('home');
@@ -4237,6 +4253,7 @@ export default function App() {
       })()}
 
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+      {isAdminOpen && <AdminModal onClose={() => setIsAdminOpen(false)} />}
       <CartModal 
         isOpen={isCartOpen} 
         onClose={() => setIsCartOpen(false)} 

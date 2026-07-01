@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Trash2, ChevronRight, Globe, CheckCircle2, Ticket, Heart, Plus, Minus, Gift } from 'lucide-react';
 import { SEEDS, Seed, getQtyLabel, getBonusSeeds } from './data';
 import { db, auth, handleFirestoreError, OperationType } from './firebase';
-import { collection, doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, writeBatch, getDocs, query, where } from 'firebase/firestore';
 import { playSfx } from './audio';
 
 interface CheckoutPageProps {
   cartItems: any[];
   onBack: () => void;
-  onProceed: (data: { totalAmount: number; selectedBonuses: number[]; shippingCost: number | null; zip: string }) => void;
+  onProceed: (data: { totalAmount: number; selectedBonuses: number[]; shippingCost: number | null; zip: string; appliedCoupon: { id: string, code: string } | null }) => void;
 }
 
 export default function CheckoutPage({ cartItems, onBack, onProceed }: CheckoutPageProps) {
@@ -26,12 +26,49 @@ export default function CheckoutPage({ cartItems, onBack, onProceed }: CheckoutP
     }
   }, []);
 
-  const [coupon, setCoupon] = useState('');
+  const [couponCodeInput, setCouponCodeInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{ id: string; code: string; discountPercentage: number; maxUses: number; usedCount: number } | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
+
   const totalItemsRef = cartItems.reduce((acc, item) => acc + (item.priceNum || 0), 0);
   
   // Dynamic promotional logic
-  const discountAmount = totalItemsRef >= 408.20 ? 4 : 0;
+  const discountAmount = appliedCoupon ? appliedCoupon.discountPercentage : 
+    (totalItemsRef >= 1500 ? 15 : 
+     totalItemsRef >= 1000 ? 10 : 
+     totalItemsRef >= 600 ? 6 : 
+     totalItemsRef >= 300 ? 4 : 0);
   const isFreeShipping = totalItemsRef >= 680.00;
+
+  const handleApplyCoupon = async () => {
+    if (!couponCodeInput) return;
+    setCouponLoading(true);
+    setCouponError('');
+    try {
+      const q = query(collection(db, 'coupons'), where('code', '==', couponCodeInput.toUpperCase()), where('isActive', '==', true));
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        setCouponError('Cupom inválido ou expirado.');
+        setAppliedCoupon(null);
+      } else {
+        const docSnap = snap.docs[0];
+        const data = docSnap.data();
+        if (data.usedCount >= data.maxUses) {
+          setCouponError('Limite de uso deste cupom atingido.');
+          setAppliedCoupon(null);
+        } else {
+          setAppliedCoupon({ id: docSnap.id, code: data.code, discountPercentage: data.discountPercentage, maxUses: data.maxUses, usedCount: data.usedCount });
+          setCouponCodeInput('');
+        }
+      }
+    } catch (err) {
+      setCouponError('Erro ao validar cupom.');
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
   
   // Calculate total bonus seeds from packs
   const totalBonusSeedsFromPacks = cartItems.reduce((acc, item) => {
@@ -58,15 +95,15 @@ export default function CheckoutPage({ cartItems, onBack, onProceed }: CheckoutP
     const fullPrefix = parseInt(cleanCep.substring(0, 3));
     
     if ((prefix >= 66 && prefix <= 69) || prefix === 77 || (fullPrefix >= 768 && fullPrefix <= 769)) {
-       setCalculatedShipping(99.90);
+       setCalculatedShipping(114.88);
     } else if (prefix >= 40 && prefix <= 65) {
-       setCalculatedShipping(79.90);
+       setCalculatedShipping(91.89);
     } else if ((prefix >= 70 && prefix <= 76) || (prefix >= 78 && prefix <= 79)) {
-       setCalculatedShipping(59.90);
+       setCalculatedShipping(68.88);
     } else if (prefix >= 1 && prefix <= 39) {
-       setCalculatedShipping(39.90);
+       setCalculatedShipping(45.88);
     } else if (prefix >= 80 && prefix <= 99) {
-       setCalculatedShipping(29.90);
+       setCalculatedShipping(34.38);
     } else {
        setCalculatedShipping(null);
     }
@@ -134,7 +171,8 @@ export default function CheckoutPage({ cartItems, onBack, onProceed }: CheckoutP
       totalAmount: itemsPrice,
       selectedBonuses: selectedBonuses,
       shippingCost: isFreeShipping ? 0 : calculatedShipping,
-      zip: shippingCepCart
+      zip: shippingCepCart,
+      appliedCoupon: appliedCoupon
     });
   };
 
@@ -359,20 +397,6 @@ export default function CheckoutPage({ cartItems, onBack, onProceed }: CheckoutP
              </div>
           </div>
 
-          {/* COUPON */}
-          <div className="bg-black/40 backdrop-blur-xl rounded-[2rem] border border-white/5 p-2 flex gap-2 shadow-2xl group focus-within:border-lime-500/50 transition-colors">
-             <input 
-               type="text" 
-               placeholder="CÓDIGO PROMOCIONAL"
-               value={coupon}
-               onChange={e => setCoupon(e.target.value)}
-               className="flex-1 bg-transparent px-6 py-3 text-xs font-black pixel placeholder:text-white/20 text-lime-400 focus:outline-none uppercase tracking-widest"
-             />
-             <button className="bg-lime-500 hover:bg-lime-400 text-black px-8 py-3 rounded-2xl font-black pixel text-[10px] transition-all active:scale-95 uppercase tracking-tighter shadow-lg">
-                ATIVAR
-             </button>
-          </div>
-
           {/* SUMMARY */}
           <div className="bg-black/40 backdrop-blur-xl rounded-[2.5rem] border border-white/5 p-8 shadow-2xl relative overflow-hidden">
              <div className="absolute bottom-0 right-0 p-4 opacity-[0.02]">
@@ -435,6 +459,53 @@ export default function CheckoutPage({ cartItems, onBack, onProceed }: CheckoutP
                       </div>
                    </div>
                 )}
+                
+                {/* COUPON INPUT */}
+                <div className="flex flex-col gap-3 border-b border-white/5 pb-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[11px] font-black text-white/40 uppercase tracking-widest pixel flex items-center gap-2"><Ticket size={14} className="text-[#00ffff]" /> Cupom de Desconto:</span>
+                    {appliedCoupon ? (
+                      <span className="text-sm vt text-[#00ffff]">{appliedCoupon.code} (-{appliedCoupon.discountPercentage}%)</span>
+                    ) : (
+                      <span className="text-xs vt text-white/40">NENHUM</span>
+                    )}
+                  </div>
+                  {!appliedCoupon ? (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Insira o código"
+                        value={couponCodeInput}
+                        onChange={(e) => setCouponCodeInput(e.target.value)}
+                        className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-[#00ffff] w-full focus:outline-none focus:border-[#00ffff]/50 uppercase font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={couponLoading}
+                        className="bg-[#00ffff]/10 hover:bg-[#00ffff]/20 text-[#00ffff] font-black text-[9px] px-3 py-1.5 rounded-lg transition-all disabled:opacity-50"
+                      >
+                        {couponLoading ? '...' : 'OK'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAppliedCoupon(null);
+                          setCouponCodeInput('');
+                          setCouponError('');
+                        }}
+                        className="text-red-400 text-[9px] font-black hover:underline pixel tracking-widest uppercase"
+                      >
+                        Remover Cupom
+                      </button>
+                    </div>
+                  )}
+                  {couponError && <p className="text-red-500 text-[10px] font-bold mt-1">{couponError}</p>}
+                </div>
+
                 <div className="flex justify-between items-end border-b border-white/5 pb-4">
                    <span className="text-[11px] font-black text-yellow-500 uppercase tracking-widest pixel">Economia Acumulada:</span>
                    <span className="text-xl vt text-yellow-500">R$ {(totalItemsRef * 0.4).toFixed(2).replace('.', ',')}</span>

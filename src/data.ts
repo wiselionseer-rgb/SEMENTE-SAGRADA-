@@ -130,7 +130,7 @@ export const SEEDS: Seed[] = [
     category: 'best', 
     rating: '5.0',
     reviews: 124,
-    prices: { 'X2': '219,90', 'X4': '339,90', 'X7': '529,90', 'X12': '749,90', 'X50': '900,00', 'X100': '1375,00' },
+    prices: { 'X2': '252,88', 'X4': '390,88', 'X7': '609,38', 'X12': '862,38', 'X50': '1035,00', 'X100': '1581,25' },
     isHighThc: true,
     isIndoor: true,
     isOutdoor: true
@@ -182,7 +182,7 @@ export const SEEDS: Seed[] = [
     category: 'best', 
     rating: '4.9',
     reviews: 89,
-    prices: { 'X2': '179,90', 'X4': '279,90', 'X7': '439,90', 'X12': '619,90', 'X50': '750,00', 'X100': '1250,00' },
+    prices: { 'X2': '206,88', 'X4': '321,88', 'X7': '505,88', 'X12': '712,88', 'X50': '862,50', 'X100': '1437,50' },
     isBeginnerFriendly: true,
     isIndoor: true
   },
@@ -233,7 +233,7 @@ export const SEEDS: Seed[] = [
     category: 'best', 
     rating: '5.0',
     reviews: 156,
-    prices: { 'X2': '179,90', 'X4': '279,90', 'X7': '439,90', 'X12': '619,90', 'X50': '750,00', 'X100': '1250,00' },
+    prices: { 'X2': '206,88', 'X4': '321,88', 'X7': '505,88', 'X12': '712,88', 'X50': '862,50', 'X100': '1437,50' },
     isHighThc: true,
     isHighYield: true,
     isOutdoor: true
@@ -285,7 +285,7 @@ export const SEEDS: Seed[] = [
     category: 'best', 
     rating: '4.9',
     reviews: 72,
-    prices: { 'X2': '179,90', 'X4': '279,90', 'X7': '439,90', 'X12': '619,90', 'X50': '750,00', 'X100': '1250,00' },
+    prices: { 'X2': '206,88', 'X4': '321,88', 'X7': '505,88', 'X12': '712,88', 'X50': '862,50', 'X100': '1437,50' },
     isFastFlowering: true,
     isIndoor: true
   },
@@ -336,7 +336,7 @@ export const SEEDS: Seed[] = [
     category: 'best', 
     rating: '5.0',
     reviews: 213,
-    prices: { 'X2': '179,90', 'X4': '279,90', 'X7': '439,90', 'X12': '619,90', 'X50': '750,00', 'X100': '1250,00' },
+    prices: { 'X2': '206,88', 'X4': '321,88', 'X7': '505,88', 'X12': '712,88', 'X50': '862,50', 'X100': '1437,50' },
     isHighThc: true,
     isIndoor: true
   },
@@ -387,7 +387,7 @@ export const SEEDS: Seed[] = [
     category: 'best', 
     rating: '4.9',
     reviews: 104,
-    prices: { 'X2': '179,90', 'X4': '279,90', 'X7': '439,90', 'X12': '619,90', 'X50': '750,00', 'X100': '1250,00' },
+    prices: { 'X2': '206,88', 'X4': '321,88', 'X7': '505,88', 'X12': '712,88', 'X50': '862,50', 'X100': '1437,50' },
     isHighThc: true,
     isFastFlowering: true,
     isIndoor: true,

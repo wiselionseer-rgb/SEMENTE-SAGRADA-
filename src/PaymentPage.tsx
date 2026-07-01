@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ShieldCheck, CreditCard, Wallet, Truck, Package, Info, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ShieldCheck, CreditCard, Wallet, Truck, Package, Info, CheckCircle2, MessageCircle } from 'lucide-react';
 import { SEEDS } from './data';
 import { playSfx } from './audio';
 import { db, auth, handleFirestoreError, OperationType } from './firebase';
-import { collection, doc, writeBatch } from 'firebase/firestore';
+import { collection, doc, writeBatch, increment } from 'firebase/firestore';
 
 interface PaymentPageProps {
   cartItems: any[];
@@ -11,11 +11,12 @@ interface PaymentPageProps {
   totalAmount: number;
   initialShippingCost?: number | null;
   initialZip?: string;
+  appliedCoupon?: { id: string, code: string, discountPercentage: number, maxUses: number, usedCount: number } | null;
   onBack: () => void;
   onSuccess: () => void;
 }
 
-export default function PaymentPage({ cartItems, selectedBonuses, totalAmount, initialShippingCost, initialZip, onBack, onSuccess }: PaymentPageProps) {
+export default function PaymentPage({ cartItems, selectedBonuses, totalAmount, initialShippingCost, initialZip, appliedCoupon, onBack, onSuccess }: PaymentPageProps) {
   const [loading, setLoading] = useState(false);
   
   useEffect(() => {
@@ -124,9 +125,17 @@ export default function PaymentPage({ cartItems, selectedBonuses, totalAmount, i
         bonusSeeds: selectedBonuses,
         shippingInfo: formData,
         paymentMethod,
+        appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
         status: 'Pendente',
         createdAt: Date.now()
       });
+
+      // Increment coupon use count
+      if (appliedCoupon) {
+        batch.update(doc(db, 'coupons', appliedCoupon.id), {
+          usedCount: increment(1)
+        });
+      }
 
       // Clear cart
       for (const item of cartItems) {
@@ -135,6 +144,44 @@ export default function PaymentPage({ cartItems, selectedBonuses, totalAmount, i
       
       await batch.commit();
       playSfx('stage');
+
+      // WhatsApp Logic
+      const orderId = newOrderRef.id;
+      let text = `Olá, realizei o pedido #${orderId.slice(0,8).toUpperCase()} e gostaria de finalizar o pagamento!\n\n`;
+      text += `*Resumo do Pedido:*\n`;
+      
+      cartItems.forEach(item => {
+        const seed = SEEDS.find(s => String(s.id) === String(item.seedId));
+        if (seed) {
+          text += `- ${item.packCount}x ${seed.name} (${item.quantity} - ${item.variantType})\n`;
+        }
+      });
+
+      if (selectedBonuses.length > 0) {
+        text += `\n*Bônus Inclusos:*\n`;
+        selectedBonuses.forEach(bonusId => {
+          const seed = SEEDS.find(s => String(s.id) === String(bonusId));
+          if (seed) {
+            text += `- 1x ${seed.name} (Semente Bônus)\n`;
+          }
+        });
+      }
+
+      text += `\n*Subtotal Líquido:* R$ ${totalAmount.toFixed(2).replace('.', ',')}`;
+      if (shippingCost !== null && shippingCost > 0) {
+         text += `\n*Frete:* R$ ${shippingCost.toFixed(2).replace('.', ',')}`;
+      } else if (shippingCost === 0) {
+         text += `\n*Frete:* GRÁTIS`;
+      }
+      if (appliedCoupon) {
+         text += `\n*Cupom Aplicado:* ${appliedCoupon.code} (-${appliedCoupon.discountPercentage}%)`;
+      }
+      text += `\n*TOTAL FINAL:* R$ ${finalTotalAmount.toFixed(2).replace('.', ',')}\n\n`;
+      text += `Por favor, me envie o link de pagamento.`;
+
+      const encodedText = encodeURIComponent(text);
+      window.open(`https://api.whatsapp.com/send?phone=5566996280883&text=${encodedText}`, '_blank');
+
       onSuccess();
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `users/${auth.currentUser.uid}/orders`);
@@ -418,8 +465,8 @@ export default function PaymentPage({ cartItems, selectedBonuses, totalAmount, i
                     'PROCESSANDO...'
                   ) : (
                     <>
-                      <Package size={18} />
-                      FINALIZAR PROTOCOLO
+                      <MessageCircle size={18} />
+                      FINALIZAR E PAGAR VIA WHATSAPP
                     </>
                   )}
                </button>
