@@ -8,7 +8,7 @@ import { playSfx } from './audio';
 interface CheckoutPageProps {
   cartItems: any[];
   onBack: () => void;
-  onProceed: (data: { totalAmount: number; selectedBonuses: number[]; shippingCost: number | null; zip: string; appliedCoupon: { id: string, code: string } | null }) => void;
+  onProceed: (data: { totalAmount: number; selectedBonuses: number[]; shippingCost: number | null; zip: string; appliedCoupon: { id: string, code: string, discountPercentage: number, maxUses: number, usedCount: number } | null }) => void;
 }
 
 export default function CheckoutPage({ cartItems, onBack, onProceed }: CheckoutPageProps) {

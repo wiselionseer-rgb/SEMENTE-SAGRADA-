@@ -120,7 +120,7 @@ export default function App() {
 
   const [G, setG] = useState<GameState>(INITIAL_STATE);
   const [currentView, setCurrentView] = useState<'home' | 'manual' | 'checkout' | 'payment' | 'about' | 'terms' | 'disclaimer' | 'privacy' | 'cookies' | 'legal'>('home');
-  const [checkoutData, setCheckoutData] = useState<{ totalAmount: number; selectedBonuses: number[]; shippingCost: number | null; zip: string; appliedCoupon: { id: string, code: string } | null } | null>(null);
+  const [checkoutData, setCheckoutData] = useState<{ totalAmount: number; selectedBonuses: number[]; shippingCost: number | null; zip: string; appliedCoupon: { id: string, code: string, discountPercentage: number, maxUses: number, usedCount: number } | null } | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [popup, setPopup] = useState<{ title: string; content?: React.ReactNode; body?: React.ReactNode } | null>(null);
   const [floats, setFloats] = useState<{id: number; x: number; y: number; text: string}[]>([]);
@@ -757,7 +757,7 @@ export default function App() {
                </div>
                <div className="flex items-center gap-5 px-2">
                   {user && user.email === 'lucasdanieltrader@gmail.com' && (
-                     <Shield onClick={() => setIsAdminOpen(true)} className="cursor-pointer text-[#ff00ff] hover:text-lime-400 transition-colors drop-shadow-[0_0_10px_rgba(255,0,255,0.5)]" size={20} title="Painel Admin" />
+                     <Shield onClick={() => setIsAdminOpen(true)} className="cursor-pointer text-[#ff00ff] hover:text-lime-400 transition-colors drop-shadow-[0_0_10px_rgba(255,0,255,0.5)]" size={20} />
                   )}
                   <User onClick={() => user ? setIsOrdersOpen(true) : setIsAuthOpen(true)} className="cursor-pointer hover:text-lime-400 transition-colors" size={20} />
                   <Heart onClick={() => user ? setIsFavoritesOpen(true) : setIsAuthOpen(true)} className="cursor-pointer hover:text-[#ff00ff] transition-colors" size={20} />
@@ -1087,7 +1087,7 @@ export default function App() {
                 <button className="pixel text-[10px] md:text-[12px] px-2 md:px-3 py-1 md:py-2 bg-[#333] border-2 border-outset border-[#777] text-white hover:bg-[#555] active:border-inset" onClick={() => { playSfx('click'); handleNextTrack(); }} onMouseEnter={() => playSfx('hover')}>{'>>'}</button>
               </div>
               <div className="w-[140px] md:w-[180px] bg-black border-inset border-4 border-[#333] px-2 md:px-3 py-1 md:py-2 overflow-hidden whitespace-nowrap text-sm md:text-lg text-[#00ffff] font-[Courier_New] shadow-[inset_0_0_10px_rgba(0,255,255,0.2)]">
-                {isMusicOn ? <marquee scrollamount="3">🎵 {trackName} 🎵</marquee> : 'POWER OFF'}
+                {isMusicOn ? <div className="animate-pulse">🎵 {trackName} 🎵</div> : 'POWER OFF'}
               </div>
               <div className="flex items-center gap-2 mt-2 md:mt-0">
                 <span className="text-[10px] text-white">vol:</span>
@@ -2224,8 +2224,8 @@ export default function App() {
                     <div 
                       className="absolute text-5xl md:text-6xl drop-shadow-[0_0_20px_rgba(255,200,0,0.8)] spin-3d transition-all duration-[3000ms] ease-linear z-0"
                       style={{
-                        left: `${((G.clock - 360) / 840) * 50 + 25}%`,
-                        top: `${Math.max(15, Math.abs(((G.clock - 360) / 840) - 0.5) * 50)}%`
+                        left: `${(((G.gameHour * 60 + G.gameMin) - 360) / 840) * 50 + 25}%`,
+                        top: `${Math.max(15, Math.abs((((G.gameHour * 60 + G.gameMin) - 360) / 840) - 0.5) * 50)}%`
                       }}
                     >
                       ☀️
@@ -2234,8 +2234,8 @@ export default function App() {
                     <div 
                       className="absolute text-4xl md:text-5xl drop-shadow-[0_0_15px_rgba(200,220,255,0.8)] transition-all duration-[3000ms] ease-linear z-0"
                       style={{
-                        left: `${((G.clock >= 1200 ? G.clock - 1200 : G.clock + 240) / 600) * 50 + 25}%`,
-                        top: `${Math.max(15, Math.abs(((G.clock >= 1200 ? G.clock - 1200 : G.clock + 240) / 600) - 0.5) * 50)}%`
+                        left: `${(((G.gameHour * 60 + G.gameMin) >= 1200 ? (G.gameHour * 60 + G.gameMin) - 1200 : (G.gameHour * 60 + G.gameMin) + 240) / 600) * 50 + 25}%`,
+                        top: `${Math.max(15, Math.abs((((G.gameHour * 60 + G.gameMin) >= 1200 ? (G.gameHour * 60 + G.gameMin) - 1200 : (G.gameHour * 60 + G.gameMin) + 240) / 600) - 0.5) * 50)}%`
                       }}
                     >
                       🌙
@@ -2581,7 +2581,7 @@ export default function App() {
                       <button 
                          onClick={() => {
                             playSfx('click');
-                            window.open('https://api.whatsapp.com/send?phone=5566996280883', '_blank');
+                            window.open('https://api.whatsapp.com/send?phone=5565992898324', '_blank');
                          }}
                          className="w-full bg-gradient-to-r from-[#38bdf8] to-[#2563eb] text-white vt text-xl md:text-2xl px-8 py-6 rounded-3xl shadow-[0_20px_50px_rgba(37,99,235,0.3)] hover:scale-105 active:scale-95 transition-all group"
                       >
@@ -2656,7 +2656,7 @@ export default function App() {
                       <button 
                          onClick={() => {
                             playSfx('click');
-                            window.open('https://api.whatsapp.com/send?phone=SEUNUMERO', '_blank');
+                            window.open('https://api.whatsapp.com/send?phone=5565992898324', '_blank');
                          }}
                          className="w-full bg-gradient-to-r from-emerald-400 to-emerald-600 text-white vt text-lg md:text-xl px-8 py-6 rounded-3xl shadow-[0_20px_50px_rgba(16,185,129,0.3)] hover:scale-105 active:scale-95 transition-all group"
                       >
@@ -2731,7 +2731,7 @@ export default function App() {
                       <button 
                          onClick={() => {
                             playSfx('click');
-                            window.open('https://api.whatsapp.com/send?phone=SEUNUMERO', '_blank');
+                            window.open('https://api.whatsapp.com/send?phone=5565992898324', '_blank');
                          }}
                          className="w-full bg-gradient-to-r from-amber-400 to-amber-600 text-white vt text-lg md:text-xl px-8 py-6 rounded-3xl shadow-[0_20px_50px_rgba(245,158,11,0.3)] hover:scale-105 active:scale-95 transition-all group"
                       >
@@ -2806,7 +2806,7 @@ export default function App() {
                       <button 
                          onClick={() => {
                             playSfx('click');
-                            window.open('https://api.whatsapp.com/send?phone=SEUNUMERO', '_blank');
+                            window.open('https://api.whatsapp.com/send?phone=5565992898324', '_blank');
                          }}
                          className="w-full bg-gradient-to-r from-violet-400 to-violet-600 text-white vt text-lg md:text-xl px-8 py-6 rounded-3xl shadow-[0_20px_50px_rgba(139,92,246,0.3)] hover:scale-105 active:scale-95 transition-all group"
                       >
@@ -3719,7 +3719,7 @@ export default function App() {
                      <button 
                        onClick={() => {
                           playSfx('click');
-                          setG(p => ({...p, selSeed: seed, isAuto}));
+                          setG(p => ({...p, selSeed: seed.id, isAuto}));
                           setSelectedSeedId(null);
                           addLog(`🛒 Escolheu ${seed.name} (${isAuto ? 'Auto' : 'Fem'}) para plantar!`, '#ffff00');
                        }}

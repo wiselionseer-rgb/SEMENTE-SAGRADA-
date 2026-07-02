@@ -180,7 +180,7 @@ export default function PaymentPage({ cartItems, selectedBonuses, totalAmount, i
       text += `Por favor, me envie o link de pagamento.`;
 
       const encodedText = encodeURIComponent(text);
-      window.open(`https://api.whatsapp.com/send?phone=5566996280883&text=${encodedText}`, '_blank');
+      window.open(`https://api.whatsapp.com/send?phone=5565992898324&text=${encodedText}`, '_blank');
 
       onSuccess();
     } catch (err) {
