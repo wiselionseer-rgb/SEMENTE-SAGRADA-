@@ -456,6 +456,16 @@ export default function PaymentPage({ cartItems, selectedBonuses, totalAmount, i
                   </div>
                </div>
 
+               <div className="bg-[#111] border border-white/10 rounded-3xl p-6 text-[10px] text-white/50 space-y-3 font-sans mt-8 mb-8 text-justify">
+                  <h4 className="text-white font-bold text-xs uppercase tracking-widest text-center mb-4">Aviso Legal</h4>
+                  <p>A Semente Sagrada comercializa exclusivamente sementes de cannabis destinadas à preservação genética, coleção e demais finalidades permitidas pela legislação aplicável.</p>
+                  <p>As sementes comercializadas neste site possuem <strong>origem na Espanha</strong>, sendo regularmente produzidas e adquiridas naquele país. A Semente Sagrada <strong>não realiza a produção dessas sementes em território brasileiro</strong>.</p>
+                  <p>Nos termos da Lei nº 11.343/2006 (Lei de Drogas) e demais normas aplicáveis, é de responsabilidade exclusiva do comprador conhecer e cumprir a legislação vigente em seu município, estado e no território nacional.</p>
+                  <p>A aquisição de sementes não autoriza, por si só, o cultivo de cannabis. O cultivo somente poderá ser realizado quando houver amparo legal, incluindo, quando aplicável, <strong>autorização judicial individual</strong>, como <strong>habeas corpus preventivo para cultivo medicinal</strong>, ou outra autorização legal competente.</p>
+                  <p>A destinação dada às sementes após a entrega é de inteira responsabilidade do comprador. Ao realizar a compra, o cliente declara que utilizará os produtos em conformidade com a legislação vigente e, quando necessário, que possui a autorização judicial ou administrativa exigida para o cultivo.</p>
+                  <p>A Semente Sagrada não incentiva, orienta ou promove qualquer conduta contrária à legislação brasileira e reserva-se o direito de cancelar pedidos caso existam indícios de utilização ilícita dos produtos.</p>
+               </div>
+
                <button 
                  type="submit"
                  disabled={loading}

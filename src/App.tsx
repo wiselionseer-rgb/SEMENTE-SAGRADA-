@@ -18,6 +18,7 @@ import PrivacyPolicyPage from './PrivacyPolicyPage';
 import CookiesPolicyPage from './CookiesPolicyPage';
 import LegalNoticePage from './LegalNoticePage';
 import AgeVerificationModal from './components/AgeVerificationModal';
+import { CouponPopup } from './CouponPopup';
 import { motion } from 'motion/react';
 import { auth, db, handleFirestoreError, OperationType } from './firebase';
 import { onAuthStateChanged, User as FirebaseUser, signOut } from 'firebase/auth';
@@ -628,6 +629,7 @@ export default function App() {
   return (
     <div className="font-[Comic Neue] min-h-screen text-[var(--green)]">
       {!isAgeVerified && <AgeVerificationModal onVerify={handleAgeVerify} />}
+      <CouponPopup />
       
       {/* GLOBAL STICKY HEADER */}
       <div className="md:sticky relative top-0 z-[1000] w-full flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
