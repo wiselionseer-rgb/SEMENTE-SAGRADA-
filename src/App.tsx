@@ -79,20 +79,6 @@ export default function App() {
   };
 
   useEffect(() => {
-    // Validate Connection to Firestore
-    const testConnection = async () => {
-      try {
-        await getDocFromServer(doc(db, 'test', 'connection'));
-      } catch (error) {
-        if(error instanceof Error && error.message.includes('the client is offline')) {
-          console.error("Please check your Firebase configuration.");
-        }
-      }
-    };
-    testConnection();
-  }, []);
-
-  useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
     });
@@ -108,13 +94,19 @@ export default function App() {
     }
     const unsubCart = onSnapshot(collection(db, `users/${user.uid}/cartItems`), (snap) => {
       setCartItems(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    }, (error) => {});
+    }, (error) => {
+      console.error("Cart items listener error:", error);
+    });
     const unsubFav = onSnapshot(collection(db, `users/${user.uid}/favorites`), (snap) => {
       setFavorites(snap.docs.map(d => d.data().seedId));
-    }, (error) => {});
+    }, (error) => {
+      console.error("Favorites listener error:", error);
+    });
     const unsubOrd = onSnapshot(collection(db, `users/${user.uid}/orders`), (snap) => {
       setOrders(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    }, (error) => {});
+    }, (error) => {
+      console.error("Orders listener error:", error);
+    });
     
     return () => { unsubCart(); unsubFav(); unsubOrd(); };
   }, [user]);

@@ -12,6 +12,8 @@ export const CouponPopup = () => {
     const unsub = onSnapshot(q, (snapshot) => {
       const activeCoupons = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setCoupons(activeCoupons);
+    }, (error) => {
+      console.error("Coupons snapshot listener error:", error);
     });
     return () => unsub();
   }, []);
