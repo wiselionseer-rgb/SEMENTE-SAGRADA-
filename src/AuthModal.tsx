@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { auth, handleFirestoreError, OperationType, db } from './firebase';
+import { auth, handleFirestoreError, OperationType, db, googleProvider } from './firebase';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signInWithPopup, 
-  GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
-  User 
+  User,
+  browserPopupRedirectResolver
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
@@ -17,37 +17,53 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   
+  const [loading, setLoading] = useState(false);
+  
   if (!isOpen) return null;
 
   const handleError = (err: any) => {
+    setLoading(false);
     let msg = err.message || String(err);
+    const code = err.code || '';
     console.error("Auth Error:", err);
 
-    if (msg.includes('auth/popup-closed-by-user')) {
+    if (code === 'auth/popup-closed-by-user' || msg.includes('auth/popup-closed-by-user')) {
       msg = 'O login com Google foi cancelado ou a janela foi fechada. Tente novamente.';
-    } else if (msg.includes('auth/invalid-credential') || msg.includes('auth/user-not-found') || msg.includes('auth/wrong-password')) {
-      msg = 'Email ou senha incorretos.';
-    } else if (msg.includes('auth/email-already-in-use')) {
-      msg = 'Este email já está em uso.';
-    } else if (msg.includes('auth/weak-password')) {
-      msg = 'A senha deve ter pelo menos 6 caracteres.';
-    } else if (msg.includes('auth/invalid-email')) {
-      msg = 'Email inválido.';
-    } else if (msg.includes('auth/popup-blocked')) {
+    } else if (code === 'auth/operation-not-allowed') {
+      msg = 'O login com Google não está habilitado no console do Firebase. Por favor, contate o administrador.';
+    } else if (code === 'auth/unauthorized-domain') {
+      msg = 'Este domínio não está autorizado para login com Google no Firebase. Adicione este domínio no console do Firebase.';
+    } else if (code === 'auth/popup-blocked' || msg.includes('auth/popup-blocked')) {
       msg = 'O pop-up de login foi bloqueado pelo seu navegador. Por favor, permita pop-ups para este site.';
+    } else if (code === 'auth/invalid-credential' || code === 'auth/user-not-found' || code === 'auth/wrong-password' || msg.includes('auth/invalid-credential')) {
+      msg = 'Email ou senha incorretos.';
+    } else if (code === 'auth/email-already-in-use') {
+      msg = 'Este email já está em uso.';
+    } else if (code === 'auth/weak-password') {
+      msg = 'A senha deve ter pelo menos 6 caracteres.';
+    } else if (code === 'auth/invalid-email') {
+      msg = 'Email inválido.';
     } else if (msg.includes('Missing or insufficient permissions')) {
       msg = 'Erro de permissão no banco de dados. Tente novamente.';
     } else if (msg.startsWith('{')) {
       try {
-        msg = JSON.parse(msg).error || "Erro desconhecido";
+        const parsed = JSON.parse(msg);
+        msg = parsed.error || parsed.message || "Erro desconhecido";
       } catch(e){}
     }
+
+    // Append error code for easier debugging if it's not a common user error
+    if (code && !['auth/popup-closed-by-user', 'auth/invalid-credential'].includes(code)) {
+      msg += ` (Código: ${code})`;
+    }
+
     setError(msg);
   };
 
   const handleAuth = async (e: any) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
@@ -66,13 +82,17 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
       onClose();
     } catch (err: any) {
       handleError(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogle = async () => {
+    setError('');
+    setLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
+      // Use the resolver to help with iframe/popup issues
+      const userCredential = await signInWithPopup(auth, googleProvider, browserPopupRedirectResolver);
       // Check if user doc exists, if not create
       const docRef = doc(db, 'users', userCredential.user.uid);
       const docSnap = await getDoc(docRef);
@@ -85,6 +105,8 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
       onClose();
     } catch (err: any) {
       handleError(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -127,9 +149,10 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
           </div>
           <button 
             type="submit" 
-            className="bg-lime-500 hover:bg-lime-400 text-black font-black py-4 rounded-xl uppercase tracking-widest mt-2 transition-all active:scale-95 shadow-[0_4px_15px_rgba(132,204,22,0.2)]"
+            disabled={loading}
+            className="bg-lime-500 hover:bg-lime-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-black py-4 rounded-xl uppercase tracking-widest mt-2 transition-all active:scale-95 shadow-[0_4px_15px_rgba(132,204,22,0.2)]"
           >
-            {isLogin ? 'Entrar' : 'Cadastrar'}
+            {loading ? 'Processando...' : (isLogin ? 'Entrar' : 'Cadastrar')}
           </button>
         </form>
 
@@ -142,10 +165,11 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         <button 
           type="button" 
           onClick={handleGoogle} 
-          className="w-full bg-white text-black font-black py-4 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-100 transition-all active:scale-95 uppercase tracking-widest text-[11px] shadow-lg"
+          disabled={loading}
+          className="w-full bg-white text-black font-black py-4 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 uppercase tracking-widest text-[11px] shadow-lg"
         >
            <img src="https://www.google.com/favicon.ico" alt="" className="w-4 h-4 opacity-80" />
-           Google
+           {loading ? 'Aguarde...' : 'Google'}
         </button>
 
         <div className="mt-8 text-center text-xs font-bold text-gray-500">
