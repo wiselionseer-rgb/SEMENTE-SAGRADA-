@@ -750,7 +750,7 @@ export default function App() {
                  <Globe size={18} className="text-[#ff00ff]" /> <span className="font-bold text-xs uppercase tracking-widest">Global</span>
                </div>
                <div className="flex items-center gap-5 px-2">
-                  {user && user.email === 'lucasdanieltrader@gmail.com' && (
+                  {user && (user.email?.toLowerCase().trim() === 'lucasdanieltrader@gmail.com' || user.email?.toLowerCase().trim() === 'wiselisonseer@gmail.com') && (
                      <Shield onClick={() => setIsAdminOpen(true)} className="cursor-pointer text-[#ff00ff] hover:text-lime-400 transition-colors drop-shadow-[0_0_10px_rgba(255,0,255,0.5)]" size={20} />
                   )}
                   <User onClick={() => user ? setIsOrdersOpen(true) : setIsAuthOpen(true)} className="cursor-pointer hover:text-lime-400 transition-colors" size={20} />
@@ -902,7 +902,7 @@ export default function App() {
         </div>
 
         {/* NAVIGATION BAR */}
-        <div className="bg-[#050505] text-[#ccc] vt text-[12px] md:text-[14px] font-bold tracking-widest border-b border-[#222]">
+        <div className="bg-[#050505] text-[#ccc] font-sans text-[11px] md:text-[13px] font-black tracking-widest border-b border-[#222]">
           <div className="max-w-[1200px] mx-auto flex overflow-x-auto no-scrollbar">
             {navItems.map((item, idx) => {
               const isActive = activeCatalogTab === item.label;
@@ -2511,6 +2511,9 @@ export default function App() {
                   <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
                      <button className="bg-white text-black font-black px-8 py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] hover:scale-105 transition-all shadow-xl">Bio Completa</button>
                      <button className="bg-transparent border border-white/10 text-white font-bold px-8 py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] hover:bg-white/5 transition-all">Pesquisa UnB</button>
+                     <a href="https://wa.me/5511999999999?text=Ol%C3%A1%2C%20gostaria%20de%20aprender%20a%20cultivar." target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white font-black px-8 py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-2">
+                        <MessageCircle size={14} /> Aprender a Cultivar
+                     </a>
                   </div>
                </div>
             </div>
@@ -3919,11 +3922,11 @@ export default function App() {
                         <div className="flex-1 bg-[#111] rounded-xl border border-[#222] p-6 flex flex-col gap-4">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-full overflow-hidden bg-[#222]">
-                                    <img src="https://i.pravatar.cc/150?img=11" className="w-full h-full object-cover" alt="Ethan Cole" />
+                                    <img src="https://i.pravatar.cc/150?img=11" className="w-full h-full object-cover" alt="Marco Silva" />
                                 </div>
                                 <div>
                                     <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-0.5">Escrito por</div>
-                                    <div className="text-white font-bold text-sm">Ethan Cole</div>
+                                    <div className="text-white font-bold text-sm">Marco Silva</div>
                                     <div className="text-gray-500 text-xs">Especialista em cultivo de cannabis e escritor</div>
                                 </div>
                             </div>
@@ -3932,11 +3935,11 @@ export default function App() {
                         <div className="flex-1 bg-[#111] rounded-xl border border-[#222] p-6 flex flex-col gap-4">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-full overflow-hidden bg-[#222]">
-                                    <img src="https://i.pravatar.cc/150?img=47" className="w-full h-full object-cover" alt="Sylvia Johnson" />
+                                    <img src="https://i.pravatar.cc/150?img=47" className="w-full h-full object-cover" alt="Ana Oliveira" />
                                 </div>
                                 <div>
                                     <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-0.5">Revisto por</div>
-                                    <div className="text-white font-bold text-sm">Sylvia Johnson</div>
+                                    <div className="text-white font-bold text-sm">Ana Oliveira</div>
                                     <div className="text-gray-500 text-xs">Especialista em cultivo indoor</div>
                                 </div>
                             </div>
