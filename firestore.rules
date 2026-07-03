@@ -1,5 +1,4 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
     
@@ -38,8 +37,8 @@ service cloud.firestore {
         && data.addedAt is number;
     }
     
-    function isValidCartItem(data) {
-       return data.keys().hasAll(['seedId', 'quantity', 'variantType', 'priceNum', 'addedAt', 'packCount'])
+    function isValidCartItem(data) { 
+      return data.keys().hasAll(['seedId', 'quantity', 'variantType', 'priceNum', 'addedAt', 'packCount'])
         && data.keys().size() == 6
         && data.seedId is string
         && data.seedId.size() > 0
@@ -79,20 +78,21 @@ service cloud.firestore {
     
     match /coupons/{couponId} {
       allow read: if true;
-      allow create: if request.auth != null && request.auth.token.email == 'lucasdanieltrader@gmail.com';
-      allow delete: if request.auth != null && request.auth.token.email == 'lucasdanieltrader@gmail.com';
-      allow update: if (request.auth != null && request.auth.token.email == 'lucasdanieltrader@gmail.com') ||
+      allow create: if request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com');
+      allow delete: if request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com');
+      allow update: if (request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com')) ||
                     (incoming().diff(existing()).affectedKeys().hasOnly(['usedCount', 'isActive']));
     }
 
     match /{path=**}/orders/{orderId} {
-      allow read: if request.auth != null && request.auth.token.email == 'lucasdanieltrader@gmail.com';
-      allow update: if request.auth != null && request.auth.token.email == 'lucasdanieltrader@gmail.com';
+      allow read: if request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com');
+      allow update: if request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com');
     }
 
     match /users/{userId} {
       allow get: if isSignedIn() && isOwner(userId) && isValidId(userId);
       allow list: if false; // No list of users
+
       // Users can be created
       allow create: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidUser(incoming(), userId);
       // No updates for users right now, their email/createdat are immortal
@@ -111,7 +111,7 @@ service cloud.firestore {
         allow get: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidId(itemId);
         allow list: if isSignedIn() && isOwner(userId) && isValidId(userId);
         allow create: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidId(itemId) && isValidCartItem(incoming());
-        allow update: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidId(itemId) 
+        allow update: if isSignedIn() && isOwner(userId) && isValidId(userId) && isValidId(itemId)
                          // For update, we only allow updating quantity and variantType
                          && incoming().diff(existing()).affectedKeys().hasOnly(['quantity', 'variantType', 'priceNum', 'packCount'])
                          && incoming().quantity is string
@@ -134,9 +134,9 @@ service cloud.firestore {
       }
     }
 
-    // Admin access for Lucas
+    // Admin access
     match /{document=**} {
-      allow read, write: if request.auth != null && request.auth.token.email == 'lucasdanieltrader@gmail.com';
+      allow read, write: if request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com');
     }
   }
 }

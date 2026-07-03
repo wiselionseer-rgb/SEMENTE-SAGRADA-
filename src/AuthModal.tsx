@@ -7,6 +7,7 @@ import {
   signOut,
   onAuthStateChanged,
   User,
+  sendPasswordResetEmail,
   browserPopupRedirectResolver
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -16,6 +17,7 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   
   const [loading, setLoading] = useState(false);
   
@@ -60,9 +62,28 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     setError(msg);
   };
 
+  const handleResetPassword = async () => {
+    if (!email) {
+      setError('Por favor, digite seu email no campo acima primeiro para recuperar a senha.');
+      return;
+    }
+    setError('');
+    setSuccessMsg('');
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setSuccessMsg('Email de redefinição de senha enviado! Verifique sua caixa de entrada e spam.');
+    } catch (err: any) {
+      handleError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAuth = async (e: any) => {
     e.preventDefault();
     setError('');
+    setSuccessMsg('');
     setLoading(true);
     try {
       if (isLogin) {
@@ -89,6 +110,7 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
 
   const handleGoogle = async () => {
     setError('');
+    setSuccessMsg('');
     setLoading(true);
     try {
       // Use the resolver to help with iframe/popup issues
@@ -123,6 +145,12 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
             {error}
           </div>
         )}
+
+        {successMsg && (
+          <div className="bg-lime-500/10 border border-lime-500/30 text-lime-400 p-4 rounded-xl mb-6 text-xs font-bold leading-relaxed border-l-4">
+            {successMsg}
+          </div>
+        )}
         
         <form onSubmit={handleAuth} className="flex flex-col gap-5">
           <div>
@@ -137,7 +165,14 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
             />
           </div>
           <div>
-            <label className="block text-[10px] uppercase text-gray-500 mb-2 font-black tracking-[0.2em]">Senha</label>
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-[10px] uppercase text-gray-500 font-black tracking-[0.2em]">Senha</label>
+              {isLogin && (
+                <button type="button" onClick={handleResetPassword} className="text-[#ff00ff] hover:text-lime-400 transition-colors text-[9px] uppercase font-bold tracking-widest">
+                  Esqueci a senha
+                </button>
+              )}
+            </div>
             <input 
               type="password" 
               required 
@@ -156,7 +191,7 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
           </button>
         </form>
 
-        <div className="my-8 flex items-center gap-4 hidden">
+        <div className="my-8 flex items-center gap-4 ">
           <div className="h-px bg-[#222] flex-1"></div>
           <span className="text-[#444] text-[10px] font-black uppercase tracking-widest leading-none">OU</span>
           <div className="h-px bg-[#222] flex-1"></div>
@@ -166,7 +201,7 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
           type="button" 
           onClick={handleGoogle} 
           disabled={loading}
-          className="w-full bg-white text-black font-black py-4 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 uppercase tracking-widest text-[11px] shadow-lg hidden"
+          className="w-full bg-white text-black font-black py-4 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 uppercase tracking-widest text-[11px] shadow-lg"
         >
            <img src="https://www.google.com/favicon.ico" alt="" className="w-4 h-4 opacity-80" />
            {loading ? 'Aguarde...' : 'Google'}
