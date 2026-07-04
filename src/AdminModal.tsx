@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { collectionGroup, getDocs, orderBy, query, collection, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collectionGroup, getDocs, orderBy, query, collection, addDoc, doc, updateDoc, deleteDoc, writeBatch, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
-import { X, Package, Search, DollarSign, Calendar, Mail, Loader2, ChevronDown, Ticket, Plus, Check, CheckCircle2 } from 'lucide-react';
+import { X, Package, Search, DollarSign, Calendar, Mail, Loader2, ChevronDown, Ticket, Plus, Check, CheckCircle2, LayoutDashboard, RefreshCcw } from 'lucide-react';
 import { SEEDS } from './data';
 
 interface AdminModalProps {
@@ -24,37 +24,37 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose }) => {
   const [couponMaxUses, setCouponMaxUses] = useState('10');
 
   useEffect(() => {
-    const getAdminData = async () => {
-      setLoading(true);
-      try {
-        // Fetch Orders
-        const fetchedOrders: any[] = [];
-        const usersSnap = await getDocs(collection(db, 'users'));
-        for (const userDoc of usersSnap.docs) {
-          const userOrdersSnap = await getDocs(collection(db, `users/${userDoc.id}/orders`));
-          userOrdersSnap.forEach((docSnap) => {
-            fetchedOrders.push({ id: docSnap.id, userId: userDoc.id, ...docSnap.data() });
-          });
-        }
-        fetchedOrders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-        setOrders(fetchedOrders);
+    setLoading(true);
 
-        // Fetch Coupons
-        const qCoupons = query(collection(db, 'coupons'));
-        const couponSnapshot = await getDocs(qCoupons);
-        const fetchedCoupons: any[] = [];
-        couponSnapshot.forEach((docSnap) => {
-          fetchedCoupons.push({ id: docSnap.id, ...docSnap.data() });
-        });
-        fetchedCoupons.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-        setCoupons(fetchedCoupons);
-      } catch (error) {
-        console.error("Error fetching admin data:", error);
-      } finally {
-        setLoading(false);
-      }
+    // Real-time Orders using collectionGroup
+    const qOrders = query(collectionGroup(db, 'orders'));
+    const unsubscribeOrders = onSnapshot(qOrders, (snapshot) => {
+      const fetchedOrders = snapshot.docs.map(d => ({
+        id: d.id,
+        userId: d.ref.parent.parent?.id,
+        ...d.data()
+      }));
+      fetchedOrders.sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
+      setOrders(fetchedOrders);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching orders:", error);
+      setLoading(false);
+    });
+
+    // Real-time Coupons
+    const qCoupons = query(collection(db, 'coupons'), orderBy('createdAt', 'desc'));
+    const unsubscribeCoupons = onSnapshot(qCoupons, (snapshot) => {
+      const fetchedCoupons = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      setCoupons(fetchedCoupons);
+    }, (error) => {
+      console.error("Error fetching coupons:", error);
+    });
+
+    return () => {
+      unsubscribeOrders();
+      unsubscribeCoupons();
     };
-    getAdminData();
   }, []);
 
   const handleCreateCoupon = async (e: React.FormEvent) => {
@@ -119,6 +119,59 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose }) => {
   );
 
   const totalRevenue = orders.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
+
+  const clearAllOrders = async () => {
+    if (!window.confirm('⚠️ ATENÇÃO: Isso apagará TODOS os pedidos e cupons, zerando as estatísticas permanentemente. Deseja continuar?')) return;
+    
+    setLoading(true);
+    try {
+      const batch = writeBatch(db);
+      let ops = 0;
+
+      // 1. Clear Orders from all users
+      const qOrders = query(collectionGroup(db, 'orders'));
+      const ordersSnap = await getDocs(qOrders);
+      console.log('Number of orders found via collectionGroup:', ordersSnap.size);
+      ordersSnap.forEach((d) => {
+        batch.delete(d.ref);
+        ops++;
+      });
+
+      // 2. Clear Coupons
+      const couponsSnap = await getDocs(collection(db, 'coupons'));
+      console.log('Number of coupons found:', couponsSnap.size);
+      couponsSnap.forEach((d) => {
+        batch.delete(d.ref);
+        ops++;
+      });
+
+      if (ops > 0) {
+        await batch.commit();
+        alert(`Sucesso! ${ops} registros foram removidos.`);
+      } else {
+        alert('Não há dados para limpar.');
+      }
+    } catch (error) {
+      console.error('Erro ao limpar dados:', error);
+      alert('Erro ao tentar limpar os dados. Verifique o console para mais detalhes.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calculate Coupon Ranking
+  const couponRanking = orders.reduce((acc: { [key: string]: { total: number, count: number } }, order) => {
+    if (order.appliedCoupon) {
+      const code = order.appliedCoupon.toUpperCase();
+      if (!acc[code]) acc[code] = { total: 0, count: 0 };
+      acc[code].total += order.totalAmount || 0;
+      acc[code].count += 1;
+    }
+    return acc;
+  }, {});
+
+  const sortedRanking = Object.entries(couponRanking)
+    .sort(([, a], [, b]) => (b as any).total - (a as any).total);
 
   return (
     <AnimatePresence>
@@ -210,6 +263,19 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose }) => {
             </div>
           ) : activeTab === 'dashboard' ? (
              <div className="flex flex-col gap-8">
+                <div className="flex items-center justify-between">
+                   <h3 className="text-white font-black pixel text-sm tracking-widest uppercase flex items-center gap-2">
+                     <LayoutDashboard className="text-lime-500" size={18} />
+                     Resumo Operacional
+                   </h3>
+                   <button 
+                     onClick={clearAllOrders}
+                     className="px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl text-[9px] font-black pixel tracking-widest uppercase hover:bg-red-500 hover:text-white transition-all flex items-center gap-2"
+                   >
+                     <RefreshCcw size={12} /> Reiniciar Dados
+                   </button>
+                </div>
+                
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                    <div className="bg-[#111] border border-[#333] rounded-3xl p-6">
                       <p className="text-white/50 text-xs font-black uppercase tracking-widest mb-4">Total Arrecadado</p>
@@ -240,30 +306,77 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose }) => {
                    </div>
                 </div>
 
-                <div className="bg-[#111] border border-[#333] rounded-3xl p-8">
-                   <h3 className="text-white font-black uppercase tracking-widest mb-6">Últimos Pedidos</h3>
-                   {orders.slice(0, 5).map(order => (
-                      <div key={order.id} className="flex justify-between items-center py-4 border-b border-[#333] last:border-0">
-                         <div>
-                            <p className="text-white font-bold text-sm">Pedido #{order.id.slice(0,8).toUpperCase()}</p>
-                            <p className="text-white/40 text-xs mt-1">{new Date(order.createdAt).toLocaleString()}</p>
-                         </div>
-                         <div className="text-right">
-                            <p className="text-lime-400 font-black">R$ {order.totalAmount.toFixed(2)}</p>
-                            <span className={`px-2 py-0.5 mt-1 inline-block rounded text-[10px] font-bold uppercase tracking-wider ${
-                                order.status === 'Pendente' ? 'bg-yellow-500/20 text-yellow-400' : 
-                                order.status === 'Pago' ? 'bg-lime-500/20 text-lime-400' : 
-                                'bg-[#00ffff]/20 text-[#00ffff]'
-                            }`}>
-                              {order.status}
-                            </span>
-                         </div>
-                      </div>
-                   ))}
-                   <button onClick={() => setActiveTab('orders')} className="w-full mt-6 bg-[#222] hover:bg-[#333] text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-colors">Ver todos os pedidos</button>
-                </div>
-             </div>
-          ) : activeTab === 'orders' ? (
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* ULTIMOS PEDIDOS */}
+                    <div className="bg-[#111] border border-[#333] rounded-3xl p-6">
+                       <h3 className="text-white font-black uppercase tracking-widest mb-6 flex items-center gap-2">
+                         <Package className="text-lime-500" size={18} />
+                         Últimos Pedidos
+                       </h3>
+                       <div className="space-y-2">
+                          {orders.slice(0, 5).map(order => (
+                             <div key={order.id} className="flex justify-between items-center py-3 border-b border-[#333] last:border-0">
+                                <div>
+                                   <p className="text-white font-bold text-xs">#{order.id.slice(0,8).toUpperCase()}</p>
+                                   <p className="text-white/40 text-[10px] mt-0.5">{new Date(order.createdAt).toLocaleDateString()}</p>
+                                </div>
+                                <div className="text-right">
+                                   <p className="text-lime-400 font-black text-sm">R$ {order.totalAmount.toFixed(2)}</p>
+                                   {order.appliedCoupon && (
+                                      <p className="text-[#00ffff] font-bold text-[9px] uppercase tracking-tighter">Cupom: {order.appliedCoupon}</p>
+                                   )}
+                                </div>
+                             </div>
+                          ))}
+                       </div>
+                       <button onClick={() => setActiveTab('orders')} className="w-full mt-6 bg-[#222] hover:bg-[#333] text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-colors">Ver todos os pedidos</button>
+                    </div>
+
+                    {/* RANKING DE CUPONS */}
+                    <div className="bg-[#111] border border-[#333] rounded-3xl p-6">
+                       <h3 className="text-white font-black uppercase tracking-widest mb-6 flex items-center gap-2">
+                         <Ticket className="text-[#ff00ff]" size={18} />
+                         Ranking de Cupons (Influencers)
+                       </h3>
+                       <div className="space-y-4">
+                          {sortedRanking.length === 0 ? (
+                            <div className="py-10 text-center text-white/20">
+                              <p className="text-[10px] font-black uppercase tracking-widest">Nenhum cupom rastreado</p>
+                            </div>
+                          ) : (
+                            (sortedRanking as [string, { total: number, count: number }][]).map(([code, stats], index) => (
+                              <div key={code} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/5 group hover:border-[#ff00ff]/30 transition-all">
+                                 <div className="flex items-center gap-3">
+                                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-black text-[10px] ${
+                                      index === 0 ? 'bg-yellow-500 text-black' : 
+                                      index === 1 ? 'bg-gray-300 text-black' : 
+                                      index === 2 ? 'bg-orange-600 text-white' : 
+                                      'bg-white/10 text-white/40'
+                                    }`}>
+                                       {index + 1}
+                                    </div>
+                                    <div>
+                                       <p className="text-white font-black text-xs font-mono">{code}</p>
+                                       <p className="text-white/30 text-[9px] font-bold uppercase">{stats.count} vendas</p>
+                                    </div>
+                                 </div>
+                                 <div className="text-right">
+                                    <p className="text-[#00ffff] font-black text-base vt">R$ {stats.total.toFixed(2)}</p>
+                                    <div className="w-16 h-1 bg-white/5 rounded-full mt-1 overflow-hidden">
+                                       <div 
+                                         className="h-full bg-gradient-to-r from-[#ff00ff] to-[#00ffff]" 
+                                         style={{ width: `${Math.min(100, (stats.total / totalRevenue) * 100)}%` }}
+                                       />
+                                    </div>
+                                 </div>
+                              </div>
+                            ))
+                          )}
+                       </div>
+                    </div>
+                  </div>
+               </div>
+            ) : activeTab === 'orders' ? (
              // ORDERS TAB
              filteredOrders.length === 0 ? (
               <div className="flex items-center justify-center h-full text-white/50">
@@ -310,6 +423,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose }) => {
                         <div className="text-right">
                           <p className="text-white/50 text-xs font-bold uppercase mb-1">Total</p>
                           <p className="text-lime-400 font-black text-lg">R$ {order.totalAmount.toFixed(2)}</p>
+                          {order.appliedCoupon && (
+                            <p className="text-[#00ffff] font-black text-[10px] uppercase tracking-tighter mt-1">Cupom: {order.appliedCoupon}</p>
+                          )}
                         </div>
                         <ChevronDown size={20} className={`text-white/50 transition-transform ${expandedOrder === order.id ? 'rotate-180' : ''}`} />
                       </div>
@@ -352,6 +468,21 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose }) => {
                              </>
                           )}
                         </div>
+                        {order.appliedCoupon && (
+                          <div className="mt-6 bg-[#00ffff]/5 border border-[#00ffff]/20 p-4 rounded-xl flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Ticket className="text-[#00ffff]" size={18} />
+                              <div>
+                                <p className="text-[#00ffff] font-black text-xs uppercase tracking-widest">Cupom Utilizado</p>
+                                <p className="text-white font-mono text-sm">{order.appliedCoupon}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-white/40 text-[10px] font-bold uppercase mb-1">Impacto</p>
+                              <p className="text-white font-bold text-xs">Venda Rastreada</p>
+                            </div>
+                          </div>
+                        )}
                         {order.status === 'Pendente' && (
                           <div className="mt-6 flex justify-end">
                             <button

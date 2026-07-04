@@ -21,7 +21,6 @@ import CookiesPolicyPage from './CookiesPolicyPage';
 import LegalNoticePage from './LegalNoticePage';
 import AgeVerificationModal from './components/AgeVerificationModal';
 import { CouponPopup } from './CouponPopup';
-import { motion } from 'motion/react';
 import { auth, db, handleFirestoreError, OperationType } from './firebase';
 import { onAuthStateChanged, User as FirebaseUser, signOut } from 'firebase/auth';
 import { collection, onSnapshot, query, doc, writeBatch, setDoc, deleteDoc, getDocFromServer } from 'firebase/firestore';
