@@ -191,7 +191,7 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
           </button>
         </form>
 
-        <div className="my-8 flex items-center gap-4 ">
+        <div className="my-8 flex items-center gap-4 hidden">
           <div className="h-px bg-[#222] flex-1"></div>
           <span className="text-[#444] text-[10px] font-black uppercase tracking-widest leading-none">OU</span>
           <div className="h-px bg-[#222] flex-1"></div>
@@ -201,7 +201,7 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
           type="button" 
           onClick={handleGoogle} 
           disabled={loading}
-          className="w-full bg-white text-black font-black py-4 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 uppercase tracking-widest text-[11px] shadow-lg"
+          className="w-full bg-white text-black font-black py-4 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 uppercase tracking-widest text-[11px] shadow-lg hidden"
         >
            <img src="https://www.google.com/favicon.ico" alt="" className="w-4 h-4 opacity-80" />
            {loading ? 'Aguarde...' : 'Google'}
