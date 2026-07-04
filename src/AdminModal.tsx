@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { collectionGroup, getDocs, orderBy, query, collection, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { X, Package, Search, DollarSign, Calendar, Mail, Loader2, ChevronDown, Ticket, Plus, Check, CheckCircle2 } from 'lucide-react';
 import { SEEDS } from './data';
 
 interface AdminModalProps {
+  isOpen: boolean;
   onClose: () => void;
 }
 
-export const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'coupons'>('orders');
+export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose }) => {
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'coupons'>('dashboard');
   const [orders, setOrders] = useState<any[]>([]);
   const [coupons, setCoupons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,15 +28,14 @@ export const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
       setLoading(true);
       try {
         // Fetch Orders
-        const qOrders = query(collectionGroup(db, 'orders'));
-        const querySnapshot = await getDocs(qOrders);
         const fetchedOrders: any[] = [];
-        querySnapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          const parentPath = docSnap.ref.parent.path; 
-          const userId = parentPath.split('/')[1]; 
-          fetchedOrders.push({ id: docSnap.id, userId, ...data });
-        });
+        const usersSnap = await getDocs(collection(db, 'users'));
+        for (const userDoc of usersSnap.docs) {
+          const userOrdersSnap = await getDocs(collection(db, `users/${userDoc.id}/orders`));
+          userOrdersSnap.forEach((docSnap) => {
+            fetchedOrders.push({ id: docSnap.id, userId: userDoc.id, ...docSnap.data() });
+          });
+        }
         fetchedOrders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         setOrders(fetchedOrders);
 
@@ -90,7 +91,6 @@ export const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
   };
 
   const deleteCoupon = async (id: string) => {
-    if (!window.confirm("Remover este cupom permanentemente?")) return;
     try {
       await deleteDoc(doc(db, 'coupons', id));
       setCoupons(coupons.filter(c => c.id !== id));
@@ -121,8 +121,15 @@ export const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
   const totalRevenue = orders.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
 
   return (
-    <div className="fixed inset-0 bg-black/95 z-[99999] flex flex-col font-sans">
-      <div className="flex items-center justify-between p-4 border-b border-[#333] bg-[#0a0a0a]">
+    <AnimatePresence>
+      {isOpen && (
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/95 z-[99999] flex flex-col font-sans"
+      >
+        <div className="flex items-center justify-between p-4 border-b border-[#333] bg-[#0a0a0a]">
         <div className="flex items-center gap-3">
           <div className="bg-[#ff00ff]/20 p-2 rounded-xl border border-[#ff00ff]/30">
             <Package className="text-[#ff00ff]" size={24} />
@@ -141,19 +148,27 @@ export const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
         {/* Sidebar */}
         <div className="w-full lg:w-80 border-r border-[#333] bg-[#0a0a0a] p-6 flex flex-col gap-6 overflow-y-auto">
           
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2">
             <button 
-              onClick={() => setActiveTab('orders')}
-              className={`flex-1 py-3 px-4 rounded-xl font-black pixel text-[10px] tracking-widest uppercase transition-colors ${activeTab === 'orders' ? 'bg-[#ff00ff] text-black' : 'bg-[#111] text-white/50 hover:text-white hover:bg-[#222]'}`}
+              onClick={() => setActiveTab('dashboard')}
+              className={`w-full py-3 px-4 rounded-xl font-black pixel text-[10px] tracking-widest uppercase transition-colors ${activeTab === 'dashboard' ? 'bg-lime-500 text-black' : 'bg-[#111] text-white/50 hover:text-white hover:bg-[#222]'}`}
             >
-              Pedidos
+              Dashboard
             </button>
-            <button 
-              onClick={() => setActiveTab('coupons')}
-              className={`flex-1 py-3 px-4 rounded-xl font-black pixel text-[10px] tracking-widest uppercase transition-colors ${activeTab === 'coupons' ? 'bg-[#00ffff] text-black' : 'bg-[#111] text-white/50 hover:text-white hover:bg-[#222]'}`}
-            >
-              Cupons
-            </button>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setActiveTab('orders')}
+                className={`flex-1 py-3 px-4 rounded-xl font-black pixel text-[10px] tracking-widest uppercase transition-colors ${activeTab === 'orders' ? 'bg-[#ff00ff] text-black' : 'bg-[#111] text-white/50 hover:text-white hover:bg-[#222]'}`}
+              >
+                Pedidos
+              </button>
+              <button 
+                onClick={() => setActiveTab('coupons')}
+                className={`flex-1 py-3 px-4 rounded-xl font-black pixel text-[10px] tracking-widest uppercase transition-colors ${activeTab === 'coupons' ? 'bg-[#00ffff] text-black' : 'bg-[#111] text-white/50 hover:text-white hover:bg-[#222]'}`}
+              >
+                Cupons
+              </button>
+            </div>
           </div>
 
           <div className="bg-black/50 border border-white/10 rounded-2xl p-5">
@@ -193,6 +208,61 @@ export const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
               <Loader2 className="animate-spin text-lime-500" size={48} />
               <p className="pixel text-sm tracking-widest uppercase">Carregando dados...</p>
             </div>
+          ) : activeTab === 'dashboard' ? (
+             <div className="flex flex-col gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                   <div className="bg-[#111] border border-[#333] rounded-3xl p-6">
+                      <p className="text-white/50 text-xs font-black uppercase tracking-widest mb-4">Total Arrecadado</p>
+                      <p className="text-lime-400 font-black text-4xl vt">R$ {totalRevenue.toFixed(2)}</p>
+                   </div>
+                   <div className="bg-[#111] border border-[#333] rounded-3xl p-6">
+                      <p className="text-white/50 text-xs font-black uppercase tracking-widest mb-4">Pedidos Realizados</p>
+                      <p className="text-white font-black text-4xl vt">{orders.length}</p>
+                   </div>
+                   <div className="bg-[#111] border border-[#333] rounded-3xl p-6">
+                      <p className="text-white/50 text-xs font-black uppercase tracking-widest mb-4">Ticket Médio</p>
+                      <p className="text-[#00ffff] font-black text-4xl vt">R$ {orders.length > 0 ? (totalRevenue / orders.length).toFixed(2) : '0.00'}</p>
+                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                   <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-3xl p-6">
+                      <p className="text-yellow-500/70 text-xs font-black uppercase tracking-widest mb-4">Pendentes</p>
+                      <p className="text-yellow-400 font-black text-3xl vt">{orders.filter(o => o.status === 'Pendente').length}</p>
+                   </div>
+                   <div className="bg-lime-500/10 border border-lime-500/30 rounded-3xl p-6">
+                      <p className="text-lime-500/70 text-xs font-black uppercase tracking-widest mb-4">Pagos (A Enviar)</p>
+                      <p className="text-lime-400 font-black text-3xl vt">{orders.filter(o => o.status === 'Pago').length}</p>
+                   </div>
+                   <div className="bg-[#00ffff]/10 border border-[#00ffff]/30 rounded-3xl p-6">
+                      <p className="text-[#00ffff]/70 text-xs font-black uppercase tracking-widest mb-4">Enviados</p>
+                      <p className="text-[#00ffff] font-black text-3xl vt">{orders.filter(o => o.status === 'Enviado').length}</p>
+                   </div>
+                </div>
+
+                <div className="bg-[#111] border border-[#333] rounded-3xl p-8">
+                   <h3 className="text-white font-black uppercase tracking-widest mb-6">Últimos Pedidos</h3>
+                   {orders.slice(0, 5).map(order => (
+                      <div key={order.id} className="flex justify-between items-center py-4 border-b border-[#333] last:border-0">
+                         <div>
+                            <p className="text-white font-bold text-sm">Pedido #{order.id.slice(0,8).toUpperCase()}</p>
+                            <p className="text-white/40 text-xs mt-1">{new Date(order.createdAt).toLocaleString()}</p>
+                         </div>
+                         <div className="text-right">
+                            <p className="text-lime-400 font-black">R$ {order.totalAmount.toFixed(2)}</p>
+                            <span className={`px-2 py-0.5 mt-1 inline-block rounded text-[10px] font-bold uppercase tracking-wider ${
+                                order.status === 'Pendente' ? 'bg-yellow-500/20 text-yellow-400' : 
+                                order.status === 'Pago' ? 'bg-lime-500/20 text-lime-400' : 
+                                'bg-[#00ffff]/20 text-[#00ffff]'
+                            }`}>
+                              {order.status}
+                            </span>
+                         </div>
+                      </div>
+                   ))}
+                   <button onClick={() => setActiveTab('orders')} className="w-full mt-6 bg-[#222] hover:bg-[#333] text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-colors">Ver todos os pedidos</button>
+                </div>
+             </div>
           ) : activeTab === 'orders' ? (
              // ORDERS TAB
              filteredOrders.length === 0 ? (
@@ -209,7 +279,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                     >
                       <div className="flex items-center gap-4 min-w-[200px]">
                         <div className="w-12 h-12 bg-black rounded-xl border border-white/10 flex items-center justify-center">
-                          <Package className={order.status === 'Pendente' ? 'text-yellow-500' : 'text-lime-500'} size={24} />
+                          <Package className={order.status === 'Pendente' ? 'text-yellow-500' : order.status === 'Pago' ? 'text-lime-500' : 'text-[#00ffff]'} size={24} />
                         </div>
                         <div>
                           <p className="text-white font-bold text-sm lg:text-base">Pedido #{order.id.slice(0,8).toUpperCase()}</p>
@@ -226,8 +296,12 @@ export const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                            <span className="text-white/70 text-xs truncate max-w-[120px] lg:max-w-[200px]" title={order.userId}>{order.userId}</span>
                          </div>
                          <div className="inline-flex">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${order.status === 'Pendente' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'bg-lime-500/20 text-lime-400 border border-lime-500/30'}`}>
-                              {order.status === 'Pendente' ? 'Pendente' : 'Pago'}
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                                order.status === 'Pendente' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 
+                                order.status === 'Pago' ? 'bg-lime-500/20 text-lime-400 border border-lime-500/30' : 
+                                'bg-[#00ffff]/20 text-[#00ffff] border border-[#00ffff]/30'
+                            }`}>
+                              {order.status}
                             </span>
                          </div>
                       </div>
@@ -288,6 +362,19 @@ export const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
                               className="bg-lime-500 hover:bg-lime-400 text-black px-6 py-2 rounded-xl font-black pixel text-[10px] tracking-widest uppercase transition-all flex items-center gap-2"
                             >
                               <CheckCircle2 size={16} /> Marcar como Pago
+                            </button>
+                          </div>
+                        )}
+                        {order.status === 'Pago' && (
+                          <div className="mt-6 flex justify-end">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateOrderStatus(order.userId, order.id, 'Enviado');
+                              }}
+                              className="bg-[#00ffff] hover:bg-[#00cccc] text-black px-6 py-2 rounded-xl font-black pixel text-[10px] tracking-widest uppercase transition-all flex items-center gap-2"
+                            >
+                              <CheckCircle2 size={16} /> Marcar como Enviado
                             </button>
                           </div>
                         )}
@@ -374,6 +461,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({ onClose }) => {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
+      )}
+    </AnimatePresence>
   );
 };

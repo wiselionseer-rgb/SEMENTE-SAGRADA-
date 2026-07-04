@@ -6,7 +6,7 @@ import { playSfx } from './audio';
 import { motion, AnimatePresence } from 'motion/react';
 
 export function CartModal({ isOpen, onClose, cartItems, onCheckout }: { isOpen: boolean; onClose: () => void, cartItems: any[], onCheckout: () => void }) {
-  if (!isOpen) return null;
+  
 
   const total = cartItems.reduce((acc, item) => acc + (item.priceNum || 0), 0);
   
@@ -64,8 +64,19 @@ export function CartModal({ isOpen, onClose, cartItems, onCheckout }: { isOpen: 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/95 z-[10000] flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] w-full max-w-lg p-8 relative shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden" onClick={e => e.stopPropagation()}>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/95 z-[10000] flex items-center justify-center p-4 backdrop-blur-sm" 
+          onClick={onClose}
+        >
+          <motion.div 
+            initial={{ scale: 0.9, y: 20, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.9, y: 20, opacity: 0 }} className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] w-full max-w-lg p-8 relative shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-lime-500/50 to-transparent"></div>
         
         <button onClick={onClose} className="absolute top-6 right-6 text-white/20 hover:text-white transition-colors pixel text-[10px]">X</button>
@@ -231,13 +242,15 @@ export function CartModal({ isOpen, onClose, cartItems, onCheckout }: { isOpen: 
             </button>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
 export function FavoritesModal({ isOpen, onClose, favorites }: { isOpen: boolean; onClose: () => void, favorites: string[] }) {
-  if (!isOpen) return null;
+  
 
   const removeFav = async (seedId: string) => {
     if (!auth.currentUser) return;
@@ -251,8 +264,19 @@ export function FavoritesModal({ isOpen, onClose, favorites }: { isOpen: boolean
   const favSeeds = SEEDS.filter(s => favorites.includes(String(s.id)));
 
   return (
-    <div className="fixed inset-0 bg-black/95 z-[10000] flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] w-full max-w-lg p-8 relative shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/95 z-[10000] flex items-center justify-center p-4 backdrop-blur-sm" 
+          onClick={onClose}
+        >
+          <motion.div 
+            initial={{ scale: 0.9, y: 20, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.9, y: 20, opacity: 0 }} className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] w-full max-w-lg p-8 relative shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#ff00ff]/50 to-transparent"></div>
         
         <button onClick={onClose} className="absolute top-6 right-6 text-white/20 hover:text-white transition-colors pixel text-[10px]">X</button>
@@ -281,17 +305,30 @@ export function FavoritesModal({ isOpen, onClose, favorites }: { isOpen: boolean
             ))}
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
 export function OrdersModal({ isOpen, onClose, orders }: { isOpen: boolean; onClose: () => void, orders: any[] }) {
-  if (!isOpen) return null;
+  
 
   return (
-    <div className="fixed inset-0 bg-black/95 z-[10000] flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] w-full max-w-2xl p-8 relative shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/95 z-[10000] flex items-center justify-center p-4 backdrop-blur-sm" 
+          onClick={onClose}
+        >
+          <motion.div 
+            initial={{ scale: 0.9, y: 20, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.9, y: 20, opacity: 0 }} className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] w-full max-w-2xl p-8 relative shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-lime-500/50 to-transparent"></div>
         
         <button onClick={onClose} className="absolute top-6 right-6 text-white/20 hover:text-white transition-colors pixel text-[10px]">X</button>
@@ -343,7 +380,9 @@ export function OrdersModal({ isOpen, onClose, orders }: { isOpen: boolean; onCl
             ))}
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

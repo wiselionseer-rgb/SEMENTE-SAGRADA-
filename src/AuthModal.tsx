@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { auth, handleFirestoreError, OperationType, db, googleProvider } from './firebase';
 import { 
   signInWithEmailAndPassword, 
@@ -21,8 +22,6 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   
   const [loading, setLoading] = useState(false);
   
-  if (!isOpen) return null;
-
   const handleError = (err: any) => {
     setLoading(false);
     let msg = err.message || String(err);
@@ -133,9 +132,23 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 z-[10000] flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-[#111] border border-[#333] rounded-2xl w-full max-w-md p-6 relative font-sans" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors pixel text-[10px]">X</button>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/90 z-[10000] flex items-center justify-center p-4" 
+          onClick={onClose}
+        >
+          <motion.div 
+            initial={{ scale: 0.9, y: 20, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.9, y: 20, opacity: 0 }}
+            className="bg-[#111] border border-[#333] rounded-2xl w-full max-w-md p-6 relative font-sans" 
+            onClick={e => e.stopPropagation()}
+          >
+            <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors pixel text-[10px]">X</button>
         <h2 className="text-2xl text-lime-400 font-bold mb-6 pixel text-center tracking-tighter">
           {isLogin ? 'LOGIN' : 'CADASTRO'}
         </h2>
@@ -213,7 +226,9 @@ export function AuthModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
             {isLogin ? 'Cadastre-se' : 'Faça Login'}
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+      </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

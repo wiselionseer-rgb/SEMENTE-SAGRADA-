@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -44,13 +45,20 @@ export const CouponPopup = () => {
     };
   }, [coupons]);
 
-  if (!visible || coupons.length === 0) return null;
+  
 
   const currentCoupon = coupons[currentCouponIndex];
-  if (!currentCoupon) return null;
 
   return (
-    <div className="fixed bottom-24 right-4 z-[9999] bg-[#111] border-2 border-[#00ffff] rounded-xl p-4 shadow-[0_0_20px_rgba(0,255,255,0.4)] max-w-[280px] transition-all duration-500 ease-in-out transform translate-y-0 opacity-100">
+    <AnimatePresence>
+      {(visible && coupons.length > 0 && currentCoupon) && (
+        <motion.div 
+          initial={{ opacity: 0, y: 50, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.9 }}
+          transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          className="fixed bottom-24 right-4 z-[9999] bg-[#111] border-2 border-[#00ffff] rounded-xl p-4 shadow-[0_0_20px_rgba(0,255,255,0.4)] max-w-[280px]"
+        >
       <button 
         onClick={() => setVisible(false)}
         className="absolute -top-3 -right-3 bg-black border-2 border-[#00ffff] text-[#00ffff] rounded-full w-8 h-8 flex items-center justify-center text-sm hover:bg-[#00ffff] hover:text-black transition-colors z-10"
@@ -75,7 +83,9 @@ export const CouponPopup = () => {
           {currentCoupon.discountPercentage}% DE DESCONTO
         </p>
         <p className="text-[9px] text-white/50">Clique no código para copiar</p>
-      </div>
-    </div>
+            </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };

@@ -1,0 +1,125 @@
+126: <motion.div
+132: <div className="flex items-center justify-between p-4 border-b border-[#333] bg-[#0a0a0a]">
+133: <div className="flex items-center gap-3">
+134: <div className="bg-[#ff00ff]/20 p-2 rounded-xl border border-[#ff00ff]/30">
+136: </div>
+137: <div>
+140: </div>
+141: </div>
+145: </div>
+147: <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-[#050505]">
+149: <div className="w-full lg:w-80 border-r border-[#333] bg-[#0a0a0a] p-6 flex flex-col gap-6 overflow-y-auto">
+151: <div className="flex flex-col gap-2">
+158: <div className="flex gap-2">
+171: </div>
+172: </div>
+174: <div className="bg-black/50 border border-white/10 rounded-2xl p-5">
+176: <div className="flex items-center gap-3">
+179: </div>
+180: </div>
+182: <div className="bg-black/50 border border-white/10 rounded-2xl p-5">
+184: <div className="flex items-center gap-3">
+187: </div>
+188: </div>
+191: <div className="relative mt-4">
+200: </div>
+202: </div>
+205: <div className="flex-1 overflow-y-auto p-4 lg:p-8 scrollbar-thin scrollbar-thumb-[#333] scrollbar-track-transparent">
+207: <div className="flex flex-col items-center justify-center h-full text-white/50 gap-4">
+210: </div>
+212: <div className="flex flex-col gap-8">
+213: <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+214: <div className="bg-[#111] border border-[#333] rounded-3xl p-6">
+217: </div>
+218: <div className="bg-[#111] border border-[#333] rounded-3xl p-6">
+221: </div>
+222: <div className="bg-[#111] border border-[#333] rounded-3xl p-6">
+225: </div>
+226: </div>
+228: <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+229: <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-3xl p-6">
+232: </div>
+233: <div className="bg-lime-500/10 border border-lime-500/30 rounded-3xl p-6">
+236: </div>
+237: <div className="bg-[#00ffff]/10 border border-[#00ffff]/30 rounded-3xl p-6">
+240: </div>
+241: </div>
+243: <div className="bg-[#111] border border-[#333] rounded-3xl p-8">
+246: <div key={order.id} className="flex justify-between items-center py-4 border-b border-[#333] last:border-0">
+247: <div>
+250: </div>
+251: <div className="text-right">
+260: </div>
+261: </div>
+264: </div>
+265: </div>
+269: <div className="flex items-center justify-center h-full text-white/50">
+271: </div>
+273: <div className="flex flex-col gap-4">
+275: <div key={order.id} className="bg-[#111] border border-[#333] rounded-2xl overflow-hidden transition-all hover:border-white/20">
+276: <div
+280: <div className="flex items-center gap-4 min-w-[200px]">
+281: <div className="w-12 h-12 bg-black rounded-xl border border-white/10 flex items-center justify-center">
+283: </div>
+284: <div>
+286: <div className="flex items-center gap-2 mt-1">
+289: </div>
+290: </div>
+291: </div>
+293: <div className="flex flex-col gap-1 min-w-[150px]">
+294: <div className="flex items-center gap-2">
+297: </div>
+298: <div className="inline-flex">
+306: </div>
+307: </div>
+309: <div className="flex items-center gap-6">
+310: <div className="text-right">
+313: </div>
+315: </div>
+316: </div>
+320: <div className="p-5 border-t border-[#333] bg-black/40">
+322: <div className="flex flex-col gap-3">
+324: <div key={idx} className="flex justify-between items-center bg-[#111] p-3 rounded-xl border border-white/5">
+325: <div className="flex items-center gap-3">
+326: <div className="bg-black p-2 rounded-lg border border-white/10 text-white/50 text-xs font-bold w-10 text-center">
+328: </div>
+329: <div>
+332: </div>
+333: </div>
+335: </div>
+342: <div key={`bonus-${idx}`} className="flex justify-between items-center bg-[#00ffff]/5 p-3 rounded-xl border border-[#00ffff]/20">
+343: <div className="flex items-center gap-3">
+344: <div className="bg-black p-2 rounded-lg border border-[#00ffff]/30 text-[#00ffff] text-xs font-bold w-10 text-center">
+346: </div>
+348: </div>
+350: </div>
+354: </div>
+356: <div className="mt-6 flex justify-end">
+366: </div>
+369: <div className="mt-6 flex justify-end">
+379: </div>
+381: </div>
+383: </div>
+385: </div>
+389: <div className="flex flex-col gap-8 max-w-4xl mx-auto">
+390: <div className="bg-black/40 border border-[#333] rounded-2xl p-6 shadow-xl">
+393: <div className="flex flex-col gap-2">
+396: </div>
+397: <div className="flex flex-col gap-2">
+400: </div>
+401: <div className="flex flex-col gap-2">
+404: </div>
+409: </div>
+411: <div className="bg-[#111] border border-[#333] rounded-2xl overflow-hidden">
+412: <div className="p-4 border-b border-[#333] bg-black/50">
+414: </div>
+416: <div className="p-8 text-center text-white/40 font-bold uppercase text-sm">Nenhum cupom gerado.</div>
+434: <div className="flex items-center gap-2">
+435: <div className="w-16 h-2 bg-[#222] rounded-full overflow-hidden">
+436: <div className="h-full bg-[#00ffff]" style={{ width: `${Math.min(100, (coupon.usedCount / coupon.maxUses) * 100)}%` }}></div>
+437: </div>
+439: </div>
+459: </div>
+460: </div>
+462: </div>
+463: </motion.div>

@@ -3,11 +3,13 @@ import { SEEDS, Seed, Quantity, QUANTITIES, getQtyLabel, getBonusSeeds } from '.
 import { GameState, INITIAL_STATE } from './gameState';
 import { drawGarden, emitRain, emitFertilizer, emitPrune, emitHarvest } from './canvas';
 import { playSfx, toggleMusic, musicOn, getCurrentTrackName, changeTrack, setOnTrackChangeCallback, setVolume } from './audio';
+import { motion, AnimatePresence } from 'motion/react';
 import { Search, User, Heart, ShoppingCart, Globe, ListFilter, ChevronLeft, ChevronRight, ChevronUp, MessageCircle, Trash2, Shield } from 'lucide-react';
 import ManualPage from './ManualPage';
 
 import { AuthModal } from './AuthModal';
 import { AdminModal } from './AdminModal';
+import { ContactModal, ServiceType } from './ContactModal';
 import { CartModal, FavoritesModal, OrdersModal } from './StoreModals';
 import CheckoutPage from './CheckoutPage';
 import PaymentPage from './PaymentPage';
@@ -47,6 +49,7 @@ export default function App() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [contactService, setContactService] = useState<ServiceType>(null);
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -222,13 +225,13 @@ export default function App() {
   const [popupMsg, setPopupMsg] = useState<{title: string, message: string, btnText: string} | null>(null);
 
   useEffect(() => {
-    if (selectedSeedId !== null || isCartOpen || isFavoritesOpen || isOrdersOpen || isAuthOpen || isAdminOpen) {
+    if (selectedSeedId !== null || isCartOpen || isFavoritesOpen || isOrdersOpen || isAuthOpen || isAdminOpen || contactService !== null) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
     return () => { document.body.style.overflow = ''; };
-  }, [selectedSeedId, isCartOpen, isFavoritesOpen, isOrdersOpen, isAuthOpen]);
+  }, [selectedSeedId, isCartOpen, isFavoritesOpen, isOrdersOpen, isAuthOpen, contactService]);
 
   useEffect(() => {
     if (selectedSeedId !== null) setCurrentImgIdx(0);
@@ -750,7 +753,7 @@ export default function App() {
                  <Globe size={18} className="text-[#ff00ff]" /> <span className="font-bold text-xs uppercase tracking-widest">Global</span>
                </div>
                <div className="flex items-center gap-5 px-2">
-                  {user && (user.email?.toLowerCase().trim() === 'lucasdanieltrader@gmail.com' || user.email?.toLowerCase().trim() === 'wiselisonseer@gmail.com' || user.email?.toLowerCase().trim() === 'lucasdanielneres10@gmail.com') && (
+                  {user && (user.email?.toLowerCase().trim() === 'lucasdanieltrader@gmail.com' || user.email?.toLowerCase().trim() === 'wiselionseer@gmail.com' || user.email?.toLowerCase().trim() === 'lucasdanielneres10@gmail.com') && (
                      <Shield onClick={() => setIsAdminOpen(true)} className="cursor-pointer text-[#ff00ff] hover:text-lime-400 transition-colors drop-shadow-[0_0_10px_rgba(255,0,255,0.5)]" size={20} />
                   )}
                   <User onClick={() => user ? setIsOrdersOpen(true) : setIsAuthOpen(true)} className="cursor-pointer hover:text-lime-400 transition-colors" size={20} />
@@ -1376,9 +1379,9 @@ export default function App() {
                           <li>✦ Suporte Jurídico Preliminar</li>
                         </ul>
                         <div className="pt-6">
-                           <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="block w-full bg-lime-500 text-black text-center font-black py-4 rounded-xl uppercase tracking-widest text-xs hover:bg-white transition-all">
+                           <button onClick={() => { playSfx('click'); setContactService('consulta'); }} className="block w-full bg-lime-500 text-black text-center font-black py-4 rounded-xl uppercase tracking-widest text-xs hover:bg-white transition-all">
                               FALAR COM ESPECIALISTA AGORA
-                           </a>
+                           </button>
                         </div>
                       </div>
                     )
@@ -2578,7 +2581,7 @@ export default function App() {
                       <button 
                          onClick={() => {
                             playSfx('click');
-                            window.open('https://api.whatsapp.com/send?phone=5565992898324', '_blank');
+                            setContactService('consulta');
                          }}
                          className="w-full bg-gradient-to-r from-[#38bdf8] to-[#2563eb] text-white vt text-xl md:text-2xl px-8 py-6 rounded-3xl shadow-[0_20px_50px_rgba(37,99,235,0.3)] hover:scale-105 active:scale-95 transition-all group"
                       >
@@ -2653,7 +2656,7 @@ export default function App() {
                       <button 
                          onClick={() => {
                             playSfx('click');
-                            window.open('https://api.whatsapp.com/send?phone=5565992898324', '_blank');
+                            setContactService('laudo');
                          }}
                          className="w-full bg-gradient-to-r from-emerald-400 to-emerald-600 text-white vt text-lg md:text-xl px-8 py-6 rounded-3xl shadow-[0_20px_50px_rgba(16,185,129,0.3)] hover:scale-105 active:scale-95 transition-all group"
                       >
@@ -2728,7 +2731,7 @@ export default function App() {
                       <button 
                          onClick={() => {
                             playSfx('click');
-                            window.open('https://api.whatsapp.com/send?phone=5565992898324', '_blank');
+                            setContactService('juridico');
                          }}
                          className="w-full bg-gradient-to-r from-amber-400 to-amber-600 text-white vt text-lg md:text-xl px-8 py-6 rounded-3xl shadow-[0_20px_50px_rgba(245,158,11,0.3)] hover:scale-105 active:scale-95 transition-all group"
                       >
@@ -2803,7 +2806,7 @@ export default function App() {
                       <button 
                          onClick={() => {
                             playSfx('click');
-                            window.open('https://api.whatsapp.com/send?phone=5565992898324', '_blank');
+                            setContactService('medicamentos');
                          }}
                          className="w-full bg-gradient-to-r from-violet-400 to-violet-600 text-white vt text-lg md:text-xl px-8 py-6 rounded-3xl shadow-[0_20px_50px_rgba(139,92,246,0.3)] hover:scale-105 active:scale-95 transition-all group"
                       >
@@ -3142,6 +3145,7 @@ export default function App() {
       )}
 
       {/* SEED MODAL OVERLAY - GLOBAL */}
+      <AnimatePresence>
       {selectedSeedId !== null && (() => {
         const seed = SEEDS.find(s => s.id === selectedSeedId);
         if (!seed) return null;
@@ -3228,7 +3232,13 @@ export default function App() {
         const isFavorite = favorites.includes(String(seed.id));
         
         return (
-          <div className="fixed inset-0 bg-black/95 z-[10000] flex items-center justify-center p-2 sm:p-6 overflow-hidden font-sans" onClick={() => setSelectedSeedId(null)}>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/95 z-[10000] flex items-center justify-center p-2 sm:p-6 overflow-hidden font-sans" 
+            onClick={() => setSelectedSeedId(null)}
+          >
             <div className="bg-[#0a0a0a] border border-[#333] rounded-2xl w-full max-w-[1400px] h-[95vh] md:h-[90vh] flex flex-col lg:flex-row relative shadow-[0_0_50px_rgba(0,0,0,1)] overflow-hidden" onClick={e => e.stopPropagation()}>
               
               {/* CLOSE BUTTON */}
@@ -4244,13 +4254,14 @@ export default function App() {
 
               </div>
             </div>
-          </div>
+          </motion.div>
         );
-
       })()}
+      </AnimatePresence>
 
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
-      {isAdminOpen && <AdminModal onClose={() => setIsAdminOpen(false)} />}
+      <AdminModal isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />
+      <ContactModal service={contactService} onClose={() => setContactService(null)} />
       <CartModal 
         isOpen={isCartOpen} 
         onClose={() => setIsCartOpen(false)} 
@@ -4264,14 +4275,22 @@ export default function App() {
       <OrdersModal isOpen={isOrdersOpen} onClose={() => setIsOrdersOpen(false)} orders={orders} />
 
       {/* Popup de Informação Estratégica - Z-index super elevado para ficar acima dos detalhes da semente */}
+      <AnimatePresence>
       {popupMsg && (
-        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100000] flex items-center justify-center p-4"
+        >
           <div 
             className="absolute inset-0 bg-black/95 backdrop-blur-sm transition-opacity duration-300" 
             onClick={() => setPopupMsg(null)}
           ></div>
-          
-          <div className="bg-[#111] border-2 border-lime-500 rounded-2xl p-6 md:p-10 max-w-lg w-full relative z-[100001] shadow-[0_0_100px_rgba(163,230,53,0.3)] flex flex-col items-center text-center scale-up-center">
+          <motion.div
+            initial={{ scale: 0.9, y: 20, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.9, y: 20, opacity: 0 }} className="bg-[#111] border-2 border-lime-500 rounded-2xl p-6 md:p-10 max-w-lg w-full relative z-[100001] shadow-[0_0_100px_rgba(163,230,53,0.3)] flex flex-col items-center text-center scale-up-center">
             {/* Lacre de Segurança/Qualidade */}
             <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-yellow-500 text-black font-black text-[10px] uppercase tracking-[3px] px-6 py-2 rounded-full shadow-[0_5px_15px_rgba(234,179,8,0.3)] whitespace-nowrap">
               Qualidade Certificada
@@ -4319,7 +4338,6 @@ export default function App() {
                 </p>
               </div>
             </div>
-          </div>
           
           <style dangerouslySetInnerHTML={{ __html: `
             .scale-up-center {
@@ -4330,9 +4348,10 @@ export default function App() {
               100% { transform: scale(1); opacity: 1; }
             }
           `}} />
-        </div>
+          </motion.div>
+        </motion.div>
       )}
-
+      </AnimatePresence>
     </div>
   );
 }
