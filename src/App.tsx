@@ -750,7 +750,7 @@ export default function App() {
                  <Globe size={18} className="text-[#ff00ff]" /> <span className="font-bold text-xs uppercase tracking-widest">Global</span>
                </div>
                <div className="flex items-center gap-5 px-2">
-                  {user && (user.email?.toLowerCase().trim() === 'lucasdanieltrader@gmail.com' || user.email?.toLowerCase().trim() === 'wiselisonseer@gmail.com') && (
+                  {user && (user.email?.toLowerCase().trim() === 'lucasdanieltrader@gmail.com' || user.email?.toLowerCase().trim() === 'wiselisonseer@gmail.com' || user.email?.toLowerCase().trim() === 'lucasdanielneres10@gmail.com') && (
                      <Shield onClick={() => setIsAdminOpen(true)} className="cursor-pointer text-[#ff00ff] hover:text-lime-400 transition-colors drop-shadow-[0_0_10px_rgba(255,0,255,0.5)]" size={20} />
                   )}
                   <User onClick={() => user ? setIsOrdersOpen(true) : setIsAuthOpen(true)} className="cursor-pointer hover:text-lime-400 transition-colors" size={20} />

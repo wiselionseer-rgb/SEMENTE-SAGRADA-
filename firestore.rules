@@ -78,15 +78,15 @@ service cloud.firestore {
     
     match /coupons/{couponId} {
       allow read: if true;
-      allow create: if request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com');
-      allow delete: if request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com');
-      allow update: if (request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com')) ||
+      allow create: if request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com' || request.auth.token.email == 'lucasdanielneres10@gmail.com');
+      allow delete: if request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com' || request.auth.token.email == 'lucasdanielneres10@gmail.com');
+      allow update: if (request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com' || request.auth.token.email == 'lucasdanielneres10@gmail.com')) ||
                     (incoming().diff(existing()).affectedKeys().hasOnly(['usedCount', 'isActive']));
     }
 
     match /{path=**}/orders/{orderId} {
-      allow read: if request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com');
-      allow update: if request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com');
+      allow read: if request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com' || request.auth.token.email == 'lucasdanielneres10@gmail.com');
+      allow update: if request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com' || request.auth.token.email == 'lucasdanielneres10@gmail.com');
     }
 
     match /users/{userId} {
@@ -136,7 +136,7 @@ service cloud.firestore {
 
     // Admin access
     match /{document=**} {
-      allow read, write: if request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com');
+      allow read, write: if request.auth != null && (request.auth.token.email == 'lucasdanieltrader@gmail.com' || request.auth.token.email == 'wiselisonseer@gmail.com' || request.auth.token.email == 'lucasdanielneres10@gmail.com');
     }
   }
 }
