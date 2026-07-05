@@ -268,6 +268,29 @@ export default function App() {
     setOnTrackChangeCallback((name) => {
       setTrackName(name);
     });
+
+    const handleFirstInteraction = () => {
+      if (!musicOn) {
+        toggleMusic();
+        setIsMusicOn(true);
+      }
+      document.removeEventListener('scroll', handleFirstInteraction);
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+      document.removeEventListener('wheel', handleFirstInteraction);
+    };
+
+    document.addEventListener('scroll', handleFirstInteraction, { passive: true });
+    document.addEventListener('click', handleFirstInteraction);
+    document.addEventListener('touchstart', handleFirstInteraction, { passive: true });
+    document.addEventListener('wheel', handleFirstInteraction, { passive: true });
+
+    return () => {
+      document.removeEventListener('scroll', handleFirstInteraction);
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+      document.removeEventListener('wheel', handleFirstInteraction);
+    };
   }, []);
 
   const handleNextTrack = () => {
