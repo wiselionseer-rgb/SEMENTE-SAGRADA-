@@ -4,7 +4,7 @@ import { GameState, INITIAL_STATE } from './gameState';
 import { drawGarden, emitRain, emitFertilizer, emitPrune, emitHarvest } from './canvas';
 import { playSfx, toggleMusic, musicOn, getCurrentTrackName, changeTrack, setOnTrackChangeCallback, setVolume } from './audio';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, User, Heart, ShoppingCart, Globe, ListFilter, ChevronLeft, ChevronRight, ChevronUp, MessageCircle, Trash2, Shield } from 'lucide-react';
+import { Search, User, Heart, ShoppingCart, Globe, ListFilter, ChevronLeft, ChevronRight, ChevronUp, MessageCircle, Trash2, Shield, Music, Play, SkipBack, SkipForward } from 'lucide-react';
 import ManualPage from './ManualPage';
 
 import { AuthModal } from './AuthModal';
@@ -635,16 +635,18 @@ export default function App() {
       {/* GLOBAL STICKY HEADER */}
       <div className="md:sticky relative top-0 z-[1000] w-full flex flex-col shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
         {/* TOP PROMO BAR */}
-        <div className="w-full bg-lime-500 text-black py-2 px-4 text-center vt text-[10px] md:text-sm font-bold uppercase tracking-widest flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 shadow-[0_4px_15px_rgba(0,255,0,0.2)]">
-          <img src="/gifs/verde_claro.png" className="h-6 w-6 pixelate inline-block" alt="Promo Promo" />
-          {(() => {
-            const currentTotal = cartItems.reduce((acc, item) => acc + (item.priceNum || 0), 0);
-            const remaining = 680 - currentTotal;
-            if (remaining <= 0) return <span>Parabéns! Você liberou o ENVIO GRÁTIS DISCRETO!</span>;
-            return <span>Gaste mais R${remaining.toFixed(2).replace('.', ',')} para obter envio grátis discreto!</span>;
-          })()}
+        <div className="w-full bg-lime-500 text-black py-1.5 px-4 text-center vt text-[9px] md:text-sm font-black uppercase tracking-[0.2em] flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 shadow-[0_4px_15px_rgba(0,255,0,0.2)] border-b border-black/5">
+          <div className="flex items-center gap-2">
+            <img src="/gifs/verde_claro.png" className="h-4 w-4 md:h-6 md:w-6 pixelate" alt="Promo" />
+            {(() => {
+              const currentTotal = cartItems.reduce((acc, item) => acc + (item.priceNum || 0), 0);
+              const remaining = 680 - currentTotal;
+              if (remaining <= 0) return <span>Parabéns! Você liberou o <span className="text-white drop-shadow-sm">ENVIO GRÁTIS DISCRETO!</span></span>;
+              return <span>Gaste mais <span className="bg-black text-lime-400 px-1.5 rounded-sm">R${remaining.toFixed(2).replace('.', ',')}</span> para obter envio grátis discreto!</span>;
+            })()}
+          </div>
           <button 
-            className="bg-black text-lime-400 px-4 py-1 hover:bg-white hover:text-black transition-colors rounded-full text-xs pixel shadow-inner border border-lime-700"
+            className="bg-black text-lime-400 px-6 py-1 hover:bg-white hover:text-black transition-all rounded-full text-[9px] md:text-xs pixel shadow-lg border border-lime-700 active:scale-95"
             onClick={() => {
               playSfx('click');
               const el = document.getElementById('catalog');
@@ -660,10 +662,19 @@ export default function App() {
           <div className="max-w-[1200px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-6">
             
             {/* Top Row: Logo & Icons (Mobile optimized) */}
-            <div className="w-full lg:w-auto flex items-center justify-between gap-4">
-              {/* Logo */}
+            <div className="w-full lg:w-auto flex items-center justify-between lg:justify-start gap-4">
+              
+              {/* Mobile Profile Icon (Visible only on mobile, left side) */}
+              <button 
+                onClick={() => setIsAuthOpen(true)}
+                className="lg:hidden p-1 text-white hover:text-lime-400 transition-colors"
+              >
+                <User size={22} />
+              </button>
+
+              {/* Logo (Centered on mobile) */}
               <div 
-                className="flex items-center gap-2 sm:gap-4 cursor-pointer group relative"
+                className="flex items-center gap-2 sm:gap-4 cursor-pointer group relative mx-auto lg:mx-0"
                 onClick={() => {
                   playSfx('click');
                   setActiveFilter(null);
@@ -692,22 +703,16 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Mobile Icons Area (Visible only on mobile) */}
-              <div className="flex lg:hidden items-center gap-4">
-                <div className="relative" onClick={() => user ? setIsCartOpen(true) : setIsAuthOpen(true)}>
-                  <ShoppingCart className="text-white hover:text-lime-400 transition-colors" size={20} />
+              {/* Mobile Cart Icon (Visible only on mobile, right side) */}
+              <div className="lg:hidden flex items-center">
+                <div className="relative cursor-pointer p-1" onClick={() => user ? setIsCartOpen(true) : setIsAuthOpen(true)}>
+                  <ShoppingCart className="text-white hover:text-lime-400 transition-colors" size={22} />
                   {cartItems.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-[#ff00ff] text-white pixel text-[8px] w-4 h-4 flex items-center justify-center rounded-sm border border-white">
+                    <span className="absolute -top-1 -right-1 bg-[#ff00ff] text-white pixel text-[8px] w-4 h-4 flex items-center justify-center rounded-sm border border-white">
                       {cartItems.reduce((acc, item) => acc + (item.packCount || 1), 0)}
                     </span>
                   )}
                 </div>
-                <button 
-                  onClick={() => setIsAuthOpen(true)}
-                  className="p-1 text-white hover:text-lime-400"
-                >
-                  <User size={20} />
-                </button>
               </div>
             </div>
 
@@ -934,8 +939,8 @@ export default function App() {
         </div>
 
         {/* NAVIGATION BAR */}
-        <div className="bg-[#050505] text-[#ccc] font-sans text-[11px] md:text-[13px] font-black tracking-widest border-b border-[#222]">
-          <div className="max-w-[1200px] mx-auto flex overflow-x-auto no-scrollbar">
+        <div className="bg-[#080808] text-[#999] font-sans text-[10px] md:text-[13px] font-black tracking-[0.1em] border-b border-white/5">
+          <div className="max-w-[1200px] mx-auto flex overflow-x-auto no-scrollbar scroll-smooth">
             {navItems.map((item, idx) => {
               const isActive = activeCatalogTab === item.label;
               const isSpecial = item.special;
@@ -945,20 +950,19 @@ export default function App() {
                 <button
                   key={item.label}
                   onClick={() => handleNavClick(item)}
-                  className={`px-6 py-4 transition-colors whitespace-nowrap border-b-2 uppercase flex items-center gap-1 ${
-                    isActive 
-                      ? 'bg-[#111] text-lime-400 border-lime-500' 
-                      : isSpecial 
-                        ? item.isGame 
-                          ? 'bg-lime-500/10 hover:bg-lime-500/20 text-lime-400 border-transparent hover:border-lime-500' 
-                          : item.label.includes('Drops') 
-                            ? 'bg-[#330033] hover:bg-[#550055] text-white border-transparent hover:border-[#ff00ff]' 
-                            : 'bg-[#111111] hover:bg-[#222222] border-transparent hover:border-white'
-                        : 'hover:bg-[#111] hover:text-lime-400 border-transparent hover:border-lime-500'
-                  } ${item.label === 'Mural' ? 'ml-auto border-transparent hover:border-lime-500 text-[#777]' : ''} ${item.isGame ? 'text-lime-400 font-black animate-pulse' : ''}`}
+                  className={`
+                    whitespace-nowrap px-6 py-4 md:py-5 transition-all duration-300 relative group flex items-center gap-2 uppercase
+                    ${isActive ? 'bg-[#111] text-lime-400 border-b-2 border-lime-500 shadow-[0_0_20px_rgba(132,204,22,0.1)]' : 'hover:bg-white/5 hover:text-white border-b-2 border-transparent'}
+                    ${isSpecial && !isActive ? 'text-white/60' : ''}
+                    ${item.isGame ? 'text-lime-500' : ''}
+                  `}
                 >
-                  {item.isGame && <span className="text-lime-400 mr-1">🎮</span>}
-                  {item.label} {item.hasSub && <span className="text-[#666]">▼</span>}
+                  {item.isGame && <span className={`text-lime-400 ${isActive ? 'animate-bounce' : ''}`}>🎮</span>}
+                  <span className={`vt tracking-[0.15em] ${isActive ? 'scale-105' : ''}`}>
+                    {item.label}
+                    {item.hasSub && <span className="text-[#555] ml-1 text-[8px]">▼</span>}
+                  </span>
+                  {isSpecial && !isActive && <span className="w-1.5 h-1.5 bg-[#ff00ff] rounded-full animate-pulse ml-1 shadow-[0_0_8px_#ff00ff]"></span>}
                 </button>
               );
             })}
@@ -1064,7 +1068,7 @@ export default function App() {
         </div>
       ))}
       
-      <div id="top-header" className="sticky top-0 z-50 shadow-[0_10px_30px_rgba(0,0,0,0.8)] border-b-8 border-double border-[var(--green)] flex flex-col items-center relative overflow-hidden min-h-[200px] md:min-h-[480px] justify-center">
+      <div id="top-header" className="sticky top-0 z-50 shadow-[0_10px_30px_rgba(0,0,0,0.8)] border-b-8 border-double border-[var(--green)] hidden md:flex flex-col items-center relative overflow-hidden min-h-[480px] justify-center">
         <video 
           autoPlay 
           loop 
@@ -1092,23 +1096,23 @@ export default function App() {
           <div className="mt-4 flex flex-wrap justify-center gap-4 items-center w-full px-2">
             
             {/* BOOMBOX MUSIC PLAYER */}
-            <div className="hidden sm:flex bg-[#111] border-4 border-outset border-[#555] px-2 md:px-4 py-2 md:py-3 flex-wrap md:flex-nowrap justify-center items-center gap-2 md:gap-4 drop-shadow-xl min-w-[280px]">
+            <div className="flex bg-[#111] border-2 md:border-4 border-outset border-[#555] px-2 md:px-4 py-1 md:py-3 flex-wrap md:flex-nowrap justify-center items-center gap-2 md:gap-4 drop-shadow-xl min-w-full md:min-w-[280px]">
               <div className="flex items-center gap-2">
-                <span className="pixel text-[10px] md:text-[14px] text-[#00ff00] animate-pulse">FM/AM</span>
-                <button className="pixel text-[10px] md:text-[12px] px-2 md:px-3 py-1 md:py-2 bg-[#333] border-2 border-outset border-[#777] text-white hover:bg-[#555] active:border-inset" onClick={() => { playSfx('click'); handlePrevTrack(); }} onMouseEnter={() => playSfx('hover')}>{'<<'}</button>
-                <button className={`pixel text-[10px] md:text-[12px] px-3 md:px-4 py-1 md:py-2 ${isMusicOn ? 'bg-red-700 hover:bg-red-600' : 'bg-[#333] hover:bg-[#555]'} border-2 border-outset border-[#777] text-white active:border-inset transition-colors`} onClick={() => { playSfx('click'); handleMusicToggle(); }} onMouseEnter={() => playSfx('hover')}>
+                <span className="pixel text-[8px] md:text-[14px] text-[#00ff00] animate-pulse">FM/AM</span>
+                <button className="pixel text-[8px] md:text-[12px] px-1 md:px-3 py-0.5 md:py-2 bg-[#333] border-2 border-outset border-[#777] text-white hover:bg-[#555] active:border-inset" onClick={() => { playSfx('click'); handlePrevTrack(); }} onMouseEnter={() => playSfx('hover')}>{'<<'}</button>
+                <button className={`pixel text-[8px] md:text-[12px] px-2 md:px-4 py-1 md:py-2 ${isMusicOn ? 'bg-red-700 hover:bg-red-600' : 'bg-[#333] hover:bg-[#555]'} border-2 border-outset border-[#777] text-white active:border-inset transition-colors`} onClick={() => { playSfx('click'); handleMusicToggle(); }} onMouseEnter={() => playSfx('hover')}>
                   {isMusicOn ? '◼ STOP' : '▶ PLAY'}
                 </button>
-                <button className="pixel text-[10px] md:text-[12px] px-2 md:px-3 py-1 md:py-2 bg-[#333] border-2 border-outset border-[#777] text-white hover:bg-[#555] active:border-inset" onClick={() => { playSfx('click'); handleNextTrack(); }} onMouseEnter={() => playSfx('hover')}>{'>>'}</button>
+                <button className="pixel text-[8px] md:text-[12px] px-1 md:px-3 py-0.5 md:py-2 bg-[#333] border-2 border-outset border-[#777] text-white hover:bg-[#555] active:border-inset" onClick={() => { playSfx('click'); handleNextTrack(); }} onMouseEnter={() => playSfx('hover')}>{'>>'}</button>
               </div>
-              <div className="w-[140px] md:w-[180px] bg-black border-inset border-4 border-[#333] px-2 md:px-3 py-1 md:py-2 overflow-hidden whitespace-nowrap text-sm md:text-lg text-[#00ffff] font-[Courier_New] shadow-[inset_0_0_10px_rgba(0,255,255,0.2)]">
-                {isMusicOn ? <div className="animate-pulse">🎵 {trackName} 🎵</div> : 'POWER OFF'}
+              <div className="w-[120px] md:w-[180px] bg-black border-inset border-2 md:border-4 border-[#333] px-2 md:px-3 py-0.5 md:py-2 overflow-hidden whitespace-nowrap text-xs md:text-lg text-[#00ffff] font-[Courier_New] shadow-[inset_0_0_10px_rgba(0,255,255,0.2)]">
+                {isMusicOn ? <div className="animate-pulse">🎵 {trackName} 🎵</div> : 'OFF'}
               </div>
-              <div className="flex items-center gap-2 mt-2 md:mt-0">
-                <span className="text-[10px] text-white">vol:</span>
+              <div className="flex items-center gap-2 mt-1 md:mt-0">
+                <span className="text-[8px] md:text-[10px] text-white">vol:</span>
                 <input 
                   type="range" min="0" max="1" step="0.1" value={volume} 
-                  className="w-16 h-2 accent-lime-500 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                  className="w-12 md:w-16 h-1 md:h-2 accent-lime-500 bg-gray-700 rounded-lg appearance-none cursor-pointer"
                   onChange={(e) => { 
                     const v = parseFloat(e.target.value); 
                     setVolumeLevel(v); 
@@ -1141,55 +1145,112 @@ export default function App() {
       <div id="app-content">
         {currentView === 'home' ? (
       <>
-        {/* MOBILE HERO BANNER (High Impact) */}
-        <div className="md:hidden w-full px-2 mt-4 mb-4">
-           <div className="relative w-full aspect-[4/5] rounded-[32px] overflow-hidden shadow-2xl border-2 border-white/10 group">
-              {/* Background with Ambient Glow */}
-              <div className="absolute inset-0 bg-[#0a0a0a]">
-                 <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-lime-500/20 via-transparent to-transparent"></div>
-                 <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-to-tr from-[#ff00ff]/10 via-transparent to-transparent"></div>
-              </div>
+        {/* MOBILE HERO BANNER (High Impact - Professional Polish) */}
+        <div className="md:hidden w-full px-2 py-4">
+           <div className="relative w-full aspect-[3/4] rounded-[32px] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.7)] border-2 border-white/5 group">
+              {/* Complex Background Layers */}
+              <img 
+                 src="/images/Partnership_announcement_HighBre…_2K_202607042049.jpeg"
+                 className="absolute inset-0 w-full h-full object-cover brightness-[0.4] transition-all duration-1000"
+                 alt="Background"
+              />
               
-              {/* Hero Image / Content */}
-              <div className="absolute inset-0 flex flex-col justify-end p-8 z-10">
-                 <div className="absolute top-10 left-10 w-20 h-20 bg-lime-500 blur-[60px] opacity-30 animate-pulse"></div>
-                 
-                 <div className="relative">
-                    <div className="vt text-[#ff00ff] text-xs font-black uppercase tracking-[0.4em] mb-2 drop-shadow-md">Exclusividade Mundial</div>
-                    <h2 className="vt text-5xl text-white font-black leading-[0.9] mb-4 drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)]">
-                       ENVIOS <br/>
-                       <span className="text-lime-400">DISCRETOS</span>
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+
+              {/* Dynamic Glows */}
+              <motion.div 
+                 animate={{ opacity: [0.3, 0.6, 0.3] }}
+                 transition={{ duration: 4, repeat: Infinity }}
+                 className="absolute top-1/4 right-0 w-48 h-48 bg-lime-500/20 blur-[80px]"
+              ></motion.div>
+
+              {/* Textual Content - High Contrast Overlay */}
+              <div className="absolute inset-0 flex flex-col justify-end p-8 z-20">
+                 <motion.div
+                    initial={{ y: 30, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.8 }}
+                 >
+                    <div className="flex items-center gap-2 mb-4">
+                       <span className="w-8 h-[2px] bg-lime-500"></span>
+                       <span className="vt text-[10px] text-lime-400 font-black uppercase tracking-[0.3em]">Qualidade Premium</span>
+                    </div>
+
+                    <h2 className="vt text-5xl text-white font-black leading-[0.8] mb-6">
+                       SEMENTE <br/>
+                       <span className="text-lime-500 italic">SAGRADA</span> <br/>
+                       WORLD
                     </h2>
-                    <p className="text-white/70 text-xs font-bold leading-relaxed mb-8 max-w-[80%] uppercase tracking-widest vt">
-                       📦 Embalagens totalmente neutras para sua segurança e privacidade.
-                    </p>
+
+                    <div className="bg-black/60 backdrop-blur-sm border-l-4 border-[#ff00ff] p-4 mb-8 rounded-r-xl">
+                       <p className="text-white/90 text-[10px] font-bold uppercase tracking-widest leading-relaxed vt">
+                          ⚡ A enciclopédia cósmica das sementes. <br/>
+                          📦 Envios discretos para todo o Brasil.
+                       </p>
+                    </div>
                     
+                    <div className="grid grid-cols-2 gap-3">
+                       <button 
+                          onClick={() => {
+                             playSfx('click');
+                             const el = document.getElementById('catalog');
+                             if (el) el.scrollIntoView({ behavior: 'smooth' });
+                          }}
+                          className="bg-lime-500 text-black font-black py-5 rounded-2xl text-[9px] uppercase tracking-[0.2em] shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2"
+                       >
+                          Explorar <ChevronRight size={14} />
+                       </button>
+                       <button 
+                          onClick={() => {
+                             playSfx('click');
+                             const el = document.getElementById('game-section');
+                             if (el) el.scrollIntoView({ behavior: 'smooth' });
+                          }}
+                          className="bg-white/10 backdrop-blur-md text-white border border-white/20 font-black py-5 rounded-2xl text-[9px] uppercase tracking-[0.2em] active:scale-95 transition-all flex items-center justify-center gap-2"
+                       >
+                          🎮 Jogo
+                       </button>
+                    </div>
+                 </motion.div>
+              </div>
+           </div>
+
+           {/* Mobile Music Player integrated below the banner */}
+           <div className="mt-6 flex justify-center">
+              <div className="bg-[#111] border-2 border-[#333] rounded-2xl px-4 py-3 flex items-center gap-4 w-full max-w-[340px] shadow-lg">
+                 <div className="w-10 h-10 bg-lime-500/10 rounded-full flex items-center justify-center animate-spin-slow">
+                    <Music className="text-lime-400" size={18} />
+                 </div>
+                 <div className="flex-1 min-w-0">
+                    <div className="text-[10px] text-white/40 font-black uppercase tracking-widest mb-1">Radio Semente</div>
+                    <div className="text-[11px] text-lime-400 font-bold truncate tracking-widest">{isMusicOn ? trackName : 'Power Off'}</div>
+                 </div>
+                 <div className="flex items-center gap-2">
                     <button 
-                       onClick={() => {
-                          playSfx('click');
-                          const el = document.getElementById('catalog');
-                          if (el) el.scrollIntoView({ behavior: 'smooth' });
-                       }}
-                       className="w-full bg-white text-black font-black py-5 rounded-2xl text-[10px] uppercase tracking-[0.3em] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+                       onClick={() => { playSfx('click'); handlePrevTrack(); }}
+                       className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-lime-400 transition-colors"
                     >
-                       Explorar Coleções <ChevronRight size={14} />
+                       <SkipBack size={14} />
+                    </button>
+                    <button 
+                       onClick={() => { playSfx('click'); handleMusicToggle(); }}
+                       className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isMusicOn ? 'bg-red-500/20 text-red-500' : 'bg-lime-500/20 text-lime-500'}`}
+                    >
+                       {isMusicOn ? <div className="w-3 h-3 bg-red-500 rounded-sm"></div> : <Play size={16} fill="currentColor" />}
+                    </button>
+                    <button 
+                       onClick={() => { playSfx('click'); handleNextTrack(); }}
+                       className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-lime-400 transition-colors"
+                    >
+                       <SkipForward size={14} />
                     </button>
                  </div>
-              </div>
-              
-              {/* Box Image / Graphic (Simulating the Dona Florinda style) */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] z-0 pointer-events-none opacity-40">
-                 <img 
-                    src="/gifs/flower_bed.gif" 
-                    className="w-full h-full object-contain pixelate"
-                    style={{ filter: 'drop-shadow(0 0 50px rgba(0,255,0,0.4))' }}
-                 />
               </div>
            </div>
         </div>
 
-        {/* SKY (Relocated and adjusted for mobile) */}
-        <div id="sky" className="md:h-[120px] h-[60px] w-full relative overflow-hidden border-b border-white/5" style={{ background: skyColor }}>
+        {/* SKY (Relocated and adjusted for mobile - Hidden on mobile for impact) */}
+        <div id="sky" className="hidden md:block md:h-[120px] w-full relative overflow-hidden border-b border-white/5" style={{ background: skyColor }}>
           <canvas id="sky-stars" style={{ opacity: isDay ? 0 : 1, position: 'absolute', top: 0, left: 0 }}></canvas>
           <div id="clouds">
             <div className="retro-cloud" style={{width:70,height:22,top:18,left:'4%'}}></div>
@@ -1201,9 +1262,7 @@ export default function App() {
             left: `${pct * 108 - 4}%`,
             background: isDay ? 'radial-gradient(circle,#fffde7,#ffcc02)' : 'radial-gradient(circle,#eceff1,#b0bec5)',
             boxShadow: isDay ? '0 0 20px #ffcc02,0 0 50px rgba(255,200,0,0.4)' : '0 0 12px rgba(200,220,255,0.6)',
-            top: isDay && h >= 9 && h < 17 ? '4px' : '12px',
-            width: '30px',
-            height: '30px'
+            top: isDay && h >= 9 && h < 17 ? '12px' : '24px'
           }}></div>
         </div>
         <div className="flex flex-col max-w-[1240px] mx-auto w-full px-2 mt-2 gap-3">
