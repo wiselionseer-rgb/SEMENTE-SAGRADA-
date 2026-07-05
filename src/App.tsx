@@ -689,7 +689,7 @@ export default function App() {
               
               {/* Mobile Profile Icon (Visible only on mobile, left side) */}
               <button 
-                onClick={() => setIsAuthOpen(true)}
+                onClick={() => user ? setIsOrdersOpen(true) : setIsAuthOpen(true)}
                 className="lg:hidden p-1 text-white hover:text-lime-400 transition-colors"
               >
                 <User size={22} />

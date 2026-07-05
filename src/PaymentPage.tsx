@@ -180,7 +180,14 @@ export default function PaymentPage({ cartItems, selectedBonuses, totalAmount, i
       text += `Por favor, me envie o link de pagamento.`;
 
       const encodedText = encodeURIComponent(text);
-      window.open(`https://api.whatsapp.com/send?phone=5565992898324&text=${encodedText}`, '_blank');
+      const waUrl = `https://wa.me/5565992898324?text=${encodedText}`;
+      
+      const newWindow = window.open(waUrl, '_blank');
+      
+      // Fallback para mobile caso o bloqueador de popups bloqueie a nova aba após um await
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+         window.location.href = waUrl;
+      }
 
       onSuccess();
     } catch (err) {
