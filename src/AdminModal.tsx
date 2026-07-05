@@ -180,7 +180,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/95 z-[99999] flex flex-col font-sans"
+        style={{ zIndex: 999999 }} className="fixed inset-0 bg-black/95 flex flex-col font-sans"
       >
         <div className="flex items-center justify-between p-4 border-b border-[#333] bg-[#0a0a0a]">
         <div className="flex items-center gap-3">

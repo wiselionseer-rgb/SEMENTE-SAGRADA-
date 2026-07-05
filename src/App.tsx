@@ -4,7 +4,7 @@ import { GameState, INITIAL_STATE } from './gameState';
 import { drawGarden, emitRain, emitFertilizer, emitPrune, emitHarvest } from './canvas';
 import { playSfx, toggleMusic, musicOn, getCurrentTrackName, changeTrack, setOnTrackChangeCallback, setVolume } from './audio';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, User, Heart, ShoppingCart, Globe, ListFilter, ChevronLeft, ChevronRight, ChevronUp, MessageCircle, Trash2, Shield, Music, Play, SkipBack, SkipForward } from 'lucide-react';
+import { Search, User, Heart, ShoppingCart, Globe, ListFilter, ChevronLeft, ChevronRight, ChevronUp, MessageCircle, Trash2, Shield, Music, Play, SkipBack, SkipForward, Volume2, Pause } from 'lucide-react';
 import ManualPage from './ManualPage';
 
 import { AuthModal } from './AuthModal';
@@ -263,6 +263,7 @@ export default function App() {
   const [isMusicOn, setIsMusicOn] = useState(musicOn);
   const [trackName, setTrackName] = useState(getCurrentTrackName());
   const [volume, setVolumeLevel] = useState(0.5);
+  const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
 
   useEffect(() => {
     setOnTrackChangeCallback((name) => {
@@ -278,18 +279,21 @@ export default function App() {
       document.removeEventListener('click', handleFirstInteraction);
       document.removeEventListener('touchstart', handleFirstInteraction);
       document.removeEventListener('wheel', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
     };
 
-    document.addEventListener('scroll', handleFirstInteraction, { passive: true });
-    document.addEventListener('click', handleFirstInteraction);
-    document.addEventListener('touchstart', handleFirstInteraction, { passive: true });
-    document.addEventListener('wheel', handleFirstInteraction, { passive: true });
+    document.addEventListener('scroll', handleFirstInteraction, { passive: true, once: true });
+    document.addEventListener('click', handleFirstInteraction, { once: true });
+    document.addEventListener('touchstart', handleFirstInteraction, { passive: true, once: true });
+    document.addEventListener('wheel', handleFirstInteraction, { passive: true, once: true });
+    document.addEventListener('keydown', handleFirstInteraction, { once: true });
 
     return () => {
       document.removeEventListener('scroll', handleFirstInteraction);
       document.removeEventListener('click', handleFirstInteraction);
       document.removeEventListener('touchstart', handleFirstInteraction);
       document.removeEventListener('wheel', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
     };
   }, []);
 
@@ -962,38 +966,50 @@ export default function App() {
         </div>
 
         {/* NAVIGATION BAR */}
-        <div className="bg-[#080808] text-[#999] font-sans text-[10px] md:text-[13px] font-black tracking-[0.1em] border-b border-white/5">
+        <div className="bg-[#080808] text-white/80 font-sans text-[11px] md:text-[13px] font-black tracking-[0.1em] border-b border-white/5">
           <div className="max-w-[1200px] mx-auto flex overflow-x-auto no-scrollbar scroll-smooth">
             {navItems.map((item, idx) => {
               const isActive = activeCatalogTab === item.label;
               const isSpecial = item.special;
-              const isLast = idx === navItems.length - 1;
+              
+              let customStyle = '';
+              if (item.isGame) {
+                customStyle = isActive 
+                  ? 'bg-lime-500/20 text-lime-400 border-lime-500 shadow-[0_0_20px_rgba(132,204,22,0.2)]' 
+                  : 'text-lime-400 bg-lime-500/5 hover:bg-lime-500/10 border-lime-500/30';
+              } else if (item.label === 'Feminizadas') {
+                customStyle = isActive 
+                  ? 'bg-[#ff00ff]/20 text-[#ffb3ff] border-[#ff00ff] shadow-[0_0_20px_rgba(255,0,255,0.2)]' 
+                  : 'text-[#ff66ff] bg-[#ff00ff]/5 hover:bg-[#ff00ff]/10 border-[#ff00ff]/30';
+              } else {
+                customStyle = isActive 
+                  ? 'bg-[#111] text-white border-white/50' 
+                  : 'hover:bg-white/5 hover:text-white border-transparent text-white/70';
+              }
 
               return (
                 <button
                   key={item.label}
                   onClick={() => handleNavClick(item)}
                   className={`
-                    whitespace-nowrap px-6 py-4 md:py-5 transition-all duration-300 relative group flex items-center gap-2 uppercase
-                    ${isActive ? 'bg-[#111] text-lime-400 border-b-2 border-lime-500 shadow-[0_0_20px_rgba(132,204,22,0.1)]' : 'hover:bg-white/5 hover:text-white border-b-2 border-transparent'}
-                    ${isSpecial && !isActive ? 'text-white/60' : ''}
-                    ${item.isGame ? 'text-lime-500' : ''}
+                    whitespace-nowrap px-5 py-4 md:px-6 md:py-5 transition-all duration-300 relative group flex items-center gap-2 uppercase border-b-2
+                    ${customStyle}
                   `}
                 >
                   {item.isGame && <span className={`text-lime-400 ${isActive ? 'animate-bounce' : ''}`}>🎮</span>}
-                  <span className={`vt tracking-[0.15em] ${isActive ? 'scale-105' : ''}`}>
+                  <span className={`vt tracking-[0.15em] drop-shadow-md ${isActive ? 'scale-105' : ''}`}>
                     {item.label}
-                    {item.hasSub && <span className="text-[#555] ml-1 text-[8px]">▼</span>}
+                    {item.hasSub && <span className="text-white/40 ml-1 text-[8px]">▼</span>}
                   </span>
                   {isSpecial && !isActive && <span className="w-1.5 h-1.5 bg-[#ff00ff] rounded-full animate-pulse ml-1 shadow-[0_0_8px_#ff00ff]"></span>}
                 </button>
               );
             })}
             <button 
-              className="px-6 py-4 hover:bg-[#111] hover:text-lime-400 transition-colors whitespace-nowrap border-b-2 border-transparent hover:border-lime-500 ml-auto flex items-center gap-1 uppercase text-[#777]"
+              className="px-5 py-4 md:px-6 hover:bg-white/5 hover:text-white transition-colors whitespace-nowrap border-b-2 border-transparent hover:border-white/50 ml-auto flex items-center gap-1 uppercase text-white/60 font-black tracking-widest text-[11px] md:text-[13px] vt"
               onClick={() => setOpenMegaMenu(openMegaMenu === 'Log / Ajuda' ? null : 'Log / Ajuda')}
             >
-              Log / Ajuda <span className="text-[#444]">▼</span>
+              Log / Ajuda <span className="text-white/40 text-[8px]">▼</span>
             </button>
           </div>
         </div>
@@ -1544,7 +1560,7 @@ export default function App() {
                           <li>✦ Suporte Jurídico Preliminar</li>
                         </ul>
                         <div className="pt-6">
-                           <button onClick={() => { playSfx('click'); setContactService('consulta'); }} className="block w-full bg-lime-500 text-black text-center font-black py-4 rounded-xl uppercase tracking-widest text-xs hover:bg-white transition-all">
+                           <button onClick={() => { playSfx('click'); setPopup(null); setContactService('consulta'); }} className="block w-full bg-lime-500 text-black text-center font-black py-4 rounded-xl uppercase tracking-widest text-xs hover:bg-white transition-all">
                               FALAR COM ESPECIALISTA AGORA
                            </button>
                         </div>
@@ -2559,23 +2575,7 @@ export default function App() {
             )}
           </div>
 
-          {/* POPUP OVERLAY */}
-          {popup && (
-            <div className="fixed inset-0 bg-black/80 z-[1000] flex items-center justify-center p-6">
-              <div className="bg-[#001800] border-4 border-double border-green-500 p-6 max-w-sm w-full shadow-[0_0_30px_rgba(0,255,0,0.3)]">
-                <div className="pixel text-xs md:text-base text-yellow-300 mb-4 border-b-2 border-[#004400] pb-3 uppercase tracking-[0.2em] font-black">{popup.title}</div>
-                <div className="vt text-base md:text-xl text-[var(--lime)] leading-relaxed font-bold">{popup.body}</div>
-                <div className="text-right mt-6">
-                  <button 
-                    className="pixel text-xs md:text-sm bg-green-900 px-6 py-2 text-white border-2 border-green-500 hover:bg-green-700 active:scale-95 transition-all cursor-pointer font-black" 
-                    onClick={() => setPopup(null)}
-                  >
-                    FECHAR
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+
         </div>
       </div>
       {/* ========================================================= */}
@@ -4474,7 +4474,7 @@ export default function App() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100000] flex items-center justify-center p-4"
+          style={{ zIndex: 999999 }} className="fixed inset-0 flex items-center justify-center p-4"
         >
           <div 
             className="absolute inset-0 bg-black/95 backdrop-blur-sm transition-opacity duration-300" 
@@ -4545,6 +4545,95 @@ export default function App() {
         </motion.div>
       )}
       </AnimatePresence>
+
+      {/* POPUP OVERLAY */}
+      {popup && (
+        <div style={{ zIndex: 999999 }} className="fixed inset-0 bg-black/80 flex items-center justify-center p-6">
+          <div className="bg-[#001800] border-4 border-double border-green-500 p-6 max-w-sm w-full shadow-[0_0_30px_rgba(0,255,0,0.3)]">
+            <div className="pixel text-xs md:text-base text-yellow-300 mb-4 border-b-2 border-[#004400] pb-3 uppercase tracking-[0.2em] font-black">{popup.title}</div>
+            <div className="vt text-base md:text-xl text-[var(--lime)] leading-relaxed font-bold">{popup.body}</div>
+            <div className="text-right mt-6">
+              <button 
+                className="pixel text-xs md:text-sm bg-green-900 px-6 py-2 text-white border-2 border-green-500 hover:bg-green-700 active:scale-95 transition-all cursor-pointer font-black" 
+                onClick={() => setPopup(null)}
+              >
+                FECHAR
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Mini Music Player */}
+      <div className="fixed bottom-4 left-4 z-[9999] flex flex-col items-start gap-2 pointer-events-none">
+        <AnimatePresence>
+          {isPlayerExpanded && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.9 }}
+              className="bg-[#111]/90 backdrop-blur-md border border-[#333] rounded-2xl p-4 shadow-2xl pointer-events-auto flex flex-col gap-3 min-w-[200px]"
+            >
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] text-white/40 font-black uppercase tracking-widest">Radio Semente</span>
+                <button onClick={() => setIsPlayerExpanded(false)} className="text-white/40 hover:text-white transition-colors">
+                  <ChevronUp size={14} className="rotate-180" />
+                </button>
+              </div>
+              <div className="text-xs text-lime-400 font-bold truncate tracking-widest">
+                {isMusicOn ? trackName : 'Power Off'}
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <button onClick={() => { playSfx('click'); handlePrevTrack(); }} className="text-white/60 hover:text-lime-400 transition-colors">
+                  <SkipBack size={16} />
+                </button>
+                <button 
+                  onClick={() => { playSfx('click'); handleMusicToggle(); }}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isMusicOn ? 'bg-red-500/20 text-red-500 hover:bg-red-500/30' : 'bg-lime-500/20 text-lime-500 hover:bg-lime-500/30'}`}
+                >
+                  {isMusicOn ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" className="ml-1" />}
+                </button>
+                <button onClick={() => { playSfx('click'); handleNextTrack(); }} className="text-white/60 hover:text-lime-400 transition-colors">
+                  <SkipForward size={16} />
+                </button>
+              </div>
+              <div className="flex items-center gap-2 mt-1">
+                <Volume2 size={12} className="text-white/40" />
+                <input 
+                  type="range" 
+                  min="0" max="1" step="0.01" 
+                  value={volume} 
+                  onChange={(e) => {
+                    const v = parseFloat(e.target.value);
+                    setVolumeLevel(v);
+                    setVolume(v);
+                  }}
+                  className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-lime-400 [&::-webkit-slider-thumb]:rounded-full cursor-pointer"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        {!isPlayerExpanded && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsPlayerExpanded(true)}
+            className="w-12 h-12 bg-[#111]/90 backdrop-blur-md border border-[#333] rounded-full shadow-xl flex items-center justify-center text-lime-400 pointer-events-auto hover:border-lime-500/50 transition-colors"
+          >
+            {isMusicOn ? (
+              <div className="relative">
+                <Music size={20} className="animate-pulse" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-lime-500 rounded-full"></span>
+              </div>
+            ) : (
+              <Music size={20} className="opacity-50" />
+            )}
+          </motion.button>
+        )}
+      </div>
+
     </div>
   );
 }

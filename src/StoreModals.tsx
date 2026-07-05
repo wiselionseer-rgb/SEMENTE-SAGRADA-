@@ -70,7 +70,7 @@ export function CartModal({ isOpen, onClose, cartItems, onCheckout }: { isOpen: 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/95 z-[10000] flex items-center justify-center p-4 backdrop-blur-sm" 
+          style={{ zIndex: 999999 }} className="fixed inset-0 bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm" 
           onClick={onClose}
         >
           <motion.div 
@@ -270,7 +270,7 @@ export function FavoritesModal({ isOpen, onClose, favorites }: { isOpen: boolean
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/95 z-[10000] flex items-center justify-center p-4 backdrop-blur-sm" 
+          style={{ zIndex: 999999 }} className="fixed inset-0 bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm" 
           onClick={onClose}
         >
           <motion.div 
@@ -322,7 +322,7 @@ export function OrdersModal({ isOpen, onClose, orders }: { isOpen: boolean; onCl
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/95 z-[10000] flex items-center justify-center p-4 backdrop-blur-sm" 
+          style={{ zIndex: 999999 }} className="fixed inset-0 bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm" 
           onClick={onClose}
         >
           <motion.div 
