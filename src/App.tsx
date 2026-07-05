@@ -165,6 +165,7 @@ export default function App() {
   const [openMegaMenu, setOpenMegaMenu] = useState<string | null>(null);
 
   const navItems = [
+    { label: 'Jogo de Cultivar', filter: null, isGame: true, special: true },
     { label: 'Feminizadas', filter: 'Feminizadas' },
     { label: 'Automática', filter: 'Automática' },
     { label: 'Buscador', filter: null, isSearch: true },
@@ -208,6 +209,12 @@ export default function App() {
 
     if (item.label === 'Mural') {
       const el = document.getElementById('reviews');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    if (item.isGame) {
+      const el = document.getElementById('game-section');
       if (el) el.scrollIntoView({ behavior: 'smooth' });
       return;
     }
@@ -649,40 +656,63 @@ export default function App() {
         </div>
 
         {/* MAIN HEADER */}
-        <div className="w-full bg-black text-white py-4 px-6 border-b-4 border-white/5">
-          <div className="max-w-[1200px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-6">
-            {/* Logo */}
-            <div 
-              className="flex items-center gap-3 sm:gap-4 cursor-pointer group relative"
-              onClick={() => {
-                playSfx('click');
-                setActiveFilter(null);
-                setSearchQuery('');
-                setActiveCatalogTab('Buscador');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            >
-              <div className="relative shrink-0 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center">
-                <div className="absolute inset-0 bg-[#ff00ff]/10 blur-lg rounded-full group-hover:bg-[#ff00ff]/20 transition-all duration-700"></div>
-                <img 
-                  src="/gifs/flower_bed.gif" 
-                  className="w-full h-full pixelate animate-pulse relative z-10 group-hover:scale-110 transition-transform duration-500" 
-                  alt="Mascot" 
-                />
+        <div className="w-full bg-black text-white py-2 md:py-4 px-4 md:px-6 border-b-4 border-white/5">
+          <div className="max-w-[1200px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-6">
+            
+            {/* Top Row: Logo & Icons (Mobile optimized) */}
+            <div className="w-full lg:w-auto flex items-center justify-between gap-4">
+              {/* Logo */}
+              <div 
+                className="flex items-center gap-2 sm:gap-4 cursor-pointer group relative"
+                onClick={() => {
+                  playSfx('click');
+                  setActiveFilter(null);
+                  setSearchQuery('');
+                  setActiveCatalogTab('Buscador');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              >
+                <div className="relative shrink-0 w-8 h-8 sm:w-12 sm:h-12 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-[#ff00ff]/10 blur-lg rounded-full group-hover:bg-[#ff00ff]/20 transition-all duration-700"></div>
+                  <img 
+                    src="/gifs/flower_bed.gif" 
+                    className="w-full h-full pixelate animate-pulse relative z-10 group-hover:scale-110 transition-transform duration-500" 
+                    alt="Mascot" 
+                  />
+                </div>
+                <div className="flex flex-col justify-center min-w-0">
+                   <div className="flex items-center">
+                      <span className="pixel text-[12px] xs:text-[16px] sm:text-2xl text-lime-400 whitespace-nowrap drop-shadow-[0_2px_0px_#005500] leading-none group-hover:text-white transition-all duration-500">SEMENTE SAGRADA</span>
+                   </div>
+                   <div className="flex items-center gap-1 mt-0.5">
+                      <div className="h-[1px] flex-1 bg-white/20 group-hover:bg-lime-400 transition-all duration-300"></div>
+                      <span className="vt text-[6px] xs:text-[8px] sm:text-xs bg-[#ff00ff] text-white px-1.5 py-0.5 rounded-sm font-black tracking-[0.1em] uppercase italic group-hover:scale-105 transition-all shadow-[1px_1px_0px_#fff]">World</span>
+                      <div className="h-[1px] flex-1 bg-white/20 group-hover:bg-lime-400 transition-all duration-300"></div>
+                   </div>
+                </div>
               </div>
-              <div className="flex flex-col justify-center min-w-0">
-                 <div className="flex items-center">
-                    <span className="pixel text-[14px] xs:text-[18px] sm:text-2xl md:text-3xl text-lime-400 whitespace-nowrap drop-shadow-[0_2px_0px_#005500] md:drop-shadow-[0_3px_0px_#005500] leading-none group-hover:text-white transition-all duration-500">SEMENTE SAGRADA</span>
-                 </div>
-                 <div className="flex items-center gap-2 mt-0.5 md:mt-1">
-                    <div className="h-[1px] flex-1 bg-white/20 group-hover:bg-lime-400 transition-all duration-300"></div>
-                    <span className="vt text-[8px] xs:text-[10px] sm:text-xs md:text-sm lg:text-base bg-[#ff00ff] text-white px-2 py-0.5 rounded-sm font-black tracking-[0.2em] uppercase italic group-hover:scale-105 transition-all shadow-[1px_1px_0px_#fff]">World</span>
-                    <div className="h-[1px] flex-1 bg-white/20 group-hover:bg-lime-400 transition-all duration-300"></div>
-                 </div>
+
+              {/* Mobile Icons Area (Visible only on mobile) */}
+              <div className="flex lg:hidden items-center gap-4">
+                <div className="relative" onClick={() => user ? setIsCartOpen(true) : setIsAuthOpen(true)}>
+                  <ShoppingCart className="text-white hover:text-lime-400 transition-colors" size={20} />
+                  {cartItems.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-[#ff00ff] text-white pixel text-[8px] w-4 h-4 flex items-center justify-center rounded-sm border border-white">
+                      {cartItems.reduce((acc, item) => acc + (item.packCount || 1), 0)}
+                    </span>
+                  )}
+                </div>
+                <button 
+                  onClick={() => setIsAuthOpen(true)}
+                  className="p-1 text-white hover:text-lime-400"
+                >
+                  <User size={20} />
+                </button>
               </div>
             </div>
 
-            <div className="flex-1 w-full max-w-[600px] relative mt-2 lg:mt-0">
+            {/* Search Bar (Full width on mobile) */}
+            <div className="w-full lg:flex-1 lg:max-w-[600px] relative">
               <input 
                 ref={searchInputRef}
                 type="text" 
@@ -746,8 +776,8 @@ export default function App() {
               </div>
             </div>
 
-            {/* Icons */}
-            <div className="flex items-center justify-center gap-6 vt text-gray-400 w-full lg:w-auto p-2 bg-[#111] border border-[#222] rounded-sm">
+            {/* Icons (Desktop only) */}
+            <div className="hidden lg:flex items-center justify-center gap-6 vt text-gray-400 w-full lg:w-auto p-2 bg-[#111] border border-[#222] rounded-sm">
                <div className="flex items-center gap-2 border-r border-[#333] pr-6 hover:text-lime-400 cursor-pointer transition-colors">
                  <Globe size={18} className="text-[#ff00ff]" /> <span className="font-bold text-xs uppercase tracking-widest">Global</span>
                </div>
@@ -919,10 +949,15 @@ export default function App() {
                     isActive 
                       ? 'bg-[#111] text-lime-400 border-lime-500' 
                       : isSpecial 
-                        ? item.label.includes('Drops') ? 'bg-[#330033] hover:bg-[#550055] text-white border-transparent hover:border-[#ff00ff]' : 'bg-[#111111] hover:bg-[#222222] border-transparent hover:border-white'
+                        ? item.isGame 
+                          ? 'bg-lime-500/10 hover:bg-lime-500/20 text-lime-400 border-transparent hover:border-lime-500' 
+                          : item.label.includes('Drops') 
+                            ? 'bg-[#330033] hover:bg-[#550055] text-white border-transparent hover:border-[#ff00ff]' 
+                            : 'bg-[#111111] hover:bg-[#222222] border-transparent hover:border-white'
                         : 'hover:bg-[#111] hover:text-lime-400 border-transparent hover:border-lime-500'
-                  } ${isLast ? 'ml-auto border-transparent hover:border-lime-500 text-[#777]' : ''}`}
+                  } ${item.label === 'Mural' ? 'ml-auto border-transparent hover:border-lime-500 text-[#777]' : ''} ${item.isGame ? 'text-lime-400 font-black animate-pulse' : ''}`}
                 >
+                  {item.isGame && <span className="text-lime-400 mr-1">🎮</span>}
                   {item.label} {item.hasSub && <span className="text-[#666]">▼</span>}
                 </button>
               );
@@ -1028,24 +1063,8 @@ export default function App() {
           {f.text}
         </div>
       ))}
-        {/* SKY */}
-        <div id="sky" style={{ background: skyColor, position: 'relative', height: '120px', width: '100%', overflow: 'hidden' }}>
-          <canvas id="sky-stars" style={{ opacity: isDay ? 0 : 1, position: 'absolute', top: 0, left: 0 }}></canvas>
-          <div id="clouds">
-            <div className="retro-cloud" style={{width:70,height:22,top:18,left:'4%'}}></div>
-            <div className="retro-cloud" style={{width:100,height:28,top:38,left:'22%'}}></div>
-            <div className="retro-cloud" style={{width:85,height:24,top:28,left:'68%'}}></div>
-            <div className="retro-cloud" style={{width:70,height:22,top:18,left:'104%'}}></div>
-          </div>
-          <div id="sun-moon" style={{
-            left: `${pct * 108 - 4}%`,
-            background: isDay ? 'radial-gradient(circle,#fffde7,#ffcc02)' : 'radial-gradient(circle,#eceff1,#b0bec5)',
-            boxShadow: isDay ? '0 0 20px #ffcc02,0 0 50px rgba(255,200,0,0.4)' : '0 0 12px rgba(200,220,255,0.6)',
-            top: isDay && h >= 9 && h < 17 ? '12px' : '24px'
-          }}></div>
-        </div>
       
-      <div id="top-header" className="sticky top-0 z-50 shadow-[0_10px_30px_rgba(0,0,0,0.8)] border-b-8 border-double border-[var(--green)] flex flex-col items-center relative overflow-hidden min-h-[350px] md:min-h-[480px] justify-center">
+      <div id="top-header" className="sticky top-0 z-50 shadow-[0_10px_30px_rgba(0,0,0,0.8)] border-b-8 border-double border-[var(--green)] flex flex-col items-center relative overflow-hidden min-h-[200px] md:min-h-[480px] justify-center">
         <video 
           autoPlay 
           loop 
@@ -1063,17 +1082,17 @@ export default function App() {
         <div className="shooting-star star-4"></div>
 
         <div className="absolute inset-0 bg-black/10 z-[1]"></div>
-        <div className="relative z-10 flex flex-col items-center w-full px-4 py-12 md:py-16">
-          <div className="site-title hover:text-white transition-colors cursor-default drop-shadow-[0_0_15px_rgba(0,255,0,0.8)] text-center px-4">★ SEMENTE SAGRADA WORLD ★</div>
-          <div className="site-sub text-center px-4 leading-tight">⚡ A ENCICLOPÉDIA CÓSMICA DAS SEMENTES ⚡</div>
-          <div className="vt text-2xl md:text-4xl text-[var(--lime)] mt-4 tracking-widest bg-black/70 px-4 md:px-8 py-2 md:py-3 rounded shadow-inner mb-6 border border-[#00ff00]/30 shadow-[0_0_20px_rgba(0,255,0,0.2)]">
+        <div className="relative z-10 flex flex-col items-center w-full px-4 py-8 md:py-16">
+          <div className="site-title hover:text-white transition-colors cursor-default drop-shadow-[0_0_15px_rgba(0,255,0,0.8)] text-center px-4 text-xl md:text-3xl lg:text-4xl">★ SEMENTE SAGRADA WORLD ★</div>
+          <div className="site-sub text-center px-4 leading-tight text-[10px] md:text-sm">⚡ A ENCICLOPÉDIA CÓSMICA DAS SEMENTES ⚡</div>
+          <div className="vt text-lg md:text-4xl text-[var(--lime)] mt-2 md:mt-4 tracking-widest bg-black/70 px-4 md:px-8 py-1 md:py-3 rounded shadow-inner mb-4 md:mb-6 border border-[#00ff00]/30 shadow-[0_0_20px_rgba(0,255,0,0.2)]">
             DIA {pad(Math.floor(G.gameDay))} — {pad(Math.floor(G.gameHour))}:{pad(Math.floor(G.gameMin))} — {period}
           </div>
           
           <div className="mt-4 flex flex-wrap justify-center gap-4 items-center w-full px-2">
             
             {/* BOOMBOX MUSIC PLAYER */}
-            <div className="bg-[#111] border-4 border-outset border-[#555] px-2 md:px-4 py-2 md:py-3 flex flex-wrap md:flex-nowrap justify-center items-center gap-2 md:gap-4 drop-shadow-xl min-w-[280px]">
+            <div className="hidden sm:flex bg-[#111] border-4 border-outset border-[#555] px-2 md:px-4 py-2 md:py-3 flex-wrap md:flex-nowrap justify-center items-center gap-2 md:gap-4 drop-shadow-xl min-w-[280px]">
               <div className="flex items-center gap-2">
                 <span className="pixel text-[10px] md:text-[14px] text-[#00ff00] animate-pulse">FM/AM</span>
                 <button className="pixel text-[10px] md:text-[12px] px-2 md:px-3 py-1 md:py-2 bg-[#333] border-2 border-outset border-[#777] text-white hover:bg-[#555] active:border-inset" onClick={() => { playSfx('click'); handlePrevTrack(); }} onMouseEnter={() => playSfx('hover')}>{'<<'}</button>
@@ -1122,6 +1141,71 @@ export default function App() {
       <div id="app-content">
         {currentView === 'home' ? (
       <>
+        {/* MOBILE HERO BANNER (High Impact) */}
+        <div className="md:hidden w-full px-2 mt-4 mb-4">
+           <div className="relative w-full aspect-[4/5] rounded-[32px] overflow-hidden shadow-2xl border-2 border-white/10 group">
+              {/* Background with Ambient Glow */}
+              <div className="absolute inset-0 bg-[#0a0a0a]">
+                 <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-lime-500/20 via-transparent to-transparent"></div>
+                 <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-to-tr from-[#ff00ff]/10 via-transparent to-transparent"></div>
+              </div>
+              
+              {/* Hero Image / Content */}
+              <div className="absolute inset-0 flex flex-col justify-end p-8 z-10">
+                 <div className="absolute top-10 left-10 w-20 h-20 bg-lime-500 blur-[60px] opacity-30 animate-pulse"></div>
+                 
+                 <div className="relative">
+                    <div className="vt text-[#ff00ff] text-xs font-black uppercase tracking-[0.4em] mb-2 drop-shadow-md">Exclusividade Mundial</div>
+                    <h2 className="vt text-5xl text-white font-black leading-[0.9] mb-4 drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)]">
+                       ENVIOS <br/>
+                       <span className="text-lime-400">DISCRETOS</span>
+                    </h2>
+                    <p className="text-white/70 text-xs font-bold leading-relaxed mb-8 max-w-[80%] uppercase tracking-widest vt">
+                       📦 Embalagens totalmente neutras para sua segurança e privacidade.
+                    </p>
+                    
+                    <button 
+                       onClick={() => {
+                          playSfx('click');
+                          const el = document.getElementById('catalog');
+                          if (el) el.scrollIntoView({ behavior: 'smooth' });
+                       }}
+                       className="w-full bg-white text-black font-black py-5 rounded-2xl text-[10px] uppercase tracking-[0.3em] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+                    >
+                       Explorar Coleções <ChevronRight size={14} />
+                    </button>
+                 </div>
+              </div>
+              
+              {/* Box Image / Graphic (Simulating the Dona Florinda style) */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] z-0 pointer-events-none opacity-40">
+                 <img 
+                    src="/gifs/flower_bed.gif" 
+                    className="w-full h-full object-contain pixelate"
+                    style={{ filter: 'drop-shadow(0 0 50px rgba(0,255,0,0.4))' }}
+                 />
+              </div>
+           </div>
+        </div>
+
+        {/* SKY (Relocated and adjusted for mobile) */}
+        <div id="sky" className="md:h-[120px] h-[60px] w-full relative overflow-hidden border-b border-white/5" style={{ background: skyColor }}>
+          <canvas id="sky-stars" style={{ opacity: isDay ? 0 : 1, position: 'absolute', top: 0, left: 0 }}></canvas>
+          <div id="clouds">
+            <div className="retro-cloud" style={{width:70,height:22,top:18,left:'4%'}}></div>
+            <div className="retro-cloud" style={{width:100,height:28,top:38,left:'22%'}}></div>
+            <div className="retro-cloud" style={{width:85,height:24,top:28,left:'68%'}}></div>
+            <div className="retro-cloud" style={{width:70,height:22,top:18,left:'104%'}}></div>
+          </div>
+          <div id="sun-moon" style={{
+            left: `${pct * 108 - 4}%`,
+            background: isDay ? 'radial-gradient(circle,#fffde7,#ffcc02)' : 'radial-gradient(circle,#eceff1,#b0bec5)',
+            boxShadow: isDay ? '0 0 20px #ffcc02,0 0 50px rgba(255,200,0,0.4)' : '0 0 12px rgba(200,220,255,0.6)',
+            top: isDay && h >= 9 && h < 17 ? '4px' : '12px',
+            width: '30px',
+            height: '30px'
+          }}></div>
+        </div>
         <div className="flex flex-col max-w-[1240px] mx-auto w-full px-2 mt-2 gap-3">
         {/* RESIZED TOP SEED SHOP (HORIZONTAL SCROLLABLE) */}
         <div className="bg-[#050505]/90 border-2 border-lime-500/20 p-8 rounded-3xl backdrop-blur-3xl relative overflow-hidden group/elite-section">
@@ -1434,7 +1518,7 @@ export default function App() {
                            </ul>
                         </div>
                         <div className="pt-6">
-                           <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="block w-full bg-[#ff00ff] text-white text-center font-black py-4 rounded-xl uppercase tracking-widest text-xs hover:bg-white hover:text-black transition-all">
+                           <a href="https://wa.me/5565992898324?text=Gostaria%20de%20Iniciar%20meu%20pr%C3%B3prio%20cultivo" target="_blank" rel="noopener noreferrer" className="block w-full bg-[#ff00ff] text-white text-center font-black py-4 rounded-xl uppercase tracking-widest text-xs hover:bg-white hover:text-black transition-all">
                               ACESSAR O CURSO COMPLETO
                            </a>
                         </div>
@@ -2482,18 +2566,36 @@ export default function App() {
                         transition={{ duration: 1.5 }}
                         className="w-full h-full object-cover brightness-75 transition-all duration-1000" 
                      />
-                     <div className="absolute inset-0 bg-gradient-to-t from-[#030803] via-transparent to-transparent"></div>
-                     <div className="absolute bottom-8 left-8">
-                        <div className="vt text-2xl md:text-4xl text-white font-black uppercase leading-none drop-shadow-2xl">Pedro <br/><span className="text-lime-500">Nicoletti</span></div>
-                        <div className="text-lime-400 font-bold italic tracking-widest mt-2 uppercase text-xs opacity-60">Fundador • Método Herbalista</div>
+                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
+                     {/* Name and Info Overlay - Bottom Right */}
+                     <div className="absolute bottom-10 right-10 text-right z-20">
+                        <div className="vt text-3xl md:text-5xl text-white font-black uppercase leading-[0.8] mb-2">
+                           Pedro <br/>
+                           <span className="text-lime-500">Nicoletti</span>
+                        </div>
+                        <div className="text-white/60 text-[10px] font-black uppercase tracking-[0.3em] mb-4">
+                           Professor e Pesquisador
+                        </div>
+                        <div className="flex justify-end">
+                           <span className="vt text-3xl text-white/40 font-black tracking-tighter mix-blend-screen italic">Herbalista</span>
+                        </div>
+                     </div>
+
+                     {/* Bottom Left Small Name */}
+                     <div className="absolute bottom-10 left-10 z-20 hidden md:block">
+                        <div className="flex flex-col gap-1">
+                           <div className="pixel text-[9px] text-white font-black uppercase tracking-widest">PEDRO</div>
+                           <div className="pixel text-[9px] text-lime-500 font-black uppercase tracking-widest">NICOLETTI</div>
+                           <div className="text-[8px] text-white/40 uppercase font-bold tracking-widest mt-1">FUNDADOR • MÉTODO HERBALISTA</div>
+                        </div>
                      </div>
                   </div>
-                  {/* Floating Stat badges */}
-                  <div className="absolute -right-6 top-1/4 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl shadow-xl animate-bounce-slow">
+                  <div className="absolute right-8 top-1/3 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl shadow-xl animate-bounce-slow z-20">
                      <span className="block text-2xl font-black text-white">6+</span>
                      <span className="text-[10px] text-gray-300 font-bold uppercase tracking-widest">Turmas Formadas</span>
                   </div>
-                  <div className="absolute -left-6 bottom-1/4 bg-lime-500 p-4 rounded-2xl shadow-xl rotate-[-6deg] hidden md:block">
+                  
+                  <div className="absolute left-6 top-1/2 -translate-y-1/2 bg-lime-500 p-4 rounded-2xl shadow-xl rotate-[-6deg] hidden md:block z-20">
                      <span className="block text-lg font-black text-black">MEC</span>
                      <span className="text-[10px] text-black/60 font-bold uppercase tracking-widest text-center">Certificado</span>
                   </div>
@@ -2513,7 +2615,17 @@ export default function App() {
                   <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
                      <button className="bg-white text-black font-black px-8 py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] hover:scale-105 transition-all shadow-xl">Bio Completa</button>
                      <button className="bg-transparent border border-white/10 text-white font-bold px-8 py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] hover:bg-white/5 transition-all">Pesquisa UnB</button>
-                     <a href="https://wa.me/5511999999999?text=Ol%C3%A1%2C%20gostaria%20de%20aprender%20a%20cultivar." target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white font-black px-8 py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-2">
+                     <button 
+                        onClick={() => {
+                           playSfx('click');
+                           const el = document.getElementById('game-section');
+                           if (el) el.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="bg-lime-500 text-black font-black px-8 py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-2"
+                     >
+                        Jogar Agora
+                     </button>
+                     <a href="https://wa.me/5565992898324?text=Gostaria%20de%20Iniciar%20meu%20pr%C3%B3prio%20cultivo" target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white font-black px-8 py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-2">
                         <MessageCircle size={14} /> Aprender a Cultivar
                      </a>
                   </div>
@@ -2934,7 +3046,7 @@ export default function App() {
           </div>
 
           <div className="flex-1 w-full flex flex-col gap-3 justify-center">
-            <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 px-8 rounded-xl transition-all whitespace-nowrap shadow-[0_4px_15px_rgba(37,211,102,0.3)] hover:-translate-y-1 hover:shadow-[0_8px_25px_rgba(37,211,102,0.4)] active:scale-95 shadow-[#25D366]/20">
+            <a href="https://wa.me/5565992898324?text=Gostaria%20de%20Iniciar%20meu%20pr%C3%B3prio%20cultivo" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 px-8 rounded-xl transition-all whitespace-nowrap shadow-[0_4px_15px_rgba(37,211,102,0.3)] hover:-translate-y-1 hover:shadow-[0_8px_25px_rgba(37,211,102,0.4)] active:scale-95 shadow-[#25D366]/20">
                 <MessageCircle size={24} />
                 CHAMAR NO WHATSAPP
             </a>
@@ -4131,7 +4243,7 @@ export default function App() {
                           </div>
 
                           <div className="flex-1 w-full flex flex-col items-center md:items-end justify-center">
-                            <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 px-8 rounded-xl transition-all whitespace-nowrap shadow-[0_4px_15px_rgba(37,211,102,0.3)] hover:-translate-y-1 hover:shadow-[0_8px_25px_rgba(37,211,102,0.4)] active:scale-95 shadow-[#25D366]/20 font-sans">
+                            <a href="https://wa.me/5565992898324?text=Gostaria%20de%20Iniciar%20meu%20pr%C3%B3prio%20cultivo" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 px-8 rounded-xl transition-all whitespace-nowrap shadow-[0_4px_15px_rgba(37,211,102,0.3)] hover:-translate-y-1 hover:shadow-[0_8px_25px_rgba(37,211,102,0.4)] active:scale-95 shadow-[#25D366]/20 font-sans">
                                 <MessageCircle size={24} />
                                 CHAMAR NO WHATSAPP
                             </a>

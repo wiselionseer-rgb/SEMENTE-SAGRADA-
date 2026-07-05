@@ -196,7 +196,7 @@ export default function AboutPage({ onBack }: { onBack: () => void }) {
           </div>
 
           <div className="flex-1 w-full flex flex-col items-center md:items-end justify-center">
-            <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 px-8 rounded-xl transition-all whitespace-nowrap shadow-[0_4px_15px_rgba(37,211,102,0.3)] hover:-translate-y-1 hover:shadow-[0_8px_25px_rgba(37,211,102,0.4)] active:scale-95 shadow-[#25D366]/20 font-sans vt-exclude">
+            <a href="https://wa.me/5565992898324?text=Gostaria%20de%20Iniciar%20meu%20pr%C3%B3prio%20cultivo" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 px-8 rounded-xl transition-all whitespace-nowrap shadow-[0_4px_15px_rgba(37,211,102,0.3)] hover:-translate-y-1 hover:shadow-[0_8px_25px_rgba(37,211,102,0.4)] active:scale-95 shadow-[#25D366]/20 font-sans vt-exclude">
                 <MessageCircle size={24} />
                 CHAMAR NO WHATSAPP
             </a>
