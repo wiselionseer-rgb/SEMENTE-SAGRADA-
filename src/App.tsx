@@ -4,7 +4,7 @@ import { GameState, INITIAL_STATE } from './gameState';
 import { drawGarden, emitRain, emitFertilizer, emitPrune, emitHarvest } from './canvas';
 import { playSfx, toggleMusic, musicOn, getCurrentTrackName, changeTrack, setOnTrackChangeCallback, setVolume } from './audio';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, User, Heart, ShoppingCart, Globe, ListFilter, ChevronLeft, ChevronRight, ChevronUp, MessageCircle, Trash2, Shield, Music, Play, SkipBack, SkipForward, Volume2, Pause } from 'lucide-react';
+import { Search, User, Heart, ShoppingCart, Globe, ListFilter, ChevronLeft, ChevronRight, ChevronUp, MessageCircle, Trash2, Shield, Music, Play, SkipBack, SkipForward, Volume2, Pause, Instagram } from 'lucide-react';
 import ManualPage from './ManualPage';
 
 import { AuthModal } from './AuthModal';
@@ -1005,8 +1005,22 @@ export default function App() {
                 </button>
               );
             })}
+            
+            {/* INSTAGRAM LINK IN NAVBAR */}
+            <a 
+              href="https://www.instagram.com/sementesagradaworld/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              title="Instagram Oficial Semente Sagrada World"
+              className="px-4 py-4 md:px-5 hover:bg-white/5 hover:text-[#E1306C] transition-colors whitespace-nowrap border-b-2 border-transparent hover:border-[#E1306C] flex items-center gap-2 uppercase text-white/60 font-black tracking-widest text-[11px] md:text-[13px] vt ml-auto md:ml-0"
+              onClick={(e) => { e.stopPropagation(); playSfx('click'); }}
+            >
+              <Instagram size={16} />
+              <span className="hidden md:inline">Instagram</span>
+            </a>
+
             <button 
-              className="px-5 py-4 md:px-6 hover:bg-white/5 hover:text-white transition-colors whitespace-nowrap border-b-2 border-transparent hover:border-white/50 ml-auto flex items-center gap-1 uppercase text-white/60 font-black tracking-widest text-[11px] md:text-[13px] vt"
+              className="px-5 py-4 md:px-6 hover:bg-white/5 hover:text-white transition-colors whitespace-nowrap border-b-2 border-transparent hover:border-white/50 md:ml-auto flex items-center gap-1 uppercase text-white/60 font-black tracking-widest text-[11px] md:text-[13px] vt"
               onClick={() => setOpenMegaMenu(openMegaMenu === 'Log / Ajuda' ? null : 'Log / Ajuda')}
             >
               Log / Ajuda <span className="text-white/40 text-[8px]">▼</span>
@@ -1187,6 +1201,19 @@ export default function App() {
         {/* MOBILE HERO BANNER (High Impact - Professional Polish) */}
         <div className="md:hidden w-full px-2 py-4">
            <div className="relative w-full aspect-[3/4] rounded-[32px] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.7)] border-2 border-white/5 group">
+              
+              {/* Instagram Floating Icon */}
+              <a 
+                href="https://www.instagram.com/sementesagradaworld/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                onClick={(e) => { e.stopPropagation(); playSfx('click'); }}
+                className="absolute top-6 left-6 z-[100] flex items-center justify-center p-3 bg-gradient-to-tr from-pink-600 via-purple-600 to-yellow-500 rounded-full shadow-[0_10px_30px_rgba(255,0,255,0.4)] border border-white/30 hover:scale-110 active:scale-95 transition-all animate-bounce-slow"
+                title="Siga-nos no Instagram"
+              >
+                <Instagram size={24} className="text-white drop-shadow-lg" />
+              </a>
+
               {/* Complex Background Layers */}
               <img 
                  src="/images/Partnership_announcement_HighBre…_2K_202607042049.jpeg"
